@@ -1,0 +1,35 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## Reading Source Files
+
+In this notebook I experiment with reading the files and then saving them to an R native format for ease of use.
+
+Begin by loading the packages used in this notebook: 
+```{r}
+library(dplyr)
+library(here)
+library(readxl)
+library(usethis)
+```
+
+Read a file as an example:
+```{r}
+m_2015 <- read_excel(paste0(here(), "/data-inputs/source-files/Time use_2015/gss-m.xlsx"))
+```
+
+Process data as an example:
+```{r}
+m_2015_slice <- m_2015 |>
+  slice_head(n = 10)
+```
+
+Save data for later use:
+```{r}
+save(m_2015_slice,
+     file = paste0(here(), "/data/m_2015_slice.rda"))
+```
+
+

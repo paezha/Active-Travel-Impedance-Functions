@@ -1,0 +1,27 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Callibration of functions
+
+In this notebook we take the data that was processed in notebook `00-Reading-Source-Files.Rmd` and use them to callibrate impedance functions.
+
+## Preliminaries
+
+Load packages:
+```{r}
+library(dplyr)
+library(here)
+```
+
+Read data files:
+```{r}
+load(file = paste0(here(),"/data/m_2015_slice.rda"))
+```
+
+Happily analyze data:
+```{r}
+summary(m_2015_slice$SEX)
+```
+
