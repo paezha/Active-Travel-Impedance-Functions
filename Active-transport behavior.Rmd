@@ -29,23 +29,24 @@ complete method
 
 ```{r load-packages, include=FALSE, cache=FALSE}
 #load all packages:
-library(fitdistrplus)
-library(dplyr)
-library(ggplot2)
-library(readxl) 
-library(splitstackshape)
-library(tibble)
-library(readr)
-library(tabulate)
-library(janitor)
-library(kableExtra)
-library(flextable)
+library(dplyr) # A Grammar of Data Manipulation
+library(fitdistrplus) # Help to Fit of a Parametric Distribution to Non-Censored or Censored Data
+library(flextable) # Functions for Tabular Reporting
+library(ggplot2) # Create Elegant Data Visualisations Using the Grammar of Graphics
+library(here) # A Simpler Way to Find Your Files
+library(janitor) # Simple Tools for Examining and Cleaning Dirty Data
+library(kableExtra) # Construct Complex Table with 'kable' and Pipe Syntax
+library(readr) # Read Rectangular Text Data
+library(readxl) # Read Excel Files 
+library(splitstackshape) # Stack and Reshape Datasets After Splitting Concatenated Values
+library(tabulate) # Pretty Console Output for Tables
+library(tibble) # Simple Data Frames
 ```
 
 
 ```{r, include=FALSE, cache=FALSE}
 #Read main file:
-gss_e_2015 <- read.csv("D:/GSS Data/gss-e.csv")
+gss_e_2015 <- read.csv(paste0(here(), "/data-inputs/source-files/Time USe_2015/gss-e.csv"))
 gss_e_2005 <- read.csv("D:/First Article/Data/Time use_2005/gss-12M0019-E-2005-c-19-e_F1.csv")
 gss_e_1998 <- read.csv("D:/First Article/Data/Time use_1998/gss-12M0012-E-1998-c-12e_F1.csv")
 gss_e_1992 <- read.csv("D:/First Article/Data/Time use_1992/gss-12M0007-E-1992-c-7-ep_F1.csv")
@@ -780,3 +781,4 @@ kable(Table_4) %>%
 
 
 ```
+
