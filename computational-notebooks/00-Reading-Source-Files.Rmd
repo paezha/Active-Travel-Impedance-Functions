@@ -437,6 +437,6 @@ walking_1986$ENDMIN <-  1
 Save data for later use:
 ```{r}
 save(walking_1986,
-     file = paste0(here(), "/data/walking_1986.Rda"))
+     file = paste0(here(), "/data/walking_19869.Rda"))
 ```
 
