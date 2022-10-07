@@ -398,3 +398,45 @@ Save data for later use:
 save(cycling_1992,
      file = paste0(here(), "/data/cycling_1992.Rda"))
 ```
+
+```{r creating dataset for walking 1986, include=FALSE, cache=FALSE}
+
+# **walking 1986**
+# Creating data of origins and destinations of walking trip 1986
+inds = which(gss_e_1986$PLACE == 7)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walking_1986 <- gss_e_1986 [unlist(rows),] %>% 
+  dplyr::select(SEQNUM, DDAY, NO_EPISO, ACT_CODE, STRTTIME, ENDTIME, DURATION, PLACE, FWGT_MS) %>% 
+  mutate(origin = lag(PLACE, order_by = SEQNUM)) %>% 
+  mutate(destination = lead(PLACE, order_by = SEQNUM)) %>% 
+  group_by(SEQNUM) %>% 
+  filter(PLACE == 7) %>% 
+  ungroup()
+summary(walking_1986$PLACE)
+
+# change destination and origins to text column
+walking_1986 <- walking_1986 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+walking_1986 <- walking_1986 %>% dplyr::rename(
+    PUMFID = SEQNUM,
+    LOCATION = PLACE, WGHT_EPI = FWGT_MS, STARTIME = STRTTIME) %>%  dplyr::select(PUMFID, DDAY, STARTIME:orig) 
+walking_1986$YEAR <-  1986
+walking_1986$MODE <-  "walking"
+walking_1986$STARTMIN <-  1
+walking_1986$ENDMIN <-  1
+```
+
+Save data for later use:
+```{r}
+save(walking_1986,
+     file = paste0(here(), "/data/walking_19869.Rda"))
+```
+
