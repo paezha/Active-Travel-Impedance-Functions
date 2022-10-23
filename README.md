@@ -7,8 +7,10 @@
 <!-- badges: end -->
 
 Mahdis Moghadasi (School of Earth, Environment and Society, McMaster
-University) Antonio Paez (School of Earth, Environment and Society,
-McMaster University)
+University)
+
+Antonio Paez (School of Earth, Environment and Society, McMaster
+University)
 
 ## Abstract
 

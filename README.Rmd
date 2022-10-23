@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 Mahdis Moghadasi (School of Earth, Environment and Society, McMaster University)
+
 Antonio Paez (School of Earth, Environment and Society, McMaster University)
 
 ## Abstract
