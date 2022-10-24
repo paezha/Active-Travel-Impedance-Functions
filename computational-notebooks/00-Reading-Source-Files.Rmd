@@ -16,20 +16,71 @@ library(usethis) # Automate Package and Project Setup
 
 ## Source Files
 
-In Canada, there is a survey program run by Statistics Canada called General Social Surveys or GSS for short. This program has run since YEAR? The GSS is conducted every year (in so-called cycles) and each year they focus on a different aspect of Canadian society. Starting in  YEAR one of the topics has been time use by Canadians. In the history of the survey, there have been five cycles dedicated to time use, Cycles X, Y, Z, conducted in years X, Y, Z. This means that there is information about time use patterns covering a period of so many years.
+In Canada, there is a survey program run by Statistics Canada called General Social Surveys or GSS for short. GSS collects data on social trends in order to track changes in Canadians' living conditions and well-being over time, as well as to provide immediate information on specific social policy issues of current or emerging interest. This survey tracks changes in time use to better understand how Canadians spend and manage their time, as well as what factors contribute to their happiness and stress .This program in Canada was established in 1985 as a series of independent, annual, cross-sectional surveys, each covering one topic in depth. Caregiving, families, time use, social identity, volunteering, and victimization are among the current GSS themes.
 
-The surveys (obtained from [here](address)) consist of two files: a main file and an episode file. These are their characteristics.
+Each of the six survey themes listed above is thoroughly repeated every 5 years. In addition to the core topic, each cycle includes new content that addresses emerging, policy-relevant issues. In addition, each survey collects detailed socio-demographic information such as age, gender, education, religion, ethnicity, income, and so on.
 
-The main file...contains info about respondents and their socio-economic...blah blah
+Time-use surveys gather data on all human activities and can thus inform a wide range of policies. In particular, three key themes have been identified as essential for informed policymaking and for which no other data sources are adequate: unpaid work and non-market production; well-being; and gender equality. Leisure time, work-life balance, health, commuting, culture, and sports are among the other topics covered by time use surveys. In addition, statistics Canada has been conducting time-use surveys at five- to seven-year intervals since 1986, most recently in 2015 (1986,1992,1998, 2005 ,2010 and 2015). This means that there is information about time use patterns covering a period of so many years.
+The GSS on time use collects information on respondents' participation in, and time spent on, a wide range of day-to-day activities using a retrospective 24-hour time diary. Furthermore, information is gathered on the location of these activities (e.g., at home, at work, etc.) and, for non-personal activities, the people who were present with the respondent at the time of the activity.
 
-The episode file...contains blah blah
+
+The surveys (obtained from [here](http://odesi2.scholarsportal.info/webview/)) consist of two files: a main file and an episode file. These are their characteristics.
+
+#The main file...contains info about respondents and their socio-economic...blah blah
+
+#The episode file...contains blah blah
 
 For the purpose of this notebook, the following definitions are important:
 
-CODE | Year     | Variable   | Description
------|----------|------------|-------------
-305  | 2015     | Locations  | Walking
-
+| **Code** 	| **Location**                             	| **Year** 	| **Description**                                                 	|
+|----------	|------------------------------------------	|----------	|-----------------------------------------------------------------	|
+|    300   	| At home or on property                   	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|    301   	| At place of work or school               	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|   302    	| Away on business                         	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|    303   	| At someone else's home or property       	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|    304   	| In the neighbourhood                     	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|    305   	| Outdoors                                 	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|    306   	| Grocery store, other stores or mall      	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|    307   	| Library, museum or theatre               	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|    308   	| Sports centre, field or arena            	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|    309   	| Restaurant, bar or club                  	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|    310   	| Place of worship                         	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|    311   	| Medical, dental or other health   clinic 	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|    312   	| Elsewhere                                	|   2015   	| Walking (code = 315) and Cycling (code = 318) to this location  	|
+|     1    	| R's home                                 	|   2010   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     2    	| Work place                               	|   2010   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     3    	| Someone else's home                      	|   2010   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     4    	| Restaurant/bar                           	|   2010   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     5    	| Place of worship                         	|   2010   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     6    	| Grocery store                            	|   2010   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     7    	| Other store/Mall                         	|   2010   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     8    	| School                                   	|   2010   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     9    	| Outdoors away from   home                	|   2010   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|    10    	| Library                                  	|   2010   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|    11    	| Other place                              	|   2010   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     1    	| Respondent's home                        	|   2005   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     2    	| Work place                               	|   2005   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     3    	| Someone else's home                      	|   2005   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     4    	| Restaurant/bar                           	|   2005   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     5    	| Place of worship                         	|   2005   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     6    	| Grocery store                            	|   2005   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     7    	| Other store/Mall                         	|   2005   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     8    	| School                                   	|   2005   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|     9    	| Outdoors away from home                  	|   2005   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|    10    	| Library                                  	|   2005   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|    11    	| Other place                              	|   2005   	| Walking (code = 14) and Cycling (code = 17) to this location    	|
+|    1     	| Respondent's home                        	|   1998   	| Walking (code = 7) and Cycling (code = 9) to this location      	|
+|     2    	| Work place                               	|   1998   	| Walking (code = 7) and Cycling (code = 9) to this location      	|
+|     3    	| Someone else's home                      	|   1998   	| Walking (code = 7) and Cycling (code = 9) to this location      	|
+|     4    	| Other plourhood                          	|   1998   	| Walking (code = 7) and Cycling (code = 9) to this location      	|
+|     1    	| Respondent's home                        	|   1992   	| Walking (code = 7) and Cycling (code = 9) to this location      	|
+|     2    	| Work place                               	|   1992   	| Walking (code = 7) and Cycling (code = 9) to this location      	|
+|     3    	| Someone else's home                      	|   1992   	| Walking (code = 7) and Cycling (code = 9) to this location      	|
+|    4     	| Other place                              	|   1992   	| Walking (code = 7) and Cycling (code = 9) to this location      	|
+|     1    	| Respondent's home                        	|   1886   	| Walking (code = 5) to this location                             	|
+|     2    	| Work place                               	|   1886   	| Walking (code = 5) to this location                             	|
+|     3    	| AT other places                          	|   1886   	| Walking (code = 5) to this location                             	|
+|     7    	| other                                    	|   1886   	| Walking (code = 5) to this location                             	|
 
 ### What are the bootstrap weights?
 
@@ -54,9 +105,10 @@ WE don't plan to use the bootstrap weights.
 In this notebook I experiment with reading the files and then saving them to an R native format for ease of use.
 
 
-Read main files:
+Read main files of GSS survey (Episode Files) from 1986 to 2015:
 ```{r}
 gss_e_2015 <- read.csv(paste0(here(), "/data-inputs/source-files/Time use_2015/gss-e.csv"))
+gss_e_2010 <- read.csv(paste0(here(), "/data-inputs/source-files/Time use_2010/gss-12M0018-E-2010-c-24-tus-ef_F1.csv"))
 gss_e_2005 <- read.csv(paste0(here(), "/data-inputs/source-files/Time use_2005/gss-12M0019-E-2005-c-19-e_F1.csv"))
 gss_e_1998 <- read.csv(paste0(here(), "/data-inputs/source-files/Time use_1998/gss-12M0012-E-1998-c-12e_F1.csv"))
 gss_e_1992 <- read.csv(paste0(here(), "/data-inputs/source-files/Time use_1992/gss-12M0007-E-1992-c-7-ep_F1.csv"))
@@ -65,7 +117,7 @@ gss_e_1986 <- read.csv(paste0(here(), "/data-inputs/source-files/Time use_1986/g
 
 We begin by creating a data set for walking using the 2015 data table.
 
-Create a table with origins and destinations for walking in 2015. I will identify the rows where the location of the activity in the episode file was "315" which is code for "walking".
+Create a table with origins and destinations for walking in 2015. First, I'll identify the rows in the episode file where the location of the activity was "315", which is code for "walking," as well as one row before and after them.
 ```{r creating dataset for walking 2015, include=FALSE, cache=FALSE}
 
 # **walking 2015**
@@ -74,11 +126,11 @@ inds <- which(gss_e_2015$LOCATION == 315)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-EXPLAIN WHAT IS DONE IN THIS CHUNK: 
+Second, I'll select the required columnS (required variables such as PUMFID (Record identification),  : 
 ```{r}
 walking_2015 <- gss_e_2015 |>
   dplyr::slice(unlist(rows)) |>
-  dplyr::select(PUMFID:LOCATION) |> 
+  dplyr::select(PUMFID,WGH_EPI, LOCATION) |> 
   #dplyr::slice_head(n = 15) |>
   group_by(PUMFID) |>
   mutate(origin = lag(LOCATION),
