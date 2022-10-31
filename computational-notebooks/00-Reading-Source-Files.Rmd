@@ -117,7 +117,8 @@ gss_e_1986 <- read.csv(paste0(here(), "/data-inputs/source-files/Time use_1986/g
 
 We begin by creating a data set for walking using the 2015 data table.
 
-Create a table with origins and destinations for walking in 2015. First, I'll identify the rows in the episode file where the location of the activity was "315", which is code for "walking," as well as one row before and after them.
+Create a table with origins and destinations for walking in 2015. First, I'll identify the rows in the episode file where the location of the activity was "315", which is code for "walking," as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
+
 ```{r creating dataset for walking 2015, include=FALSE, cache=FALSE}
 
 # **walking 2015**
@@ -126,11 +127,12 @@ inds <- which(gss_e_2015$LOCATION == 315)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columnS (required variables such as PUMFID (Record identification),  : 
+Second, I'll select the required columns (required variables such as PUMFID (Record identification), EPINO (Sequential episode number), WGHT_EPI (Episode weight), DDAY(Diary - Reference day), TOTEPISO (Total number of episodes during the reference day), TUI_01 (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), STARTMIN (Start time of the episode in minutes), ENDMIN (End time of the episode in minutes), DURATION (Duration (in minutes) of the episode) and LOCATION (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
+
 ```{r}
 walking_2015 <- gss_e_2015 |>
   dplyr::slice(unlist(rows)) |>
-  dplyr::select(PUMFID,WGH_EPI, LOCATION) |> 
+  dplyr::select(PUMFID:LOCATION) |> 
   #dplyr::slice_head(n = 15) |>
   group_by(PUMFID) |>
   mutate(origin = lag(LOCATION),
@@ -141,63 +143,75 @@ walking_2015 <- gss_e_2015 |>
 ```
 
 
-Similarly, filter origins of interest:
+Similarly, I'll filter origins of interest and then create a column with a description of each origin's code:
 ```{r}
 walking_2015 <- walking_2015 |>
   filter(origin == 300 | 
            origin == 301 | 
            origin == 303 | 
            origin == 302 | 
+           origin == 304 |
            origin == 305 | 
            origin == 306 | 
-           origin == 307 | 
+           origin == 307 |
+           origin == 308 |
            origin == 309 | 
-           origin == 310)  |>
+           origin == 310 |
+           origin == 311) |>
   mutate(orig_label =
            case_when(origin == 300 ~ "Home", 
                      origin == 301 ~ "Work or school",
                      origin == 303 ~ "Other's home",
                      origin == 302 ~ "Business",
+                     origin == 304 ~ "In the neighbourhood",
                      origin == 305 ~ "Outdoors",
                      origin == 306 ~ "Grocery store, other stores or mall",
-                     origin == 306 ~ "Library, museum or theatre",
+                     origin == 308 ~ "Sports centre, field or arena",
+                     origin == 307 ~ "Library, museum or theatre",
                      origin == 309 ~ "Restaurant, bar or club",
-                     origin == 310 ~ "Place of worship"),
+                     origin == 310 ~ "Place of worship",
+                     origin == 311 ~ "Medical, dental or other health clinic"),
          orig_label = factor(orig_label))
 ```
 
-Choose only destinations that are common in cycles X, Y, Z...
+Then, I'll filter destinations of interest and then create a column with a description of each destination's code
 ```{r}
 # change destination and origins to text column
 walking_2015 <- walking_2015 |>  
   # Choose destinations of interest
   filter(destination == 300 | 
            destination == 301 | 
-           destination == 303 | 
+           destination == 303 |
+           destination == 304 |
            destination == 302 | 
            destination == 305 |
            destination == 306 | 
-           destination == 307 | 
+           destination == 307 |
+           destination == 308 |
            destination == 309 | 
-           destination == 310 ) |>
+           destination == 310 |
+           destination == 311)  |>
   # Label the destinations
   mutate(dest_label =
            case_when(destination == 300 ~ "Home", 
                      destination == 301 ~ "Work or school",
                      destination == 303 ~ "Other's home",
+                     destination == 304 ~ "In the neighbourhood",
                      destination == 302 ~ "Business",
                      destination == 305 ~ "Outdoors",
                      destination == 306 ~ "Grocery store, other stores or mall",
-                     destination == 306 ~ "Library, museum or theatre",
+                     destination == 307 ~ "Library, museum or theatre",
+                     destination == 308 ~ "Sports centre, field or arena",
                      destination == 309 ~ "Restaurant, bar or club",
-                     destination == 310 ~ "Place of worship"),
+                     destination == 310 ~ "Place of worship",
+                     destination == 311 ~ "Medical, dental or other health clinic"),
          dest_label = factor(dest_label))
 ```
 
-EXPLAIN:
+Here, I'll add two columns of year and mode to walking_2015 dataset.
 ```{r}
 walking_2015 <- walking_2015 |>
-  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:dest_label) |>
+  dplyr::select(PUMFID, WGHT_EPI,TUI_01, DDAY, STARTIME:dest_label) |>
   mutate(YEAR = 2015,
          MODE = "Walking")
 ```
@@ -234,7 +248,7 @@ The person was at home doing 27 (personal care), then went for walk that lasted 
 
 QUESTION: Should we include recreational trips in our analysis? If not, then we need to filter out all home-to-home trips.
 
-<!---
+
 Save data for later use:
 ```{r}
 save(walking_2015,
@@ -242,52 +256,136 @@ save(walking_2015,
 ```
 
 
+In the next step, We begin by creating a data set for cycling using the 2015 data table.
+
+Create a table with origins and destinations for cycling in 2015. First, I'll identify the rows in the episode file where the location of the activity was "318", which is code for "cycling," as well as one row before and after them to identify the locations before and after the cycling that will be considered as the origin and destination for each respondent.
+
 ```{r creating dataset for cycling 2015, include=FALSE, cache=FALSE}
 
 # cycling _2015
 # Creating data of origins and destinations of cycling trip 2015
 inds = which(gss_e_2015$LOCATION == 318)
 rows <- lapply(inds, function(x) (x-1):(x+1))
+```
+
+Second, I'll select the required columns (required variables such as PUMFID (Record identification), EPINO (Sequential episode number), WGHT_EPI (Episode weight), DDAY(Diary - Reference day), TOTEPISO (Total number of episodes during the reference day), TUI_01 (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), STARTMIN (Start time of the episode in minutes), ENDMIN (End time of the episode in minutes), DURATION (Duration (in minutes) of the episode) and LOCATION (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the cycling for each respondent.
+
+```{r}
 cycling_2015 <- gss_e_2015[unlist(rows),] %>% 
   dplyr::select(PUMFID:LOCATION) %>% 
   mutate(origin = lag(LOCATION, order_by = PUMFID)) %>% 
   mutate(destination = lead(LOCATION, order_by = PUMFID)) %>% 
   group_by(PUMFID) %>% 
   filter(LOCATION == 318)
-
-# change destination and origins to text column
-cycling_2015 <- cycling_2015 %>%  filter(destination == 300 | destination == 301 | destination == 303 | destination == 302 | destination == 305 |destination == 306 | destination == 307 | destination == 309 | destination == 310 ) %>% filter(origin == 300 | origin == 301 | origin == 303 | origin == 302 | origin == 305 | origin == 306 | origin == 307 | origin == 309 | origin == 310) %>% 
-  mutate(dest =
-           case_when(destination == 300 ~ "home", 
-                     destination == 301 ~ "work or school",
-                     destination == 303 ~ "other's home",
-                     destination == 302 ~ "business",
-                     destination == 305 ~ "outdoors",
-                     destination == 306 ~ "Grocery store, other stores or mall",
-                     destination == 306 ~ "Library, museum or theatre",
-                     destination == 309 ~ "Restaurant, bar or club",
-                     destination == 310 ~ "Place of worship")) %>% 
-  mutate(orig =
-           case_when(origin == 300 ~ "home", 
-                     origin == 301 ~ "work or school",
-                     origin == 303 ~ "other's home",
-                     origin == 302 ~ "business",
-                     origin == 305 ~ "outdoors",
-                     origin == 306 ~ "Grocery store, other stores or mall",
-                     origin == 306 ~ "Library, museum or theatre",
-                     origin == 309 ~ "Restaurant, bar or club",
-                     origin == 310 ~ "Place of worship"))
-
-cycling_2015 <- cycling_2015 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
-cycling_2015$YEAR <-  2015
-cycling_2015$MODE <-  "cycling"
 ```
+
+Similarly, I'll filter origins of interest and then create a column with a description of each origin's code:
+
+```{r}
+cycling_2015 <- cycling_2015 |>
+  filter(origin == 300 | 
+           origin == 301 | 
+           origin == 303 | 
+           origin == 302 | 
+           origin == 304 |
+           origin == 305 | 
+           origin == 306 | 
+           origin == 307 |
+           origin == 308 |
+           origin == 309 | 
+           origin == 310 |
+           origin == 311) |>
+  mutate(orig_label =
+           case_when(origin == 300 ~ "Home", 
+                     origin == 301 ~ "Work or school",
+                     origin == 303 ~ "Other's home",
+                     origin == 302 ~ "Business",
+                     origin == 304 ~ "In the neighbourhood",
+                     origin == 305 ~ "Outdoors",
+                     origin == 306 ~ "Grocery store, other stores or mall",
+                     origin == 308 ~ "Sports centre, field or arena",
+                     origin == 307 ~ "Library, museum or theatre",
+                     origin == 309 ~ "Restaurant, bar or club",
+                     origin == 310 ~ "Place of worship",
+                     origin == 311 ~ "Medical, dental or other health clinic"),
+         orig_label = factor(orig_label))
+```
+
+Then, I'll filter destinations of interest and then create a column with a description of each destination's code
+```{r}
+# change destination and origins to text column
+cycling_2015 <- cycling_2015 |>  
+  # Choose destinations of interest
+  filter(destination == 300 | 
+           destination == 301 | 
+           destination == 303 |
+           destination == 304 |
+           destination == 302 | 
+           destination == 305 |
+           destination == 306 | 
+           destination == 307 |
+           destination == 308 |
+           destination == 309 | 
+           destination == 310 |
+           destination == 311)  |>
+  # Label the destinations
+  mutate(dest_label =
+           case_when(destination == 300 ~ "Home", 
+                     destination == 301 ~ "Work or school",
+                     destination == 303 ~ "Other's home",
+                     destination == 304 ~ "In the neighbourhood",
+                     destination == 302 ~ "Business",
+                     destination == 305 ~ "Outdoors",
+                     destination == 306 ~ "Grocery store, other stores or mall",
+                     destination == 307 ~ "Library, museum or theatre",
+                     destination == 308 ~ "Sports centre, field or arena",
+                     destination == 309 ~ "Restaurant, bar or club",
+                     destination == 310 ~ "Place of worship",
+                     destination == 311 ~ "Medical, dental or other health clinic"),
+         dest_label = factor(dest_label))
+```
+
+
+Here, I'll add two columns of year and mode to cycling_2015 dataset.
+
+```{r}
+cycling_2015 <- cycling_2015 |>
+  dplyr::select(PUMFID, WGHT_EPI,TUI_01, DDAY, STARTIME:dest_label) |>
+  mutate(YEAR = 2015,
+         MODE = "cycling")
+```
+
+Sanity check!
+```{r}
+cycling_2015 |> 
+  group_by(orig_label, 
+           dest_label) |>
+  count() |>
+  pivot_wider(names_from = "dest_label", values_from = "n")
+```
+
+The most common destination for a cycling trip that starts at home is `Work or school`. Notice, though that there are quite a few trips that start _and_ end at Home. What are those supposed to be?
+
+Check those home-to-home trips:
+```{r}
+cycling_2015 |>
+  filter(orig_label == "Home" & dest_label == "Home")
+```
+The person was at home doing 27 (personal care), then went for walk that lasted 15 minutes, came back home and spent 180 doing 9 (looking for work). So, this was a recreational/leisure trip!
+
+QUESTION: Should we include recreational trips in our analysis? If not, then we need to filter out all home-to-home trips.
+
+
+
+
 
 Save data for later use:
 ```{r}
 save(cycling_2015,
-     file = paste0(here(), "/data/cycling_2015.Rda"))
+    file = paste0(here(), "/data/cycling_2015.Rda"))
 ```
+
+
 
 ```{r creating dataset for walking 2005, include=FALSE, cache=FALSE}
 
