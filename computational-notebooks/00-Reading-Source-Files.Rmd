@@ -121,7 +121,7 @@ gss_e_1986 <- read.csv(paste0(here(), "/data-inputs/source-files/Time use_1986/g
 
 We begin by creating a data set for walking using the 2015 data table.
 
-Create a table with origins and destinations for walking in 2015. First, I'll identify the rows in the episode file where the location of the activity was "315", which is code for "walking," as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
+Create a table with origins and destinations for walking in 2015. First, I'll identify the rows in the episode file where the location of the activity was `315`, which is code for `walking`, as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
 
 ```{r creating dataset for walking 2015, include=FALSE, cache=FALSE}
 
@@ -131,12 +131,12 @@ inds <- which(gss_e_2015$LOCATION == 315)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columns (required variables such as PUMFID (Record identification), EPINO (Sequential episode number), WGHT_EPI (Episode weight), DDAY(Diary - Reference day), TOTEPISO (Total number of episodes during the reference day), TUI_01 (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), STARTMIN (Start time of the episode in minutes), ENDMIN (End time of the episode in minutes), DURATION (Duration (in minutes) of the episode) and LOCATION (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
+Second, I'll select the required columns (required variables such as PUMFID (Record identification), WGHT_EPI (Episode weight), TUI_01 (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and LOCATION (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
 
 ```{r}
 walking_2015 <- gss_e_2015 |>
   dplyr::slice(unlist(rows)) |>
-  dplyr::select(PUMFID:LOCATION) |> 
+  dplyr::select(PUMFID, WGHT_EPI,DDAY,TUI_01:LOCATION) |> 
   #dplyr::slice_head(n = 15) |>
   group_by(PUMFID) |>
   mutate(origin = lag(LOCATION),
@@ -212,12 +212,13 @@ walking_2015 <- walking_2015 |>
          dest_label = factor(dest_label))
 ```
 
-Here, I'll add two columns of year and mode to walking_2015 dataset.
+Here, I'll add two columns of year and mode to walking_2015 dataset and change the name of TUI_01 to ACTCODE align with other years.
 ```{r}
 walking_2015 <- walking_2015 |>
-  dplyr::select(PUMFID, WGHT_EPI,TUI_01, DDAY, STARTIME:dest_label) |>
+  dplyr::select(PUMFID, WGHT_EPI,TUI_01, STARTIME, ENDTIME, DURATION:dest_label) |>
   mutate(YEAR = 2015,
          MODE = "Walking")
+walking_2015 <- walking_2015 |> dplyr::rename(ACTCODE = TUI_01)
 ```
 
 
@@ -266,7 +267,7 @@ save(walking_2015,
 
 In the next step, We begin by creating a data set for cycling using the 2015 data table.
 
-Create a table with origins and destinations for cycling in 2015. First, I'll identify the rows in the episode file where the location of the activity was "318", which is code for "cycling," as well as one row before and after them to identify the locations before and after the cycling that will be considered as the origin and destination for each respondent.
+Create a table with origins and destinations for cycling in 2015. First, I'll identify the rows in the episode file where the location of the activity was `318`, which is code for `cycling`, as well as one row before and after them to identify the locations before and after the cycling that will be considered as the origin and destination for each respondent.
 
 ```{r creating dataset for cycling 2015, include=FALSE, cache=FALSE}
 
@@ -276,11 +277,11 @@ inds <- which(gss_e_2015$LOCATION == 318)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columns (required variables such as PUMFID (Record identification), EPINO (Sequential episode number), WGHT_EPI (Episode weight), DDAY(Diary - Reference day), TOTEPISO (Total number of episodes during the reference day), TUI_01 (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), STARTMIN (Start time of the episode in minutes), ENDMIN (End time of the episode in minutes), DURATION (Duration (in minutes) of the episode) and LOCATION (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the cycling for each respondent.
+Second, I'll select the required columns (required variables such as PUMFID (Record identification), WGHT_EPI (Episode weight), TUI_01 (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and LOCATION (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the cycling for each respondent.
 
 ```{r}
 cycling_2015 <- gss_e_2015[unlist(rows),] |> 
-  dplyr::select(PUMFID:LOCATION) |>
+  dplyr::select(PUMFID, WGHT_EPI, TUI_01:LOCATION) |>
   mutate(origin = lag(LOCATION, order_by = PUMFID)) |> 
   mutate(destination = lead(LOCATION, order_by = PUMFID)) |>
   group_by(PUMFID) |>
@@ -354,13 +355,14 @@ cycling_2015 <- cycling_2015 |>
 ```
 
 
-Here, I'll add two columns of year and mode to cycling_2015 dataset.
+Here, I'll add two columns of year and mode to cycling_2015 dataset and change the name of TUI_01 to ACTCODE align with other years
 
 ```{r}
 cycling_2015 <- cycling_2015 |>
-  dplyr::select(PUMFID, WGHT_EPI,TUI_01, DDAY, STARTIME:dest_label) |>
+  dplyr::select(PUMFID:ENDTIME, DURATION:dest_label) |>
   mutate(YEAR = 2015,
-         MODE = "cycling")
+         MODE = "cycling") |>
+  dplyr::rename(ACTCODE = TUI_01)
 ```
 
 Sanity check!
@@ -411,7 +413,7 @@ save(cycling_2015,
 ## Walking 2010
 
 
-Here a table with origins and destinations for walking in 2010 will be created. First, I'll identify the rows in the episode file where the location of the activity was "14", which is code for "walking," as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
+Here a table with origins and destinations for walking in 2010 will be created. First, I'll identify the rows in the episode file where the location of the activity was `14`, which is code for `walking`, as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
 
 ```{r creating dataset for walking 2010, include=FALSE, cache=FALSE}
 
@@ -421,12 +423,12 @@ inds <- which(gss_e_2010$PLACE == 14)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columns (required variables such as RECID (Record identification), EPINO (Sequential episode number), WGHT_EPI (Episode weight), DDAY(Diary - Reference day), TOTEPISO (Total number of episodes during the reference day), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), STARTMIN (Start time of the episode in minutes), ENDMIN (End time of the episode in minutes), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
+Second, I'll select the required columns (required variables such as RECID (Record identification), EPINO (Sequential episode number), WGHT_EPI (Episode weight), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
 
 
 ```{r}
 walking_2010 <- gss_e_2010[unlist(rows),] |> 
-  dplyr::select(RECID:PLACE) |>
+  dplyr::select(RECID,WGHT_EPI, ACTCODE:ENDTIME,DURATION,PLACE) |>
   mutate(origin = lag(PLACE, order_by = RECID)) |> 
   mutate(destination = lead(PLACE, order_by = RECID)) |>
   group_by(RECID) |>
@@ -489,12 +491,15 @@ walking_2010 <- walking_2010 |>
          dest_label = factor(dest_label))
 ```
 
-Here, I'll add two columns of year and mode to walking_2010 dataset.
+Here, I'll add two columns of year and mode to walking_2010 dataset and change the name of `RECID` and `PLACE` TO `PUMFID` and `LOCATION` . Indeed Changes names to align with the name of variables in 2015. 
 ```{r}
 walking_2010 <- walking_2010 |>
   dplyr::select(RECID, WGHT_EPI,ACTCODE, STARTIME:dest_label) |>
   mutate(YEAR = 2010,
          MODE = "Walking")
+walking_2010 <- walking_2010 %>% dplyr::rename(
+    PUMFID = RECID,
+    LOCATION = PLACE)
 ```
 
 
@@ -507,7 +512,7 @@ walking_2010 |>
   pivot_wider(names_from = "dest_label", values_from = "n")
 ```
 
-The most common destination for a walking trip that starts at home is `work or school`. Notice, though that the most trips start _and_ end at Home. What are those supposed to be?
+The most common destination for a walking trip that starts at home is `HOME and work or school`. Notice, though that the most trips start _and_ end at Home. What are those supposed to be?
 
 Check those home-to-home trips:
 ```{r}
@@ -524,16 +529,17 @@ gss_e_2010 |>
   select(RECID:PLACE)
 ```
 
-The person was at home doing 390 (Food (or meal) cleanup), then went for cycling that lasted 15 minutes, came back home and spent 5 doing 181.1 (Household management (organizing/planning activities, etc.). So, this was a recreational/leisure trip!
+The person was at home doing 390 (Food (or meal) cleanup), then went for walking that lasted 15 minutes, came back home and spent 5 doing 181.1 (Household management (organizing/planning activities, etc.). So, this was a recreational/leisure trip!
 
 Note: ACTCODE is an activity code of the episode (What were you doing at [hour:minute]?).The list of main activity codes  can be found in an appendix of the User Guide.
 
 QUESTION: Should we include recreational trips in our analysis? If not, then we need to filter out all home-to-home trips.
 
+
 ### Cycling 2010
 
 
-Here a table with origins and destinations for walking in 2010 will be created. First, I'll identify the rows in the episode file where the location of the activity was `17`, which is code for "CYCLING," as well as one row before and after them to identify the locations before and after the cycling that will be considered as the origin and destination for each respondent. 
+Here a table with origins and destinations for cycling in 2010 will be created. First, I'll identify the rows in the episode file where the location of the activity was `17`, which is code for `Cycling`, as well as one row before and after them to identify the locations before and after the cycling that will be considered as the origin and destination for each respondent. 
 
 ```{r creating dataset for cycling 2010, include=FALSE, cache=FALSE}
 
@@ -543,7 +549,7 @@ inds <- which(gss_e_2010$PLACE == 17)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columns (required variables such as RECID (Record identification), EPINO (Sequential episode number), WGHT_EPI (Episode weight), DDAY(Diary - Reference day), TOTEPISO (Total number of episodes during the reference day), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), STARTMIN (Start time of the episode in minutes), ENDMIN (End time of the episode in minutes), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the cycling for each respondent.
+Second, I'll select the required columns (required variables such as RECID (Record identification), WGHT_EPI (Episode weight), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the cycling for each respondent.
 
 
 ```{r}
@@ -611,12 +617,15 @@ cycling_2010 <- cycling_2010 |>
          dest_label = factor(dest_label))
 ```
 
-Here, I'll add two columns of year and mode to cycling_2010 dataset.
+Here, I'll add two columns of year and mode to cycling_2010 dataset and change the name of `RECID` and `PLACE` TO `PUMFID` and `LOCATION` . Indeed Changes names to align with the name of variables in 2015. 
 ```{r}
 cycling_2010 <- cycling_2010 |>
-  dplyr::select(RECID, WGHT_EPI,ACTCODE, STARTIME:dest_label) |>
+  dplyr::select(RECID, WGHT_EPI,ACTCODE:ENDTIME, DURATION:dest_label) |>
   mutate(YEAR = 2010,
          MODE = "cycling")
+cycling_2010 <- cycling_2010 %>% dplyr::rename(
+    PUMFID = RECID,
+    LOCATION = PLACE)
 ```
 
 
@@ -661,7 +670,7 @@ QUESTION: Should we include recreational trips in our analysis? If not, then we 
 ### Walking 2005
 
 
-Here a table with origins and destinations for walking in 2005 will be created. First, I'll identify the rows in the episode file where the location of the activity was "14", which is code for "walking," as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
+Here a table with origins and destinations for walking in 2005 will be created. First, I'll identify the rows in the episode file where the location of the activity was `14`, which is code for `walking`, as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
 
 ```{r creating dataset for walking 2005, include=FALSE, cache=FALSE}
 
@@ -671,7 +680,7 @@ inds = which(gss_e_2005$PLACE == 14)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columns (required variables such as RECID (Record identification), EPINO (Sequential episode number), WGHT_EPI (Episode weight), DDAY(Diary - Reference day), TOTEPISO (Total number of episodes during the reference day), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), STARTMIN (Start time of the episode in minutes), ENDMIN (End time of the episode in minutes), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
+Second, I'll select the required columns (required variables such as RECID (Record identification), WGHT_EPI (Episode weight), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
 
 ```{r}
 walking_2005 <- gss_e_2005 [unlist(rows),] |>
@@ -742,12 +751,15 @@ walking_2005 <- walking_2005 |>
 ```
 
 
-Here, I'll add two columns of year and mode to walking_2005 dataset.
+Here, I'll add two columns of year and mode to walking_2005 dataset and change the name of `RECID` and `PLACE` TO `PUMFID` and `LOCATION` . Indeed Changes names to align with the name of variables in 2015. 
 ```{r}
 walking_2005 <- walking_2005 |>
-  dplyr::select(RECID, WGHT_EPI,ACTCODE, STARTIME:dest_label) |>
+  dplyr::select(RECID, WGHT_EPI, ACTCODE:ENDTIME, DURATION:dest_label) |>
   mutate(YEAR = 2005,
          MODE = "Walking")
+walking_2005 <- walking_2005 |> dplyr::rename(
+    PUMFID = RECID,
+    LOCATION = PLACE) 
 ```
 
 
@@ -794,7 +806,7 @@ save(walking_2005,
 # Cycling_2005
 
 
-Here a table with origins and destinations for walking in 2005 will be created. First, I'll identify the rows in the episode file where the location of the activity was `17`, which is code for "CYCLING," as well as one row before and after them to identify the locations before and after the cycling that will be considered as the origin and destination for each respondent. 
+Here a table with origins and destinations for cycling in 2005 will be created. First, I'll identify the rows in the episode file where the location of the activity was `17`, which is code for `Cycling`, as well as one row before and after them to identify the locations before and after the cycling that will be considered as the origin and destination for each respondent. 
 
 ```{r creating dataset for cycling 2005, include=FALSE, cache=FALSE}
 
@@ -804,7 +816,7 @@ inds <- which(gss_e_2005$PLACE == 17)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columns (required variables such as RECID (Record identification), EPINO (Sequential episode number), WGHT_EPI (Episode weight), DDAY(Diary - Reference day), TOTEPISO (Total number of episodes during the reference day), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), STARTMIN (Start time of the episode in minutes), ENDMIN (End time of the episode in minutes), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the cycling for each respondent.
+Second, I'll select the required columns (required variables such as RECID (Record identification), WGHT_EPI (Episode weight), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the cycling for each respondent.
 
 
 ```{r}
@@ -872,12 +884,15 @@ cycling_2005 <- cycling_2005 |>
          dest_label = factor(dest_label))
 ```
 
-Here, I'll add two columns of year and mode to cycling_2005 dataset.
+Here, I'll add two columns of year and mode to cycling_2005 dataset and change the name of `RECID` and `PLACE` TO `PUMFID` and `LOCATION` . Indeed Changes names to align with the name of variables in 2015. 
 ```{r}
 cycling_2005 <- cycling_2005 |>
-  dplyr::select(RECID, WGHT_EPI,ACTCODE, STARTIME:dest_label) |>
+  dplyr::select(RECID, WGHT_EPI, ACTCODE:ENDTIME, DURATION:dest_label) |>
   mutate(YEAR = 2005,
          MODE = "cycling")
+cycling_2005 <- cycling_2005 |> dplyr::rename(
+    PUMFID = RECID,
+    LOCATION = PLACE) 
 ```
 
 
@@ -927,7 +942,7 @@ save(cycling_2005,
 # Walking 1998
 
 
-Here a table with origins and destinations for walking in 1998 will be created. First, I'll identify the rows in the episode file where the location of the activity was "7", which is code for "walking," as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
+Here a table with origins and destinations for walking in 1998 will be created. First, I'll identify the rows in the episode file where the location of the activity was `7`, which is code for `walking`, as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
 
 ```{r creating dataset for walking 1998, include=FALSE, cache=FALSE}
 
@@ -937,7 +952,7 @@ inds = which(gss_e_1998$PLACE == 7)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columns (required variables such as RECID (Record identification), EPINO (Sequential episode number), WGHT_EPI (Episode weight), DDAY(Diary - Reference day), TOTEPISO (Total number of episodes during the reference day), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), STARTMIN (Start time of the episode in minutes), ENDMIN (End time of the episode in minutes), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
+Second, I'll select the required columns (required variables such as RECID (Record identification), WGHT_EPI (Episode weight), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
 
 ```{r}
 walking_1998 <- gss_e_1998 [unlist(rows),] |>
@@ -980,12 +995,16 @@ walking_1998 <- walking_1998 |>
 ```
 
 
-Here, I'll add two columns of year and mode to walking_1998 dataset.
+Here, I'll add two columns of year and mode to walking_1998 dataset and change the name of `RECID`, `WGHTEPI` and `PLACE` TO `PUMFID`,`WGHT_EPI` and `LOCATION` . Indeed Changes names to align with the name of variables in 2015. 
 ```{r}
 walking_1998 <- walking_1998 |>
-  dplyr::select(RECID, WGHTEPI,ACTCODE, STARTIME:dest_label) |>
+  dplyr::select(RECID, WGHTEPI,ACTCODE: ENDTIME, DURATION:dest_label) |>
   mutate(YEAR = 1998,
          MODE = "Walking")
+walking_1998 <- walking_1998|> dplyr::rename(
+    PUMFID = RECID,
+    WGHT_EPI = WGHTEPI,
+    LOCATION = PLACE) 
 ```
 
 
@@ -1032,7 +1051,7 @@ save(walking_1998,
 
 # Cycling_1998
 
-Here a table with origins and destinations for cycling in 1998 will be created. First, I'll identify the rows in the episode file where the location of the activity was `9`, which is code for "CYCLING," as well as one row before and after them to identify the locations before and after the cycling that will be considered as the origin and destination for each respondent. 
+Here a table with origins and destinations for cycling in 1998 will be created. First, I'll identify the rows in the episode file where the location of the activity was `9`, which is code for `Cycling`, as well as one row before and after them to identify the locations before and after the cycling that will be considered as the origin and destination for each respondent. 
 
 ```{r creating dataset for cycling 1998, include=FALSE, cache=FALSE}
 # **cycling 1998**
@@ -1041,7 +1060,7 @@ inds <- which(gss_e_1998$PLACE == 9)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columns (required variables such as RECID (Record identification), EPINO (Sequential episode number), WGHTEPI (Episode weight), DDAY(Diary - Reference day), TOTEPISO (Total number of episodes during the reference day), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), STARTMIN (Start time of the episode in minutes), ENDMIN (End time of the episode in minutes), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the cycling for each respondent.
+Second, I'll select the required columns (required variables such as RECID (Record identification), WGHTEPI (Episode weight), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the cycling for each respondent.
 
 
 ```{r}
@@ -1081,12 +1100,16 @@ cycling_1998 <- cycling_1998 |>
          dest_label = factor(dest_label))
 ```
 
-Here, I'll add two columns of year and mode to cycling_1998 dataset.
+Here, I'll add two columns of year and mode to cycling_1998 dataset and change the name of `RECID`, `WGHTEPI` and `PLACE` TO `PUMFID`,`WGHT_EPI` and `LOCATION` . Indeed Changes names to align with the name of variables in 2015.
 ```{r}
 cycling_1998 <- cycling_1998 |>
-  dplyr::select(RECID, WGHTEPI,ACTCODE, STARTIME:dest_label) |>
+  dplyr::select(RECID, WGHTEPI,ACTCODE: ENDTIME, DURATION:dest_label) |>
   mutate(YEAR = 1998,
          MODE = "cycling")
+cycling_1998 <- cycling_1998|> dplyr::rename(
+    PUMFID = RECID,
+    WGHT_EPI = WGHTEPI,
+    LOCATION = PLACE) 
 ```
 
 
@@ -1136,7 +1159,7 @@ save(cycling_1998,
 # Walking_1992
 
 
-Here a table with origins and destinations for walking in 1992 will be created. First, I'll identify the rows in the episode file where the location of the activity was `7`, which is code for "walking," as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
+Here a table with origins and destinations for walking in 1992 will be created. First, I'll identify the rows in the episode file where the location of the activity was `7`, which is code for `walking`, as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
 
 ```{r creating dataset for walking 1992, include=FALSE, cache=FALSE}
 
@@ -1146,7 +1169,7 @@ inds = which(gss_e_1992$PLACE == 7)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columns (required variables such as SEQNUM (Record identification), TIMEWGT (Episode weight), DDAY(Diary - Reference day), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
+Second, I'll select the required columns (required variables such as SEQNUM (Record identification), TIMEWGT (Episode weight), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
 
 ```{r}
 walking_1992 <- gss_e_1992 [unlist(rows),] |>
@@ -1188,12 +1211,16 @@ walking_1992 <- walking_1992 |>
 ```
 
 
-Here, I'll add two columns of year and mode to walking_1992 dataset.
+Here, I'll add two columns of year and mode to walking_1992 dataset and change the name of `SEQNUM`, `TIMEWGT` and `PLACE` TO `PUMFID`,`WGHT_EPI` and `LOCATION` . Indeed Changes names to align with the name of variables in 2015.
 ```{r}
 walking_1992 <- walking_1992 |>
-  dplyr::select(SEQNUM,DDAY, TIMEWGT,ACTCODE, STARTIME:dest_label) |>
+  dplyr::select(SEQNUM,TIMEWGT,ACTCODE:dest_label) |>
   mutate(YEAR = 1992,
          MODE = "Walking")
+walking_1992 <- walking_1992 |> dplyr::rename(
+    PUMFID = SEQNUM,
+    WGHT_EPI = TIMEWGT,
+    LOCATION = PLACE)
 ```
 
 
@@ -1213,7 +1240,7 @@ Check those home-to-home trips:
 walking_1992 |>
   filter(orig_label == "Home" & dest_label == "Home")
 ```
-See RECID == 218 and check the walking episode:
+See SEQNUM == 218 and check the walking episode:
 ```{r}
 gss_e_1992 |>
   filter(SEQNUM == 218) |>
@@ -1242,7 +1269,7 @@ save(walking_1992,
 # Cycling_1992
 
 
-Here a table with origins and destinations for cycling in 1992 will be created. First, I'll identify the rows in the episode file where the location of the activity was `9`, which is code for "CYCLING," as well as one row before and after them to identify the locations before and after the cycling that will be considered as the origin and destination for each respondent. 
+Here a table with origins and destinations for cycling in 1992 will be created. First, I'll identify the rows in the episode file where the location of the activity was `9`, which is code for `Cycling` as well as one row before and after them to identify the locations before and after the cycling that will be considered as the origin and destination for each respondent. 
 
 ```{r creating dataset for cycling 1992, include=FALSE, cache=FALSE}
 # **cycling 1992**
@@ -1251,7 +1278,7 @@ inds <- which(gss_e_1992$PLACE == 9)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columns (required variables such as SEQNUM (Record identification), TIMEWGT (Episode weight), DDAY(Diary - Reference day), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the cycling for each respondent.
+Second, I'll select the required columns (required variables such as SEQNUM (Record identification), TIMEWGT (Episode weight), ACTCODE (Activity code of the episode), STARTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the cycling for each respondent.
 
 
 ```{r}
@@ -1291,12 +1318,16 @@ cycling_1992 <- cycling_1992 |>
          dest_label = factor(dest_label))
 ```
 
-Here, I'll add two columns of year and mode to cycling_1992 dataset.
+Here, I'll add two columns of year and mode to cycling_1992 dataset and change the name of `SEQNUM`, `TIMEWGT` and `PLACE` TO `PUMFID`,`WGHT_EPI` and `LOCATION` . Indeed, Changes names to align with the name of variables in 2015.
 ```{r}
 cycling_1992 <- cycling_1992 |>
-  dplyr::select(SEQNUM,TIMEWGT,DDAY,ACTCODE:dest_label) |>
+  dplyr::select(SEQNUM,TIMEWGT,ACTCODE:dest_label) |>
   mutate(YEAR = 1992,
          MODE = "cycling")
+cycling_1992 <- cycling_1992 |> dplyr::rename(
+    PUMFID = SEQNUM,
+    WGHT_EPI = TIMEWGT,
+    LOCATION = PLACE)
 ```
 
 
@@ -1345,17 +1376,17 @@ save(cycling_1992,
 
 # Walking 1986
 
-Here a table with origins and destinations for walking in 1992 will be created. First, I'll identify the rows in the episode file where the location of the activity was `5`, which is code for "walking," as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
+Here a table with origins and destinations for walking in 1986 will be created. First, I'll identify the rows in the episode file where the location of the activity was `5`, which is code for `walking` as well as one row before and after them to identify the locations before and after the walking that will be considered as the origin and destination for each respondent. 
 
-```{r creating dataset for walking 1886, include=FALSE, cache=FALSE}
+```{r creating dataset for walking 1986, include=FALSE, cache=FALSE}
 
-# **walking 1886**
-# Creating data of origins and destinations of walking trip 1886
+# **walking 1986**
+# Creating data of origins and destinations of walking trip 1986
 inds = which(gss_e_1986$PLACE == 5)
 rows <- lapply(inds, function(x) (x-1):(x+1))
 ```
 
-Second, I'll select the required columns (required variables such as SEQNUM (Record identification), FWGT_MS (Episode weight), DDAY(Diary - Reference day), ACT_CODE (Activity code of the episode), STARTTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
+Second, I'll select the required columns (required variables such as SEQNUM (Record identification), ACT_CODE (Activity code of the episode), STARTTIME (Start time of the episode), ENDTIME (End time of the episode), DURATION (Duration (in minutes) of the episode) and Place (Location of the episode) and then I'll create origins and destinations columns based on the locations before and after the walking for each respondent.
 
 ```{r}
 walking_1986 <- gss_e_1986 [unlist(rows),] |>
@@ -1400,9 +1431,15 @@ walking_1986 <- walking_1986 |>
 Here, I'll add two columns of year and mode to walking_1986 dataset.
 ```{r}
 walking_1986 <- walking_1986 |>
-  dplyr::select(SEQNUM,DDAY,ACT_CODE:dest_label) |>
+  dplyr::select(SEQNUM,ACT_CODE:dest_label) |>
   mutate(YEAR = 1986,
          MODE = "Walking")
+walking_1986 <- walking_1986 |> dplyr::rename(
+    PUMFID = SEQNUM,
+    STARTIME= STRTTIME,
+    WGHT_EPI = FWGT_MS,
+    ACTCODE = ACT_CODE,
+    LOCATION = PLACE)
 ```
 
 
@@ -1442,8 +1479,10 @@ QUESTION: Should we include recreational trips in our analysis? If not, then we 
 Save data for later use:
 ```{r}
 save(walking_1986,
-     file = paste0(here(), "/data/walking_1992.Rda"))
+     file = paste0(here(), "/data/walking_1986.Rda"))
 ```
+
+
 
 
 
