@@ -1428,7 +1428,7 @@ walking_1986 <- walking_1986 |>
 ```
 
 
-Here, I'll add two columns of year and mode to walking_1986 dataset.
+Here, I'll add two columns of year and mode to walking_1986 dataset and change the name of `SEQNUM`, `FWGT_MS`, `ACT_CODE`, `STRTTIME` and `PLACE` TO `PUMFID`,`WGHT_EPI`, `ACTCODE`, `STARTIME` and `LOCATION` . Indeed, Changes names to align with the name of variables in 2015.
 ```{r}
 walking_1986 <- walking_1986 |>
   dplyr::select(SEQNUM,ACT_CODE:dest_label) |>
