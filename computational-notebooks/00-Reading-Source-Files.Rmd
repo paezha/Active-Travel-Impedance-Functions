@@ -1514,7 +1514,7 @@ descdist(walking_2015$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boo
 
 Let's test out different models for our walk trips, we see that lnorm or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
 
-```{r walk-itting-impedance-function}
+```{r walking-impedance-function}
 #gamma_ <- fitdistrplus::fitdist(data=walking_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(walking_2015$WGHT_EPI), optim.method= "Brent") 
 #lnorm_ <- fitdistrplus::fitdist(data=walking_2015$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(walking_2015$WGHT_EPI))
 #norm_ <-fitdistrplus::fitdist(data=walking_2015%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead")
