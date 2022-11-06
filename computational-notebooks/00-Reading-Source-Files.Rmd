@@ -11,6 +11,7 @@ library(here) # A Simpler Way to Find Your Files
 library(readxl) # Read Excel Files
 library(tidyr) # Tidy Messy Data
 library(usethis) # Automate Package and Project Setup
+library(fitdistrplus)
 ```
 
 
@@ -1484,5 +1485,789 @@ save(walking_1986,
 
 
 
+##calculating impedance function for walking trip during 1986- 2015:
+
+### Walking_2015
+
+First, we examine the variable of travel time (DURATION) in 2015. The minimum time for walking trip is 5 minutes, the maximum is 900 minutes, and the average time for walking trip is 17.49 minutes.
+
+```{r}
+summary(walking_2015$DURATION)
+```
+
+Then, I'll plot weighted histograms.A histogram is a graph that depicts the frequency distribution of a few data points from a single variable. Histograms frequently divide data into "bins" or "range groups" and count the number of data points that belong to each of those bins. 
+
+```{r}
+ggplot(walking_2015, aes(x = DURATION )) + geom_histogram(binwidth = 30) + geom_vline(aes(xintercept=mean(DURATION)),
+            color="blue", linetype="dashed", size=1)
+```
 
 
+skewness-kurtosis plot: 
+This plot helps to identify a suitable Pearson distribution. The descdist function provides classical descriptive statistics (minimum, maximum, median, mean, standard deviation),skewness and kurtosis.A skewness kurtosis plot such as the one proposed by Cullen and Frey(1999)is provided by the descdist function for the empirical distribution. On this plot, values for common distributions are displayed in order to help the choice of distributions to fit to data. For some distributions (normal, uniform, logistic, exponential), there is only one possible value for the skewness and the kurtosis. Thus, the distribution is represented by a single point on the plot. For other distributions, are as of possible values are represented, consisting in lines(as for gamma and lognormal distributions), or larger areas(as for beta distribution).
+
+
+
+```{r}
+descdist(walking_2015$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+Let's test out different models for our walk trips, we see that lnorm or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
+
+```{r walk-itting-impedance-function}
+#gamma_ <- fitdistrplus::fitdist(data=walking_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(walking_2015$WGHT_EPI), optim.method= "Brent") 
+#lnorm_ <- fitdistrplus::fitdist(data=walking_2015$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(walking_2015$WGHT_EPI))
+#norm_ <-fitdistrplus::fitdist(data=walking_2015%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead")
+exp_ <- fitdistrplus::fitdist(data=walking_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead",weights = round(walking_2015$WGHT_EPI) )
+# pois_ <- fitdistrplus::fitdist(data=walking_2015%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead")
+# nbinom_ <- fitdistrplus::fitdist(data=walking_2015%>% unlist() %>% as.numeric(), "nbinom", method="mle", optim.method="Nelder-Mead")
+# geom_ <- fitdistrplus::fitdist(data=walking_2015%>% unlist() %>% as.numeric(), "geom", method="mle", optim.method="Nelder-Mead")
+#beta_ <- fitdistrplus::fitdist(data=walking_2015$DURATION%>% unlist() %>% as.numeric(), "beta", method="mle", optim.method="Nelder-Mead")
+#logis_ <- fitdistrplus::fitdist(data=walking_2015%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead")
+
+```
+
+
+```{r}
+summary(walking_2015$WGHT_EPI)
+print(summary)
+```
+
+
+now let's compare these models AIC and BIC to see which fits the walking_2015 data best:
+```{r}
+broom::glance(MASS::fitdistr(walking_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(walking_2015$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+#broom::glance(MASS::fitdistr(walking_2015$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(walking_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+#broom::glance(MASS::fitdistr(walking_2015$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+```
+
+Exponential has largest LOgLiklihood and the smallest AIC and BIC. we will pick exponential function for walk trips!
+
+```{r}
+walking_2015_exp <- exp_
+summary(exp_)
+```
+
+now populate our dataframe with the impedance value (i.e. travel cost) based on their travel time, and then creating a new column based on multiple weight in value of impedance function. 
+
+```{r}
+walking_2015 <- walking_2015 %>%
+ mutate(f = dexp(DURATION, walking_2015_exp$estimate["rate"])) 
+summary(walking_2015$f)
+```
+
+
+### cycling_2015
+
+First, we examine the variable of travel time (DURATION) in 2015. The minimum time for cycling trip is 5 minutes, the maximum is 120 minutes, and the average time for walking trip is 23.71 minutes.
+
+```{r}
+summary(cycling_2015$DURATION)
+```
+
+Then, I'll plot weighted histograms.A histogram is a graph that depicts the frequency distribution of a few data points from a single variable. Histograms frequently divide data into "bins" or "range groups" and count the number of data points that belong to each of those bins. 
+
+```{r}
+ggplot(cycling_2015, aes(x = DURATION )) + geom_histogram(binwidth = 5) + geom_vline(aes(xintercept=mean(DURATION)),
+            color="blue", linetype="dashed", size=1)
+```
+
+
+skewness-kurtosis plot: 
+This plot helps to identify a suitable Pearson distribution. The descdist function provides classical descriptive statistics (minimum, maximum, median, mean, standard deviation),skewness and kurtosis.A skewness kurtosis plot such as the one proposed by Cullen and Frey(1999)is provided by the descdist function for the empirical distribution. On this plot, values for common distributions are displayed in order to help the choice of distributions to fit to data. For some distributions (normal, uniform, logistic, exponential), there is only one possible value for the skewness and the kurtosis. Thus, the distribution is represented by a single point on the plot. For other distributions, are as of possible values are represented, consisting in lines(as for gamma and lognormal distributions), or larger areas(as for beta distribution).
+
+
+
+```{r}
+descdist(cycling_2015$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+Let's test out different models for our cycling trips, we see that exponentil or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
+
+```{r cycling-impedance-function}
+gamma_ <- fitdistrplus::fitdist(data=cycling_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2015$WGHT_EPI)) 
+#lnorm_ <- fitdistrplus::fitdist(data=cycling_2015$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2015$WGHT_EPI))
+#norm_ <-fitdistrplus::fitdist(data=cycling_2015%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2015$WGHT_EPI))
+exp_ <- fitdistrplus::fitdist(data=cycling_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead",weights = round(cycling_2015$WGHT_EPI) )
+# pois_ <- fitdistrplus::fitdist(data=cycling_2015%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2015$WGHT_EPI))
+# nbinom_ <- fitdistrplus::fitdist(data=cycling_2015%>% unlist() %>% as.numeric(), "nbinom", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2015$WGHT_EPI))
+# geom_ <- fitdistrplus::fitdist(data=cycling_2015%>% unlist() %>% as.numeric(), "geom", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2015$WGHT_EPI))
+#beta_ <- fitdistrplus::fitdist(data=cycling_2015$DURATION%>% unlist() %>% as.numeric(), "beta", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2015$WGHT_EPI))
+#logis_ <- fitdistrplus::fitdist(data=cycling_2015%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2015$WGHT_EPI))
+
+```
+
+
+```{r}
+summary(cycling_2015$WGHT_EPI)
+print(summary)
+```
+
+
+now let's compare these models AIC and BIC to see which fits the walking_2015 data best:
+```{r}
+broom::glance(MASS::fitdistr(cycling_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(cycling_2015$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+#broom::glance(MASS::fitdistr(cycling_2015$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(cycling_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+#broom::glance(MASS::fitdistr(cycling_2015$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+```
+
+Exponential has largest LOgLiklihood and the smallest AIC and BIC. we will pick exponential function for cycling trips!
+
+```{r}
+cycling_2015_exp <- exp_
+summary(exp_)
+```
+
+now populate our dataframe with the impedance value (i.e. travel cost) based on their travel time, and then creating a new column based on multiple weight in value of impedance function. 
+
+```{r}
+cycling_2015 <- cycling_2015 %>%
+ mutate(f = dexp(DURATION, cycling_2015_exp$estimate["rate"])) 
+summary(cycling_2015$f)
+```
+
+##Walking_2010
+
+First, we examine the variable of travel time (DURATION) in 2010. The minimum time for walking trip is 0 minutes, the maximum is 480 minutes, and the average time for walking trip is 12.38 minutes.
+
+```{r}
+summary(walking_2010$DURATION)
+```
+
+Then, I'll plot weighted histograms.A histogram is a graph that depicts the frequency distribution of a few data points from a single variable. Histograms frequently divide data into "bins" or "range groups" and count the number of data points that belong to each of those bins. 
+
+```{r}
+ggplot(walking_2010, aes(x = DURATION )) + geom_histogram(binwidth = 10) + geom_vline(aes(xintercept=mean(DURATION)),
+            color="blue", linetype="dashed", size=1)
+```
+
+
+skewness-kurtosis plot: 
+This plot helps to identify a suitable Pearson distribution. The descdist function provides classical descriptive statistics (minimum, maximum, median, mean, standard deviation),skewness and kurtosis.A skewness kurtosis plot such as the one proposed by Cullen and Frey(1999)is provided by the descdist function for the empirical distribution. On this plot, values for common distributions are displayed in order to help the choice of distributions to fit to data. For some distributions (normal, uniform, logistic, exponential), there is only one possible value for the skewness and the kurtosis. Thus, the distribution is represented by a single point on the plot. For other distributions, are as of possible values are represented, consisting in lines(as for gamma and lognormal distributions), or larger areas(as for beta distribution).
+
+
+
+```{r}
+descdist(walking_2010$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+Let's test out different models for our walk trips, we see that lnorm or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
+
+```{r walk-itting-impedance-function}
+#gamma_ <- fitdistrplus::fitdist(data=walking_2010$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(walking_2010$WGHT_EPI), optim.method= "Brent") 
+#lnorm_ <- fitdistrplus::fitdist(data=walking_2010$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(walking_2010$WGHT_EPI))
+#norm_ <-fitdistrplus::fitdist(data=walking_2010%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead")
+exp_ <- fitdistrplus::fitdist(data=walking_2010$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead",weights = round(walking_2010$WGHT_EPI) )
+# pois_ <- fitdistrplus::fitdist(data=walking_2010%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead")
+# nbinom_ <- fitdistrplus::fitdist(data=walking_2010%>% unlist() %>% as.numeric(), "nbinom", method="mle", optim.method="Nelder-Mead")
+# geom_ <- fitdistrplus::fitdist(data=walking_2010%>% unlist() %>% as.numeric(), "geom", method="mle", optim.method="Nelder-Mead")
+#beta_ <- fitdistrplus::fitdist(data=walking_2010$DURATION%>% unlist() %>% as.numeric(), "beta", method="mle", optim.method="Nelder-Mead")
+#logis_ <- fitdistrplus::fitdist(data=walking_2010%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead")
+
+```
+
+
+```{r}
+summary(walking_2010$WGHT_EPI)
+print(summary)
+```
+
+
+now let's compare these models AIC and BIC to see which fits the walking_2010 data best:
+```{r}
+#broom::glance(MASS::fitdistr(walking_2010$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+#broom::glance(MASS::fitdistr(walking_2010$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+#broom::glance(MASS::fitdistr(walking_2010$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(walking_2010$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+#broom::glance(MASS::fitdistr(walking_2010$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+```
+
+Exponential has largest LOgLiklihood and the smallest AIC and BIC. we will pick exponential function for walk trips!
+
+```{r}
+walking_2010_exp <- exp_
+summary(exp_)
+```
+
+now populate our dataframe with the impedance value (i.e. travel cost) based on their travel time, and then creating a new column based on multiple weight in value of impedance function. 
+
+```{r}
+walking_2010 <- walking_2010 %>%
+ mutate(f = dexp(DURATION, walking_2010_exp$estimate["rate"])) 
+summary(walking_2010$f)
+```
+
+### cycling_2010
+
+First, we examine the variable of travel time (DURATION) in 2010. The minimum time for cycling trip is 1 minutes, the maximum is 153 minutes, and the average time for walking trip is 21.18 minutes.
+
+```{r}
+summary(cycling_2010$DURATION)
+```
+
+Then, I'll plot weighted histograms.A histogram is a graph that depicts the frequency distribution of a few data points from a single variable. Histograms frequently divide data into "bins" or "range groups" and count the number of data points that belong to each of those bins. 
+
+```{r}
+ggplot(cycling_2010, aes(x = DURATION )) + geom_histogram(binwidth = 5) + geom_vline(aes(xintercept=mean(DURATION)),
+            color="blue", linetype="dashed", size=1)
+```
+
+
+skewness-kurtosis plot: 
+This plot helps to identify a suitable Pearson distribution. The descdist function provides classical descriptive statistics (minimum, maximum, median, mean, standard deviation),skewness and kurtosis.A skewness kurtosis plot such as the one proposed by Cullen and Frey(1999)is provided by the descdist function for the empirical distribution. On this plot, values for common distributions are displayed in order to help the choice of distributions to fit to data. For some distributions (normal, uniform, logistic, exponential), there is only one possible value for the skewness and the kurtosis. Thus, the distribution is represented by a single point on the plot. For other distributions, are as of possible values are represented, consisting in lines(as for gamma and lognormal distributions), or larger areas(as for beta distribution).
+
+
+
+```{r}
+descdist(cycling_2010$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+Let's test out different models for our cycling trips, we see that exponentil or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
+
+```{r cycling-impedance-function}
+gamma_ <- fitdistrplus::fitdist(data=cycling_2010$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2010$WGHT_EPI)) 
+#lnorm_ <- fitdistrplus::fitdist(data=cycling_2010$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2010$WGHT_EPI))
+#norm_ <-fitdistrplus::fitdist(data=cycling_2010%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2010$WGHT_EPI))
+exp_ <- fitdistrplus::fitdist(data=cycling_2010$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead",weights = round(cycling_2010$WGHT_EPI) )
+# pois_ <- fitdistrplus::fitdist(data=cycling_2010%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2010$WGHT_EPI))
+# nbinom_ <- fitdistrplus::fitdist(data=cycling_2010%>% unlist() %>% as.numeric(), "nbinom", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2010$WGHT_EPI))
+# geom_ <- fitdistrplus::fitdist(data=cycling_2010%>% unlist() %>% as.numeric(), "geom", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2010$WGHT_EPI))
+#beta_ <- fitdistrplus::fitdist(data=cycling_2010$DURATION%>% unlist() %>% as.numeric(), "beta", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2010$WGHT_EPI))
+#logis_ <- fitdistrplus::fitdist(data=cycling_2010%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2010$WGHT_EPI))
+
+```
+
+
+```{r}
+summary(cycling_2010$WGHT_EPI)
+print(summary)
+```
+
+
+now let's compare these models AIC and BIC to see which fits the cycling_2010 data best:
+```{r}
+broom::glance(MASS::fitdistr(cycling_2010$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(cycling_2010$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+#broom::glance(MASS::fitdistr(cycling_2010$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(cycling_2010$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+#broom::glance(MASS::fitdistr(cycling_2010$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+```
+
+Exponential has largest LOgLiklihood and the smallest AIC and BIC. we will pick exponential function for cycling trips!
+
+```{r}
+cycling_2010_exp <- exp_
+summary(exp_)
+```
+
+now populate our dataframe with the impedance value (i.e. travel cost) based on their travel time, and then creating a new column based on multiple weight in value of impedance function. 
+
+```{r}
+cycling_2010 <- cycling_2010 %>%
+ mutate(f = dexp(DURATION, cycling_2010_exp$estimate["rate"])) 
+summary(cycling_2010$f)
+```
+
+##Walking_2005
+
+First, we examine the variable of travel time (DURATION) in 2005. The minimum time for walking trip is 5 minutes, the maximum is 515 minutes, and the average time for walking trip is 12.07 minutes.
+
+```{r}
+summary(walking_2005$DURATION)
+```
+
+Then, I'll plot weighted histograms.A histogram is a graph that depicts the frequency distribution of a few data points from a single variable. Histograms frequently divide data into "bins" or "range groups" and count the number of data points that belong to each of those bins. 
+
+```{r}
+ggplot(walking_2005, aes(x = DURATION )) + geom_histogram(binwidth = 5) + geom_vline(aes(xintercept=mean(DURATION)),
+            color="blue", linetype="dashed", size=1)
+```
+
+
+skewness-kurtosis plot: 
+This plot helps to identify a suitable Pearson distribution. The descdist function provides classical descriptive statistics (minimum, maximum, median, mean, standard deviation),skewness and kurtosis.A skewness kurtosis plot such as the one proposed by Cullen and Frey(1999)is provided by the descdist function for the empirical distribution. On this plot, values for common distributions are displayed in order to help the choice of distributions to fit to data. For some distributions (normal, uniform, logistic, exponential), there is only one possible value for the skewness and the kurtosis. Thus, the distribution is represented by a single point on the plot. For other distributions, are as of possible values are represented, consisting in lines(as for gamma and lognormal distributions), or larger areas(as for beta distribution).
+
+
+
+```{r}
+descdist(walking_2005$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+Let's test out different models for our walk trips, we see that lnorm or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
+
+```{r walk-itting-impedance-function}
+#gamma_ <- fitdistrplus::fitdist(data=walking_2005$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(walking_2005$WGHT_EPI), optim.method= "Brent") 
+#lnorm_ <- fitdistrplus::fitdist(data=walking_2005$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(walking_2005$WGHT_EPI))
+#norm_ <-fitdistrplus::fitdist(data=walking_2005%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead")
+exp_ <- fitdistrplus::fitdist(data=walking_2005$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead",weights = round(walking_2005$WGHT_EPI) )
+# pois_ <- fitdistrplus::fitdist(data=walking_2005%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead")
+# nbinom_ <- fitdistrplus::fitdist(data=walking_2005%>% unlist() %>% as.numeric(), "nbinom", method="mle", optim.method="Nelder-Mead")
+# geom_ <- fitdistrplus::fitdist(data=walking_2005%>% unlist() %>% as.numeric(), "geom", method="mle", optim.method="Nelder-Mead")
+#beta_ <- fitdistrplus::fitdist(data=walking_2005$DURATION%>% unlist() %>% as.numeric(), "beta", method="mle", optim.method="Nelder-Mead")
+#logis_ <- fitdistrplus::fitdist(data=walking_2005%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead")
+
+```
+
+
+```{r}
+summary(walking_2005$WGHT_EPI)
+print(summary)
+```
+
+
+now let's compare these models AIC and BIC to see which fits the walking_2010 data best:
+```{r}
+#broom::glance(MASS::fitdistr(walking_2005$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+#broom::glance(MASS::fitdistr(walking_2005$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+#broom::glance(MASS::fitdistr(walking_2005$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(walking_2005$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+#broom::glance(MASS::fitdistr(walking_2005$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+```
+
+Exponential has largest LOgLiklihood and the smallest AIC and BIC. we will pick exponential function for walk trips!
+
+```{r}
+walking_2005_exp <- exp_
+summary(exp_)
+```
+
+now populate our dataframe with the impedance value (i.e. travel cost) based on their travel time, and then creating a new column based on multiple weight in value of impedance function. 
+
+```{r}
+walking_2005 <- walking_2005 %>%
+ mutate(f = dexp(DURATION, walking_2005_exp$estimate["rate"])) 
+summary(walking_2005$f)
+```
+
+
+### cycling_2005
+
+First, we examine the variable of travel time (DURATION) in 2005. The minimum time for cycling trip is 1 minutes, the maximum is 180 minutes, and the average time for walking trip is 19.29 minutes.
+
+```{r}
+summary(cycling_2005$DURATION)
+```
+
+Then, I'll plot weighted histograms.A histogram is a graph that depicts the frequency distribution of a few data points from a single variable. Histograms frequently divide data into "bins" or "range groups" and count the number of data points that belong to each of those bins. 
+
+```{r}
+ggplot(cycling_2005, aes(x = DURATION )) + geom_histogram(binwidth = 5) + geom_vline(aes(xintercept=mean(DURATION)),
+            color="blue", linetype="dashed", size=1)
+```
+
+
+skewness-kurtosis plot: 
+This plot helps to identify a suitable Pearson distribution. The descdist function provides classical descriptive statistics (minimum, maximum, median, mean, standard deviation),skewness and kurtosis.A skewness kurtosis plot such as the one proposed by Cullen and Frey(1999)is provided by the descdist function for the empirical distribution. On this plot, values for common distributions are displayed in order to help the choice of distributions to fit to data. For some distributions (normal, uniform, logistic, exponential), there is only one possible value for the skewness and the kurtosis. Thus, the distribution is represented by a single point on the plot. For other distributions, are as of possible values are represented, consisting in lines(as for gamma and lognormal distributions), or larger areas(as for beta distribution).
+
+
+
+```{r}
+descdist(cycling_2005$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+Let's test out different models for our cycling trips, we see that exponentil or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
+
+```{r cycling-impedance-function}
+gamma_ <- fitdistrplus::fitdist(data=cycling_2005$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2005$WGHT_EPI)) 
+#lnorm_ <- fitdistrplus::fitdist(data=cycling_2005$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2005$WGHT_EPI))
+#norm_ <-fitdistrplus::fitdist(data=cycling_2005%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2005$WGHT_EPI))
+exp_ <- fitdistrplus::fitdist(data=cycling_2005$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead",weights = round(cycling_2005$WGHT_EPI) )
+# pois_ <- fitdistrplus::fitdist(data=cycling_2005%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2005$WGHT_EPI))
+# nbinom_ <- fitdistrplus::fitdist(data=cycling_2005%>% unlist() %>% as.numeric(), "nbinom", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2005$WGHT_EPI))
+# geom_ <- fitdistrplus::fitdist(data=cycling_2005%>% unlist() %>% as.numeric(), "geom", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2005$WGHT_EPI))
+#beta_ <- fitdistrplus::fitdist(data=cycling_2005$DURATION%>% unlist() %>% as.numeric(), "beta", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2005$WGHT_EPI))
+#logis_ <- fitdistrplus::fitdist(data=cycling_2005%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2005$WGHT_EPI))
+
+```
+
+
+```{r}
+summary(cycling_2005$WGHT_EPI)
+print(summary)
+```
+
+
+now let's compare these models AIC and BIC to see which fits the cycling_2005 data best:
+```{r}
+broom::glance(MASS::fitdistr(cycling_2005$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(cycling_2005$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+#broom::glance(MASS::fitdistr(cycling_2005$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(cycling_2005$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+#broom::glance(MASS::fitdistr(cycling_2005$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+```
+
+Exponential has largest LOgLiklihood and the smallest AIC and BIC. we will pick exponential function for cycling trips!
+
+```{r}
+cycling_2005_exp <- exp_
+summary(exp_)
+```
+
+now populate our dataframe with the impedance value (i.e. travel cost) based on their travel time, and then creating a new column based on multiple weight in value of impedance function. 
+
+```{r}
+cycling_2005 <- cycling_2005 %>%
+ mutate(f = dexp(DURATION, cycling_2005_exp$estimate["rate"])) 
+summary(cycling_2005$f)
+```
+
+##Walking_1998
+
+First, we examine the variable of travel time (DURATION) in 1998. The minimum time for walking trip is 1 minutes, the maximum is 255 minutes, and the average time for walking trip is 11.26 minutes.
+
+```{r}
+summary(walking_1998$DURATION)
+```
+
+Then, I'll plot weighted histograms.A histogram is a graph that depicts the frequency distribution of a few data points from a single variable. Histograms frequently divide data into "bins" or "range groups" and count the number of data points that belong to each of those bins. 
+
+```{r}
+ggplot(walking_1998, aes(x = DURATION )) + geom_histogram(binwidth = 5) + geom_vline(aes(xintercept=mean(DURATION)),
+            color="blue", linetype="dashed", size=1)
+```
+
+
+skewness-kurtosis plot: 
+This plot helps to identify a suitable Pearson distribution. The descdist function provides classical descriptive statistics (minimum, maximum, median, mean, standard deviation),skewness and kurtosis.A skewness kurtosis plot such as the one proposed by Cullen and Frey(1999)is provided by the descdist function for the empirical distribution. On this plot, values for common distributions are displayed in order to help the choice of distributions to fit to data. For some distributions (normal, uniform, logistic, exponential), there is only one possible value for the skewness and the kurtosis. Thus, the distribution is represented by a single point on the plot. For other distributions, are as of possible values are represented, consisting in lines(as for gamma and lognormal distributions), or larger areas(as for beta distribution).
+
+
+
+```{r}
+descdist(walking_1998$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+Let's test out different models for our walk trips, we see that lnorm or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
+
+```{r walk-itting-impedance-function}
+#gamma_ <- fitdistrplus::fitdist(data=walking_1998$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(walking_1998$WGHT_EPI), optim.method= "Brent") 
+#lnorm_ <- fitdistrplus::fitdist(data=walking_1998$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(walking_1998$WGHT_EPI))
+#norm_ <-fitdistrplus::fitdist(data=walking_1998%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead")
+exp_ <- fitdistrplus::fitdist(data=walking_1998$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead",weights = round(walking_1998$WGHT_EPI) )
+# pois_ <- fitdistrplus::fitdist(data=walking_1998%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead")
+# nbinom_ <- fitdistrplus::fitdist(data=walking_1998%>% unlist() %>% as.numeric(), "nbinom", method="mle", optim.method="Nelder-Mead")
+# geom_ <- fitdistrplus::fitdist(data=walking_1998%>% unlist() %>% as.numeric(), "geom", method="mle", optim.method="Nelder-Mead")
+#beta_ <- fitdistrplus::fitdist(data=walking_1998$DURATION%>% unlist() %>% as.numeric(), "beta", method="mle", optim.method="Nelder-Mead")
+#logis_ <- fitdistrplus::fitdist(data=walking_1998%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead")
+
+```
+
+
+```{r}
+summary(walking_1998$WGHT_EPI)
+print(summary)
+```
+
+
+now let's compare these models AIC and BIC to see which fits the walking_1998 data best:
+```{r}
+#broom::glance(MASS::fitdistr(walking_1998$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+#broom::glance(MASS::fitdistr(walking_1998$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+#broom::glance(MASS::fitdistr(walking_1998$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(walking_1998$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+#broom::glance(MASS::fitdistr(walking_1998$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+```
+
+Exponential has largest LOgLiklihood and the smallest AIC and BIC. we will pick exponential function for walk trips!
+
+```{r}
+walking_1998_exp <- exp_
+summary(exp_)
+```
+
+now populate our dataframe with the impedance value (i.e. travel cost) based on their travel time, and then creating a new column based on multiple weight in value of impedance function. 
+
+```{r}
+walking_1998 <- walking_1998 %>%
+ mutate(f = dexp(DURATION, walking_1998_exp$estimate["rate"])) 
+summary(walking_1998$f)
+```
+
+### cycling_1998
+
+First, we examine the variable of travel time (DURATION) in 1998. The minimum time for cycling trip is 2 minutes, the maximum is 90 minutes, and the average time for walking trip is 1920.61.29 minutes.
+
+```{r}
+summary(cycling_1998$DURATION)
+```
+
+Then, I'll plot weighted histograms.A histogram is a graph that depicts the frequency distribution of a few data points from a single variable. Histograms frequently divide data into "bins" or "range groups" and count the number of data points that belong to each of those bins. 
+
+```{r}
+ggplot(cycling_1998, aes(x = DURATION )) + geom_histogram(binwidth = 5) + geom_vline(aes(xintercept=mean(DURATION)),
+            color="blue", linetype="dashed", size=1)
+```
+
+
+skewness-kurtosis plot: 
+This plot helps to identify a suitable Pearson distribution. The descdist function provides classical descriptive statistics (minimum, maximum, median, mean, standard deviation),skewness and kurtosis.A skewness kurtosis plot such as the one proposed by Cullen and Frey(1999)is provided by the descdist function for the empirical distribution. On this plot, values for common distributions are displayed in order to help the choice of distributions to fit to data. For some distributions (normal, uniform, logistic, exponential), there is only one possible value for the skewness and the kurtosis. Thus, the distribution is represented by a single point on the plot. For other distributions, are as of possible values are represented, consisting in lines(as for gamma and lognormal distributions), or larger areas(as for beta distribution).
+
+
+
+```{r}
+descdist(cycling_1998$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+Let's test out different models for our cycling trips, we see that exponentil or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
+
+```{r cycling-impedance-function}
+gamma_ <- fitdistrplus::fitdist(data=cycling_1998$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1998$WGHT_EPI)) 
+#lnorm_ <- fitdistrplus::fitdist(data=cycling_1998$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1998$WGHT_EPI))
+#norm_ <-fitdistrplus::fitdist(data=cycling_1998%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1998$WGHT_EPI))
+exp_ <- fitdistrplus::fitdist(data=cycling_1998$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead",weights = round(cycling_1998$WGHT_EPI) )
+# pois_ <- fitdistrplus::fitdist(data=cycling_1998%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1998$WGHT_EPI))
+# nbinom_ <- fitdistrplus::fitdist(data=cycling_1998%>% unlist() %>% as.numeric(), "nbinom", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1998$WGHT_EPI))
+# geom_ <- fitdistrplus::fitdist(data=cycling_1998%>% unlist() %>% as.numeric(), "geom", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1998$WGHT_EPI))
+#beta_ <- fitdistrplus::fitdist(data=cycling_1998$DURATION%>% unlist() %>% as.numeric(), "beta", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1998$WGHT_EPI))
+#logis_ <- fitdistrplus::fitdist(data=cycling_1998%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1998$WGHT_EPI))
+
+```
+
+
+```{r}
+summary(cycling_1998$WGHT_EPI)
+print(summary)
+```
+
+
+now let's compare these models AIC and BIC to see which fits the cycling_2005 data best:
+```{r}
+broom::glance(MASS::fitdistr(cycling_1998$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(cycling_1998$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+#broom::glance(MASS::fitdistr(cycling_1998$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(cycling_1998$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+#broom::glance(MASS::fitdistr(cycling_1998$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+```
+
+Exponential has largest LOgLiklihood and the smallest AIC and BIC. we will pick exponential function for cycling trips!
+
+```{r}
+cycling_1998_exp <- exp_
+summary(exp_)
+```
+
+now populate our dataframe with the impedance value (i.e. travel cost) based on their travel time, and then creating a new column based on multiple weight in value of impedance function. 
+
+```{r}
+cycling_1998 <- cycling_1998 %>%
+ mutate(f = dexp(DURATION, cycling_1998_exp$estimate["rate"])) 
+summary(cycling_1998$f)
+```
+
+
+##Walking_1992
+
+First, we examine the variable of travel time (DURATION) in 1992. The minimum time for walking trip is 1 minutes, the maximum is 300 minutes, and the average time for walking trip is 19.11 minutes.
+
+```{r}
+summary(walking_1992$DURATION)
+```
+
+Then, I'll plot weighted histograms.A histogram is a graph that depicts the frequency distribution of a few data points from a single variable. Histograms frequently divide data into "bins" or "range groups" and count the number of data points that belong to each of those bins. 
+
+```{r}
+ggplot(walking_1992, aes(x = DURATION )) + geom_histogram(binwidth = 5) + geom_vline(aes(xintercept=mean(DURATION)),
+            color="blue", linetype="dashed", size=1)
+```
+
+
+skewness-kurtosis plot: 
+This plot helps to identify a suitable Pearson distribution. The descdist function provides classical descriptive statistics (minimum, maximum, median, mean, standard deviation),skewness and kurtosis.A skewness kurtosis plot such as the one proposed by Cullen and Frey(1999)is provided by the descdist function for the empirical distribution. On this plot, values for common distributions are displayed in order to help the choice of distributions to fit to data. For some distributions (normal, uniform, logistic, exponential), there is only one possible value for the skewness and the kurtosis. Thus, the distribution is represented by a single point on the plot. For other distributions, are as of possible values are represented, consisting in lines(as for gamma and lognormal distributions), or larger areas(as for beta distribution).
+
+
+
+```{r}
+descdist(walking_1992$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+Let's test out different models for our walk trips, we see that lnorm or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
+
+```{r walk-itting-impedance-function}
+#gamma_ <- fitdistrplus::fitdist(data=walking_1992$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(walking_1992$WGHT_EPI), optim.method= "Brent") 
+#lnorm_ <- fitdistrplus::fitdist(data=walking_1992$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(walking_1992$WGHT_EPI))
+#norm_ <-fitdistrplus::fitdist(data=walking_1992%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead")
+exp_ <- fitdistrplus::fitdist(data=walking_1992$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead",weights = round(walking_1992$WGHT_EPI) )
+# pois_ <- fitdistrplus::fitdist(data=walking_1992%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead")
+# nbinom_ <- fitdistrplus::fitdist(data=walking_1992%>% unlist() %>% as.numeric(), "nbinom", method="mle", optim.method="Nelder-Mead")
+# geom_ <- fitdistrplus::fitdist(data=walking_1992%>% unlist() %>% as.numeric(), "geom", method="mle", optim.method="Nelder-Mead")
+#beta_ <- fitdistrplus::fitdist(data=walking_1992$DURATION%>% unlist() %>% as.numeric(), "beta", method="mle", optim.method="Nelder-Mead")
+#logis_ <- fitdistrplus::fitdist(data=walking_1992%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead")
+
+```
+
+
+```{r}
+summary(walking_1992$WGHT_EPI)
+print(summary)
+```
+
+
+now let's compare these models AIC and BIC to see which fits the walking_1998 data best:
+```{r}
+#broom::glance(MASS::fitdistr(walking_1992$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+#broom::glance(MASS::fitdistr(walking_1992$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+#broom::glance(MASS::fitdistr(walking_1992$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(walking_1992$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+#broom::glance(MASS::fitdistr(walking_1992$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+```
+
+Exponential has largest LOgLiklihood and the smallest AIC and BIC. we will pick exponential function for walk trips!
+
+```{r}
+walking_1992_exp <- exp_
+summary(exp_)
+```
+
+now populate our dataframe with the impedance value (i.e. travel cost) based on their travel time, and then creating a new column based on multiple weight in value of impedance function. 
+
+```{r}
+walking_1992 <- walking_1992 %>%
+ mutate(f = dexp(DURATION, walking_1992_exp$estimate["rate"])) 
+summary(walking_1992$f)
+```
+
+### cycling_1992
+
+First, we examine the variable of travel time (DURATION) in 1992. The minimum time for cycling trip is 5 minutes, the maximum is 240 minutes, and the average time for walking trip is 30.93 minutes.
+
+```{r}
+summary(cycling_1992$DURATION)
+```
+
+Then, I'll plot weighted histograms.A histogram is a graph that depicts the frequency distribution of a few data points from a single variable. Histograms frequently divide data into "bins" or "range groups" and count the number of data points that belong to each of those bins. 
+
+```{r}
+ggplot(cycling_1992, aes(x = DURATION )) + geom_histogram(binwidth = 5) + geom_vline(aes(xintercept=mean(DURATION)),
+            color="blue", linetype="dashed", size=1)
+```
+
+
+skewness-kurtosis plot: 
+This plot helps to identify a suitable Pearson distribution. The descdist function provides classical descriptive statistics (minimum, maximum, median, mean, standard deviation),skewness and kurtosis.A skewness kurtosis plot such as the one proposed by Cullen and Frey(1999)is provided by the descdist function for the empirical distribution. On this plot, values for common distributions are displayed in order to help the choice of distributions to fit to data. For some distributions (normal, uniform, logistic, exponential), there is only one possible value for the skewness and the kurtosis. Thus, the distribution is represented by a single point on the plot. For other distributions, are as of possible values are represented, consisting in lines(as for gamma and lognormal distributions), or larger areas(as for beta distribution).
+
+
+
+```{r}
+descdist(cycling_1992$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+Let's test out different models for our cycling trips, we see that exponentil or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
+
+```{r cycling-impedance-function}
+gamma_ <- fitdistrplus::fitdist(data=cycling_1992$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1992$WGHT_EPI)) 
+#lnorm_ <- fitdistrplus::fitdist(data=cycling_1992$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1992$WGHT_EPI))
+#norm_ <-fitdistrplus::fitdist(data=cycling_1992%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1992$WGHT_EPI))
+exp_ <- fitdistrplus::fitdist(data=cycling_1992$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead",weights = round(cycling_1992$WGHT_EPI) )
+# pois_ <- fitdistrplus::fitdist(data=cycling_1992%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1992$WGHT_EPI))
+# nbinom_ <- fitdistrplus::fitdist(data=cycling_1992%>% unlist() %>% as.numeric(), "nbinom", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1992$WGHT_EPI))
+# geom_ <- fitdistrplus::fitdist(data=cycling_1992%>% unlist() %>% as.numeric(), "geom", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1992$WGHT_EPI))
+#beta_ <- fitdistrplus::fitdist(data=cycling_1992$DURATION%>% unlist() %>% as.numeric(), "beta", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1992$WGHT_EPI))
+#logis_ <- fitdistrplus::fitdist(data=cycling_1992%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead", weights = round(cycling_1992$WGHT_EPI))
+
+```
+
+
+```{r}
+summary(cycling_1992$WGHT_EPI)
+print(summary)
+```
+
+
+now let's compare these models AIC and BIC to see which fits the cycling_1992 data best:
+```{r}
+broom::glance(MASS::fitdistr(cycling_1992$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(cycling_1992$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+#broom::glance(MASS::fitdistr(cycling_1992$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(cycling_1992$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+#broom::glance(MASS::fitdistr(cycling_1992$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+```
+
+Exponential has largest LOgLiklihood and the smallest AIC and BIC. we will pick exponential function for cycling trips!
+
+```{r}
+cycling_1992_exp <- exp_
+summary(exp_)
+```
+
+now populate our dataframe with the impedance value (i.e. travel cost) based on their travel time, and then creating a new column based on multiple weight in value of impedance function. 
+
+```{r}
+cycling_1992 <- cycling_1992 %>%
+ mutate(f = dexp(DURATION, cycling_1992_exp$estimate["rate"])) 
+summary(cycling_1992$f)
+```
+
+
+##Walking_1986
+
+First, we examine the variable of travel time (DURATION) in 1986. The minimum time for walking trip is 1 minutes, the maximum is 660 minutes, and the average time for walking trip is 20.85 minutes.
+
+```{r}
+summary(walking_1986$DURATION)
+```
+
+Then, I'll plot weighted histograms.A histogram is a graph that depicts the frequency distribution of a few data points from a single variable. Histograms frequently divide data into "bins" or "range groups" and count the number of data points that belong to each of those bins. 
+
+```{r}
+ggplot(walking_1986, aes(x = DURATION )) + geom_histogram(binwidth = 15) + geom_vline(aes(xintercept=mean(DURATION)),
+            color="blue", linetype="dashed", size=1)
+```
+
+
+skewness-kurtosis plot: 
+This plot helps to identify a suitable Pearson distribution. The descdist function provides classical descriptive statistics (minimum, maximum, median, mean, standard deviation),skewness and kurtosis.A skewness kurtosis plot such as the one proposed by Cullen and Frey(1999)is provided by the descdist function for the empirical distribution. On this plot, values for common distributions are displayed in order to help the choice of distributions to fit to data. For some distributions (normal, uniform, logistic, exponential), there is only one possible value for the skewness and the kurtosis. Thus, the distribution is represented by a single point on the plot. For other distributions, are as of possible values are represented, consisting in lines(as for gamma and lognormal distributions), or larger areas(as for beta distribution).
+
+
+
+```{r}
+descdist(walking_1986$DURATION%>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+Let's test out different models for our walk trips, we see that lnorm or gamma will likely be the best fit according to the graph above. using fitdist function to fit a distribution using the default maximum likelihood estimation method and Nelder-Mead method for direct optimization
+
+```{r walk-itting-impedance-function}
+#gamma_ <- fitdistrplus::fitdist(data=walking_1986$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(walking_1986$WGHT_EPI), optim.method= "Brent") 
+#lnorm_ <- fitdistrplus::fitdist(data=walking_1986$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(walking_1986$WGHT_EPI))
+#norm_ <-fitdistrplus::fitdist(data=walking_1986%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead")
+exp_ <- fitdistrplus::fitdist(data=walking_1986$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead",weights = round(walking_1986$WGHT_EPI) )
+# pois_ <- fitdistrplus::fitdist(data=walking_1986%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead")
+# nbinom_ <- fitdistrplus::fitdist(data=walking_1986%>% unlist() %>% as.numeric(), "nbinom", method="mle", optim.method="Nelder-Mead")
+# geom_ <- fitdistrplus::fitdist(data=walking_1986%>% unlist() %>% as.numeric(), "geom", method="mle", optim.method="Nelder-Mead")
+#beta_ <- fitdistrplus::fitdist(data=walking_1986$DURATION%>% unlist() %>% as.numeric(), "beta", method="mle", optim.method="Nelder-Mead")
+#logis_ <- fitdistrplus::fitdist(data=walking_1986%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead")
+
+```
+
+
+```{r}
+summary(walking_1986$WGHT_EPI)
+print(summary)
+```
+
+
+now let's compare these models AIC and BIC to see which fits the walking_1998 data best:
+```{r}
+#broom::glance(MASS::fitdistr(walking_1986$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+#broom::glance(MASS::fitdistr(walking_1986$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+#broom::glance(MASS::fitdistr(walking_1986$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(walking_1986$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+#broom::glance(MASS::fitdistr(walking_1986$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+```
+
+Exponential has largest LOgLiklihood and the smallest AIC and BIC. we will pick exponential function for walk trips!
+
+```{r}
+walking_1986_exp <- exp_
+summary(exp_)
+```
+
+now populate our dataframe with the impedance value (i.e. travel cost) based on their travel time, and then creating a new column based on multiple weight in value of impedance function. 
+
+```{r}
+walking_1986 <- walking_1986 %>%
+ mutate(f = dexp(DURATION, walking_1986_exp$estimate["rate"])) 
+summary(walking_1986$f)
+```
