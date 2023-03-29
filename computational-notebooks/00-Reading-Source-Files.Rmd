@@ -16,6 +16,7 @@ library(readxl) # Read Excel Files
 library(tidyr) # Tidy Messy Data
 library(usethis) # Automate Package and Project Setup
 library(fitdistrplus)
+library("writexl")
 ```
 
 
@@ -249,7 +250,7 @@ gss_e_2015 |>
   slice(unique(c(which(LOCATION == 315) - 1, 
                  which(LOCATION == 315),
                  which(LOCATION == 315) + 1))) |>
-  select(PUMFID:LOCATION)
+  dplyr::select(PUMFID:LOCATION)
 ```
 
 The person was at home doing 27 (personal care), then went for walk that lasted 15 minutes, came back home and spent 180 doing 9 (looking for work). So, this was a recreational/leisure trip!
@@ -393,7 +394,7 @@ gss_e_2015 |>
   slice(unique(c(which(LOCATION == 318) - 1, 
                  which(LOCATION == 318),
                  which(LOCATION == 318) + 1))) |>
-  select(PUMFID:LOCATION)
+   dplyr::select(PUMFID:LOCATION)
 ```
 
 #Here there is a problem- there is not any home to home trip for user 10511. check the excel file
@@ -529,7 +530,7 @@ gss_e_2010 |>
   slice(unique(c(which(PLACE == 14) - 1, 
                  which(PLACE == 14),
                  which(PLACE == 14) + 1))) |>
-  select(RECID:PLACE)
+   dplyr::select(RECID:PLACE)
 ```
 
 The person was at home doing 390 (Food (or meal) cleanup), then went for walking that lasted 15 minutes, came back home and spent 5 doing 181.1 (Household management (organizing/planning activities, etc.). So, this was a recreational/leisure trip!
@@ -657,7 +658,7 @@ gss_e_2010 |>
   slice(unique(c(which(PLACE == 17) - 1, 
                  which(PLACE == 17),
                  which(PLACE == 17) + 1))) |>
-  select(RECID:PLACE)
+   dplyr::select(RECID:PLACE)
 ```
 
 
@@ -789,7 +790,7 @@ gss_e_2005 |>
   slice(unique(c(which(PLACE == 14) - 1, 
                  which(PLACE == 14),
                  which(PLACE == 14) + 1))) |>
-  select(RECID:PLACE)
+   dplyr::select(RECID:PLACE)
 ```
 
 The person was at home doing 390 (Food (or meal) cleanup), then went for cycling that lasted 15 minutes, came back home and spent 5 doing 181.1 (Household management (organizing/planning activities, etc.). So, this was a recreational/leisure trip!
@@ -924,7 +925,7 @@ gss_e_2005 |>
   slice(unique(c(which(PLACE == 17) - 1, 
                  which(PLACE == 17),
                  which(PLACE == 17) + 1))) |>
-  select(RECID:PLACE)
+   dplyr::select(RECID:PLACE)
 ```
 
 
@@ -1034,7 +1035,7 @@ gss_e_1998 |>
   slice(unique(c(which(PLACE == 7) - 1, 
                  which(PLACE == 7),
                  which(PLACE == 7) + 1))) |>
-  select(RECID:PLACE)
+   dplyr::select(RECID:PLACE)
 ```
 
 The person was at home doing 430 (MEALS AT HOME/SNACKS/COFFEE), then went for walking that lasted 45 minutes, came back home and spent 240 min doing 911 (WATCHING TELEVISION (REGULAR SCHEDULED TELEVISION)). So, this was a recreational/leisure trip!
@@ -1141,7 +1142,7 @@ gss_e_1998 |>
   slice(unique(c(which(PLACE == 9) - 1, 
                  which(PLACE == 9),
                  which(PLACE == 9) + 1))) |>
-  select(RECID:PLACE)
+   dplyr::select(RECID:PLACE)
 ```
 
 
@@ -1250,7 +1251,7 @@ gss_e_1992 |>
   slice(unique(c(which(PLACE == 7) - 1, 
                  which(PLACE == 7),
                  which(PLACE == 7) + 1))) |>
-  select(SEQNUM:PLACE)
+   dplyr::select(SEQNUM:PLACE)
 ```
 
 The person was at home doing 430 (Meals at Home/Snacks/Coffee), then went for walking that lasted 5 minutes, came back home and spent 35 doing 181 (Household management (Household Administration, e.g.Paying Bills, Menu Planning, etc.). So, this was a recreational/leisure trip!
@@ -1359,7 +1360,7 @@ gss_e_1992 |>
   slice(unique(c(which(PLACE == 9) - 1, 
                  which(PLACE == 9),
                  which(PLACE == 9) + 1))) |>
-  select(SEQNUM:PLACE)
+   dplyr::select(SEQNUM:PLACE)
 ```
 
 
@@ -1469,7 +1470,7 @@ gss_e_1986 |>
   slice(unique(c(which(PLACE == 5) - 1, 
                  which(PLACE == 5),
                  which(PLACE == 5) + 1))) |>
-  select(SEQNUM:PLACE)
+   dplyr::select(SEQNUM:PLACE)
 ```
 
 The person was at home doing 24 (play with children), then went for walking that lasted 120 minutes, came back home and spent 30 minutes doing 43 (Household management (Meals at home/snacks/ coffee). So, this was a recreational/leisure trip!
@@ -2287,92 +2288,123 @@ trip_c_f <- rbind(cycling_2015,cycling_2010, cycling_2005, cycling_1998 ,cycling
 trip_f <-  rbind(walking_2015,walking_2010, walking_2005, walking_1998 ,walking_1992,  walking_1986, cycling_2015,cycling_2010, cycling_2005, cycling_1998 ,cycling_1992)
 ```
 
+
+Here, creating a figure of impedance function for walking trips during 1986- 2015.
 ```{r}
 ggplot(data = trip_w_f, aes(x = DURATION, y = f)) + 
-geom_line(linetype = "solid") +
+geom_line(linetype = "solid", color = "blue", size =1.25) +
   facet_grid(. ~ YEAR) +
   scale_x_continuous("Time in minutes") +
   scale_y_continuous("Cumulative Percentage of Trips") +
   labs(title = "Impedance function for walking trip from 1986 - 2015")
+ggsave("IP_W.png", dpi = 600)
 ```
 ```{r}
 summary(trip_c_f)
 print(summary)
 ```
-
+Here, creating a figure of impedance function for cycling trips during 1986- 2015
 
 ```{r}
 ggplot(data = trip_c_f, aes(x = DURATION, y = f)) + 
-geom_line(linetype = "solid", na.rm=TRUE) +
+geom_line(linetype = "solid", na.rm=TRUE, color = "red", size =1.25) +
   facet_grid(. ~ YEAR) +
   scale_x_continuous("Time in minutes") +
-  scale_y_continuous("Cumulative Percentage of Trips")
+  scale_y_continuous("Cumulative Percentage of Trips") +
+  labs(title = "Impedance function for cycling trip from 1986 - 2015")
+ggsave("IP_C.png", dpi = 600)
+```
+
+creating a figure of impedance function of walking and cycling to different destinations in 2015 
+
+```{r}
+trip__f_2015 <- rbind(walking_2015,cycling_2015)
 ```
 
 ```{r}
-ggplot(data = cycling_2005, aes(x = DURATION, y = f)) + 
-geom_line(linetype = "solid") +
+ggplot(data = trip__f_2015, aes(x = DURATION, y = f, color = MODE)) + 
+geom_line() +
+  facet_wrap(facets = vars(dest_label)) +
   scale_x_continuous("Time in minutes") +
-  scale_y_continuous("Cumulative Percentage of Trips")
+  scale_y_continuous("Cumulative Percentage of Trips") +
+  labs(title = "Impedance function to different destinations in 2015")
+ggsave("IP_2015.png", dpi = 600)
 ```
+
+creating a figure of impedance function of walking and cycling to different destinations in 2010
 ```{r}
-ggplot(data = cycling_1992, aes(x = DURATION, y = f)) + 
-geom_line(linetype = "solid") +
+trip__f_2010 <- rbind(walking_2010,cycling_2010)
+```
+
+```{r}
+ggplot(data = trip__f_2010, aes(x = DURATION, y = f, color = MODE)) + 
+geom_line() +
+  facet_wrap(facets = vars(dest_label)) +
   scale_x_continuous("Time in minutes") +
-  scale_y_continuous("Cumulative Percentage of Trips")
+  scale_y_continuous("Cumulative Percentage of Trips") +
+  labs(title = "Impedance function to different destinations in 2010")
+ggsave("IP_2010.png", dpi = 600)
 ```
 
-
-
+creating a figure of impedance function of walking and cycling to different destinations in 2005
 
 ```{r}
-ggplot(data = cycling_1998, aes(x = DURATION, y = f)) + 
-geom_line(linetype = "solid") +
+trip__f_2005 <- rbind(walking_2005,cycling_2005)
+```
+
+```{r}
+ggplot(data = trip__f_2005, aes(x = DURATION, y = f, color = MODE)) + 
+geom_line() +
+  facet_wrap(facets = vars(dest_label)) +
   scale_x_continuous("Time in minutes") +
-  scale_y_continuous("Cumulative Percentage of Trips")
+  scale_y_continuous("Cumulative Percentage of Trips") +
+  labs(title = "Impedance function to different destinations in 2005")
+ggsave("IP_2005.png", dpi = 600)
 ```
 
-
-
-
-
-** Impedance function for different destination **
+creating a figure of impedance function of walking and cycling to different destinations in 1998
 
 ```{r}
- 
-ggplot(data = walking_2015, aes(x = DURATION, y = f)) + 
+trip__f_1998 <- rbind(walking_1998,cycling_1998)
+```
+
+```{r}
+ggplot(data = trip__f_1998, aes(x = DURATION, y = f, color = MODE)) + 
 geom_line() +
-facet_wrap(facets = vars(dest_label)) 
+  facet_wrap(facets = vars(dest_label)) +
+  scale_x_continuous("Time in minutes") +
+  scale_y_continuous("Cumulative Percentage of Trips") +
+  labs(title = "Impedance function to different destinations in 1998")
+ggsave("IP_1998.png", dpi = 600)
+```
+
+creating a figure of impedance function of walking and cycling to different destinations in 1992
+```{r}
+trip__f_1992 <- rbind(walking_1992,cycling_1992)
 ```
 
 ```{r}
- 
-ggplot(data = walking_2010, aes(x = DURATION, y = f)) + 
+ggplot(data = trip__f_1992, aes(x = DURATION, y = f, color = MODE)) + 
 geom_line() +
-facet_wrap(facets = vars(dest_label)) 
+  facet_wrap(facets = vars(dest_label)) +
+  scale_x_continuous("Time in minutes") +
+  scale_y_continuous("Cumulative Percentage of Trips") +
+  labs(title = "Impedance function to different destinations in 1992")
+ggsave("IP_1992.png", dpi = 600)
 ```
+
+
+creating a figure of impedance function of walking and cycling to different destinations in 1986
 ```{r}
-#filter(trip_f, YEAR == 2015 , YEAR == 2010)
-ggplot(data = trip_f, aes(x = DURATION, y = f, color = MODE)) + 
+ggplot(data = walking_1986, aes(x = DURATION, y = f, color = MODE)) + 
 geom_line() +
-facet_wrap(facets = vars(dest_label)) +
-  scale_color_manual(values = pal, breaks = c("walking", "cycling"))
+  facet_wrap(facets = vars(dest_label)) +
+  scale_x_continuous("Time in minutes") +
+  scale_y_continuous("Cumulative Percentage of Trips") +
+  labs(title = "Impedance function to different destinations in 1986")
+ggsave("IP_1986.png", dpi = 600)
 ```
 
-
-```{r}
-ggplot(data = trip_f, aes(x = DURATION, y = f, color = MODE)) + 
-geom_line() +
-facet_wrap(dest_label ~ YEAR)
-```
-
-
-```{r}
- 
-ggplot(data = walking_2015, aes(x = DURATION, y = f)) + 
-geom_point() +
-facet_wrap(facets = vars(dest_label)) 
-```
 
 
 4.1 Walking and cycling duration 
@@ -2397,9 +2429,7 @@ Table_1 <- trip_f %>% filter(MODE == "walking") %>%
     walking_1992 %>%  count(dest_label) %>%
   mutate(percent = scales::percent(n / sum(n)))
   
-  kable(Table_1) %>%
-  kable_styling(latex_options = c("scale_down")) 
-kbl(caption = "Summary statistics on walking trips in 2015") %>% kable_classic(full_width = F, html_font = "Cambria") %>%  add_header_above(c(" " = 1, "Duration" = 3)) 
+
 ```
 
 
