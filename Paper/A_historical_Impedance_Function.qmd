@@ -3,7 +3,7 @@ title: "A historical collection of impedance functions"
 author: "MM"
 format:
   docx:
-    reference-doc: custom-reference-doc.docx
+   reference-doc: custom-reference-doc.docx
 editor: source
 bibliography: references.bib
 ---
