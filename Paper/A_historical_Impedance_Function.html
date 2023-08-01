@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.189">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="MM">
+
+<title>A historical collection of impedance functions for active travel accessibility analysis in Canada</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+<script src="A_historical_Impedance_Function_files/libs/clipboard/clipboard.min.js"></script>
+<script src="A_historical_Impedance_Function_files/libs/quarto-html/quarto.js"></script>
+<script src="A_historical_Impedance_Function_files/libs/quarto-html/popper.min.js"></script>
+<script src="A_historical_Impedance_Function_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="A_historical_Impedance_Function_files/libs/quarto-html/anchor.min.js"></script>
+<link href="A_historical_Impedance_Function_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="A_historical_Impedance_Function_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="A_historical_Impedance_Function_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="A_historical_Impedance_Function_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="A_historical_Impedance_Function_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">A historical collection of impedance functions for active travel accessibility analysis in Canada</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>MM </p>
+          </div>
+  </div>
+    
+    
+  </div>
+  
+
+</header>
+
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p>urban planning as cities strive to become more sustainable. Accessibility analysis employs different methods such as gravity-based models, potential models, etc. An important component of these methods is the impedance function used to represent the responses of travelers to the friction of distance separating origins and destinations. The objective of this study is to investigate active travel behavior in Canada using time use data. Empirical estimates of impedance functions are calibrated to assess the time-willingness to reach different destinations such as work, school, grocery stores, restaurants, and sports places by walking and cycling. This research makes use of Canada’s General Social Survey Cycles 2, 7, 12, 19, 24, 29 thus giving a historical perspective on active mobility over the past 35 years. The focus of these surveys is on time use and the datasets contain information on travel time by active modes (cycling and walking) as well as the type of activity at the end of the trip which allows us to classify trips by purpose. Our focus is on Canadian Census Metropolitan Areas (CMAs) and the results indicate that the most common destinations for walking trips after work or school are grocery stores, other stores or malls are the most destinations for walking travels respectively. For trips by bicycle the most common destination after traveling to work or school, is sports centers, field or arena. Strong distance-decay effects are evident from the results. The impedance functions, in addition to providing information about the behavior of active travelers in Canada for the period of time under study, are a valuable resource for implementing active accessibility analysis in Canadian applications.</p>
+<p>Keywords: Impedance function, Accessibility, Active travel mode</p>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Urban and transportation planning has shown a growing interest in the idea that cities have the potential to shape travel behavior through intentional modifications. This notion stems from the recognition that the design and layout of urban environments can significantly influence how people choose to travel within the city. By creating environments that prioritize accessibility and offer diverse transportation options, cities can encourage individuals to opt for sustainable modes of transportation, such as walking, cycling, and the use of public transit. Indeed accessibility plays a crucial role in shaping travel behavior. It refers to the ease with which individuals can access desired destinations, services, and amenities within their city. By improving accessibility, cities aim to make it more convenient and attractive for people to choose sustainable transportation options over private vehicles. Factors such as increased population density, a mix of activities (e.g., residential, commercial, recreational), well-connected transportation infrastructure, and proximity to key destinations like schools, workplaces, and retail centers contribute to enhanced accessibility <span class="citation" data-cites="iacono2008access">(<a href="#ref-iacono2008access" role="doc-biblioref">Iacono, Krizek, and El-Geneidy 2008</a>)</span>.</p>
+<p>It is important to note that walking and cycling accessibility are closely intertwined. Both modes of active transportation contribute to the overall concept of “active accessibility” or “non-motorized accessibility.” While walking primarily involves travel on foot, cycling provides an additional mode that combines physical activity with efficient mobility. The integration of walking and cycling infrastructure, along with improved pedestrian and cyclist safety measures, further supports the goal of promoting sustainable travel choices within cities <span class="citation" data-cites="frank2001built sallis2004active wu2019measuring">(<a href="#ref-frank2001built" role="doc-biblioref">Frank and Engelke 2001</a>; <a href="#ref-sallis2004active" role="doc-biblioref">Sallis et al. 2004</a>; <a href="#ref-wu2019measuring" role="doc-biblioref">Wu et al. 2019</a>)</span>.By considering and improving accessibility in urban and transportation planning, cities can create environments that facilitate and encourage active modes of transportation. This approach not only helps reduce dependence on private vehicles but also promotes healthier and more sustainable travel behaviors among residents.</p>
+<p>A significant body of literature has contributed to the quantification of urban accessibility in recent decades. The assessment of accessibility levels for active modes of transportation, and specifically the calculation of accessibility using impedance functions, has emerged as a crucial research topic that has garnered substantial attention from scholars in the fields of transport planning, urban geography, and sustainable development <span class="citation" data-cites="nassir2016utility currie2010quantifying frank2005linking iacono2010 krizek2005perspectives">(<a href="#ref-nassir2016utility" role="doc-biblioref">Nassir et al. 2016</a>; <a href="#ref-currie2010quantifying" role="doc-biblioref">Currie 2010</a>; <a href="#ref-frank2005linking" role="doc-biblioref">Frank et al. 2005</a>; <a href="#ref-iacono2010" role="doc-biblioref">Iacono, Krizek, and El-Geneidy 2010</a>; <a href="#ref-krizek2005perspectives" role="doc-biblioref">Krizek 2005</a>)</span>. These studies generally agree on two primary components for measuring accessibility include: (1) the location and attractiveness of urban opportunities (benefit side), and (2) the impedance of travel from residential areas in the network to these locations (cost side). According to these definitions, areas with higher accessibility are those characterized by lower impedance when traveling to desirable destinations <span class="citation" data-cites="hansen1959accessibility pirie1979measuring handy1997measuring geurs2001accessibility bhat2002development church2003measuring kwan2003recent geurs2004 levinson2005access cascetta2013new">(<a href="#ref-hansen1959accessibility" role="doc-biblioref">Hansen 1959</a>; <a href="#ref-pirie1979measuring" role="doc-biblioref">Pirie 1979</a>; <a href="#ref-handy1997measuring" role="doc-biblioref">Handy and Niemeier 1997</a>; <a href="#ref-geurs2001accessibility" role="doc-biblioref">Geurs and Ritsema van Eck 2001</a>; <a href="#ref-bhat2002development" role="doc-biblioref">Bhat et al. 2002</a>; <a href="#ref-church2003measuring" role="doc-biblioref">Church and Marston 2003</a>; <a href="#ref-kwan2003recent" role="doc-biblioref">Kwan et al. 2003</a>; <a href="#ref-geurs2004" role="doc-biblioref">Geurs and Van Wee 2004</a>; <a href="#ref-levinson2005access" role="doc-biblioref">Levinson and Krizek 2005</a>; <a href="#ref-cascetta2013new" role="doc-biblioref">Cascetta, Cartenı̀, and Montanino 2013</a>)</span>.</p>
+<p>The impedance function, in its various forms, serves as a measure of the willingness to travel a certain distance to reach desired destinations and is a valuable tool for analyzing spatial patterns of travel behavior and can be used for any mode of transportation planning <span class="citation" data-cites="taylor1975distance fotheringham1981spatial eldridge1991warped luoma1993threshold vale2017influence papa2012gravity vale2016active">(<a href="#ref-taylor1975distance" role="doc-biblioref">Taylor 1975</a>; <a href="#ref-fotheringham1981spatial" role="doc-biblioref">Fotheringham 1981</a>; <a href="#ref-eldridge1991warped" role="doc-biblioref">Eldridge and Jones III 1991</a>; <a href="#ref-luoma1993threshold" role="doc-biblioref">Luoma, Mikkonen, and Palomäki 1993</a>; <a href="#ref-vale2017influence" role="doc-biblioref">Vale and Pereira 2017</a>; <a href="#ref-papa2012gravity" role="doc-biblioref">Papa and Coppola 2012</a>; <a href="#ref-vale2016active" role="doc-biblioref">Vale, Saraiva, and Pereira 2016</a>)</span>. Generally, as the distance to a destination increases, the likelihood of walking or cycling decreases. Various distance decay functions have been utilized to describe the distribution of walking and cycling trips, both in general and for specific purposes <span class="citation" data-cites="iacono2010 larsen2010beyond iacono2008access">(<a href="#ref-iacono2010" role="doc-biblioref">Iacono, Krizek, and El-Geneidy 2010</a>; <a href="#ref-larsen2010beyond" role="doc-biblioref">Larsen, El-Geneidy, and Yasmin 2010</a>; <a href="#ref-iacono2008access" role="doc-biblioref">Iacono, Krizek, and El-Geneidy 2008</a>)</span>. When assessing accessibility using impedance functions, different cost decay functions have been employed, including threshold functions (e.g., step function) and smooth cost decay functions (e.g., inverse-potential, log-normal, logistic, exponential square-root, and half-life function) <span class="citation" data-cites="de2009exponential reggiani2011accessibility osth2016new itf2017linking">(<a href="#ref-de2009exponential" role="doc-biblioref">De Vries, Nijkamp, and Rietveld 2009</a>; <a href="#ref-reggiani2011accessibility" role="doc-biblioref">Reggiani, Bucci, and Russo 2011</a>; <a href="#ref-osth2016new" role="doc-biblioref">Östh, Lyhagen, and Reggiani 2016</a>; <a href="#ref-itf2017linking" role="doc-biblioref">ITF. 2017</a>)</span>. Scholars place significant emphasis on the selection of an appropriate impedance function, leading to a diverse range of functions being employed. However, despite the numerous specifications of impedance functions used, there is limited available evidence to determine a priori which one might be superior. These various specifications primarily vary in their treatment of the influence of distance, consequently impacting the measurement of accessibility.Negative exponential distance-decay functions are commonly used in assessing non-motorized accessibility, capturing the willingness of individuals to walk or cycle to destinations <span class="citation" data-cites="handy1997measuring geurs2001accessibility iacono2010 vega2012using millward2013active vale2017influence">(<a href="#ref-handy1997measuring" role="doc-biblioref">Handy and Niemeier 1997</a>; <a href="#ref-geurs2001accessibility" role="doc-biblioref">Geurs and Ritsema van Eck 2001</a>; <a href="#ref-iacono2010" role="doc-biblioref">Iacono, Krizek, and El-Geneidy 2010</a>; <a href="#ref-vega2012using" role="doc-biblioref">Vega 2012</a>; <a href="#ref-millward2013active" role="doc-biblioref">Millward, Spinney, and Scott 2013</a>; <a href="#ref-vale2017influence" role="doc-biblioref">Vale and Pereira 2017</a>)</span>. The negative exponential form presents an advantageous characteristic of a more gradual decline when compared to the power function. This attribute renders it particularly effective in accurately estimating shorter trips, especially those associated with non-motorized modes of transportation <span class="citation" data-cites="kanafani1983transportation">(<a href="#ref-kanafani1983transportation" role="doc-biblioref">Kanafani 1983</a>)</span>. In a recent study by Vale and Pereira (2017), the modified Gaussian and exponential functions were found to be the most robust for modeling walking accessibility when examining 20 pedestrian accessibility measures. Additionally, the study introduced a new cumulative Gaussian function that considers cumulative opportunities at close distances (200 or 400 m) and a modified Gaussian curve for longer distances <span class="citation" data-cites="vale2017influence">(<a href="#ref-vale2017influence" role="doc-biblioref">Vale and Pereira 2017</a>)</span>. Prins et al.&nbsp;(2014) investigated bicycle and walking accessibility to grocery stores or markets for the elderly, estimating distance decay model parameters based on factors such as gender, age, and functional limitations <span class="citation" data-cites="prins2014many">(<a href="#ref-prins2014many" role="doc-biblioref">Prins et al. 2014</a>)</span>. Iacono et al.&nbsp;(2010) calibrated the distance-decay model for five different trip purposes (work, shopping, school, restaurant, and recreation) and developed accessibility measures for both walking and cycling <span class="citation" data-cites="iacono2008access">(<a href="#ref-iacono2008access" role="doc-biblioref">Iacono, Krizek, and El-Geneidy 2008</a>)</span>.</p>
+<p>In addition to determining the form of the impedance function, the analyst must also specify the variable used to measure separation or impedance, which can be either time, cost, or a combination of both. Previous studies have employed both time and distance measures, and there are instances where the generalized cost concept has been applied as well. The choice between time and distance as the impedance variable has been found to be acceptable based on previous research. However, when it comes to non-motorized travel modes like bicycling and walking, extracting accurate travel times from existing network models can be challenging, which limits the options and makes distance a more practical choice <span class="citation" data-cites="handy1997measuring iacono2010 yang2012walking arranz2019measuring">(<a href="#ref-handy1997measuring" role="doc-biblioref">Handy and Niemeier 1997</a>; <a href="#ref-iacono2010" role="doc-biblioref">Iacono, Krizek, and El-Geneidy 2010</a>; <a href="#ref-yang2012walking" role="doc-biblioref">Yang and Diez-Roux 2012</a>; <a href="#ref-arranz2019measuring" role="doc-biblioref">Arranz-López et al. 2019</a>)</span>.</p>
+<p>The objective of this study is to analyze historical data spanning from 1986 to 2015 in Canada to gain insights into people’s actual travel behavior, specifically focusing on active modes of transportation. The investigation encompasses various trip purposes, such as home, work or school, visiting others’ homes, outdoor activities, business-related trips, shopping, visits to libraries, museums or theaters, dining out, and attending places of worship. The study employs impedance functions as a method to understand individuals’ willingness to travel. While walking and cycling share similarities, they also exhibit notable differences <span class="citation" data-cites="tan2014walking demaio2009bike">(<a href="#ref-tan2014walking" role="doc-biblioref">Tan and QL Xue 2014</a>; <a href="#ref-demaio2009bike" role="doc-biblioref">DeMaio 2009</a>)</span>. Both modes rely on human power but vary in terms of travel speed and distance coverage. Cycling allows for faster travel with a greater range, while walking offers adaptability without the need for special equipment. Previous research has often neglected the competitive nature between walking and cycling for short trips when both options are available. Consequently, individuals may opt for one mode over the other based on their preferences and costs. Hence, this article aims to separately calculate the impedance function for cycling and walking trips using data from the General Social Survey (GSS) dataset in Canada.</p>
+<p>Various studies have employed impedance values derived from locally-calibrated travel models. Nevertheless, it is crucial to recognize that these values can be influenced by the specific environment in which they were collected, particularly in the context of non-motorized transportation, where weather conditions can significantly impact travel behavior. Although the ideal approach would involve year-round data collection, covering all seasons, as suggested by Ortuzar and Willumsen (2001), practical constraints often lead to data collection over a limited period, reflecting prevailing weather conditions at the time of the survey<span class="citation" data-cites="iacono2010 de2011modelling">(<a href="#ref-iacono2010" role="doc-biblioref">Iacono, Krizek, and El-Geneidy 2010</a>; <a href="#ref-de2011modelling" role="doc-biblioref">Dios Ortúzar and Willumsen 2011</a>)</span>. This becomes especially important for non-motorized modes and regions with notable seasonal climate variations. For instance, if survey data are gathered during warmer and drier months, changes in travel behavior during colder or wetter months may be overlooked, potentially resulting in overestimating the number of pedestrians and bicyclists during colder weather. Additionally, changes in destination choices for discretionary trips can affect travel distances, consequently influencing the relevant impedance values. Therefore, accurate estimation of specialized impedance functions tailored to non-motorized modes requires access to appropriate travel survey data capable of capturing pedestrian and bicycling behavior. In this study, the impedance function was calculated using the GSS dataset, collected annually over a one-year period through telephone surveys.</p>
+<p>To calculate impedance values for each mode and trip purpose, household travel survey data were used to fit a negative exponential curve that provided a continuous approximation to the shape of the trip length distribution, using both trip duration and distance data. The same functional form was used for all impedances to ensure consistency of application across modes and trip purposes</p>
+<p>(Iacono et al., 2010)</p>
+<p>اکر در آخر بخوام بگم که از اکسپونشنال میخوام استافده کنم این به درد میخوئره</p>
+<p>Given its proven efficacy in numerous empirical applications, this functional form was considered well-suited for estimation in our current study, wherein a set of impedance functions was applied.</p>
+<p>The impedance function plays a particularly important role in the study of non-work accessibility, because non work travel involves a wide range of trip purposes and travelers behave differently depending on the purpose of their trip. Theories of urban form such as Christaller’s (1933=1966) central place theory have long recognized that a person’s willingness to travel long distances varies by the purpose of a trip. Central place theory explains urban form as a hierarchy of places determined in part by a desire of consumers to minimize travel to purchase goods and services (Losch 1954; O’Sullivan 2000). Different business types have different trade areas. People tend to buy certain goods and services for the convenience of not traveling far—typically near home or work—such as groceries, gasoline, or hair salons. Conversely, people tend to travel farther for other kinds of goods and services for which convenience is less important than the ability to make comparisons before a purchase, such as furniture, household appliances, or a car. To illustrate, people could easily spend 45 minutes of travel time to purchase a new couch but rarely spend more than about 10 minutes to pick up a carton of milk. Travelers who set out to buy milk feel a greater ‘‘friction’’ compared to going to a furniture store because most people have many milk-selling destinations closer to home than furniture stores, and because the value they derive from buying milk is far lower than for making a major purchase like a couch. So the impedance function must be calculated separately for each trip purpose. I calculated impedance functions by using automobile trips from the 2005 household travel survey referenced above (Michigan Department of Transportation, 2005). I used a single, automobile-based impedance function for both modes, in part because the set of transit trips are too small for a reliable estimate, but also because automobile travel more accurately reflects the ‘‘norm’’ of expectations from travelers throughout the region. This assumption is likely to marginally understate the disadvantage experienced by racial and ethnic minorities because they disproportionately constitute transit riders.</p>
+<p>Despite the growth of research on the social and physical environmental features that may be associated with walking, there is little evidence on the amounts and durations of usual walking trips for different purposes among nationally representative samples of U.S. residents 12,19</p>
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-arranz2019measuring" class="csl-entry" role="doc-biblioentry">
+Arranz-López, Aldo, Julio A Soria-Lara, Frank Witlox, and Antonio Páez. 2019. <span>“Measuring Relative Non-Motorized Accessibility to Retail Activities.”</span> <em>International Journal of Sustainable Transportation</em> 13 (9): 639–51.
+</div>
+<div id="ref-bhat2002development" class="csl-entry" role="doc-biblioentry">
+Bhat, Chandra, Susan Handy, Kara Kockelman, Hani Mahmassani, Anand Gopal, Issam Srour, and Lisa Weston. 2002. <span>“Development of an Urban Accessibility Index: Formulations, Aggregation, and Application.”</span> <em>Work</em> 4938 (4).
+</div>
+<div id="ref-cascetta2013new" class="csl-entry" role="doc-biblioentry">
+Cascetta, Ennio, Armando Cartenı̀, and Marcello Montanino. 2013. <span>“A New Measure of Accessibility Based on Perceived Opportunities.”</span> <em>Procedia-Social and Behavioral Sciences</em> 87: 117–32.
+</div>
+<div id="ref-church2003measuring" class="csl-entry" role="doc-biblioentry">
+Church, Richard L, and James R Marston. 2003. <span>“Measuring Accessibility for People with a Disability.”</span> <em>Geographical Analysis</em> 35 (1): 83–96.
+</div>
+<div id="ref-currie2010quantifying" class="csl-entry" role="doc-biblioentry">
+Currie, Graham. 2010. <span>“Quantifying Spatial Gaps in Public Transport Supply Based on Social Needs.”</span> <em>Journal of Transport Geography</em> 18 (1): 31–41.
+</div>
+<div id="ref-de2009exponential" class="csl-entry" role="doc-biblioentry">
+De Vries, Jacob J, Peter Nijkamp, and Piet Rietveld. 2009. <span>“Exponential or Power Distance-Decay for Commuting? An Alternative Specification.”</span> <em>Environment and Planning A</em> 41 (2): 461–80.
+</div>
+<div id="ref-demaio2009bike" class="csl-entry" role="doc-biblioentry">
+DeMaio, Paul. 2009. <span>“Bike-Sharing: History, Impacts, Models of Provision, and Future.”</span> <em>Journal of Public Transportation</em> 12 (4): 41–56.
+</div>
+<div id="ref-de2011modelling" class="csl-entry" role="doc-biblioentry">
+Dios Ortúzar, Juan de, and Luis G Willumsen. 2011. <em>Modelling Transport</em>. John wiley &amp; sons.
+</div>
+<div id="ref-eldridge1991warped" class="csl-entry" role="doc-biblioentry">
+Eldridge, J Douglas, and John Paul Jones III. 1991. <span>“Warped Space: A Geography of Distance Decay.”</span> <em>The Professional Geographer</em> 43 (4): 500–511.
+</div>
+<div id="ref-fotheringham1981spatial" class="csl-entry" role="doc-biblioentry">
+Fotheringham, A Stewart. 1981. <span>“Spatial Structure and Distance-Decay Parameters.”</span> <em>Annals of the Association of American Geographers</em> 71 (3): 425–36.
+</div>
+<div id="ref-frank2001built" class="csl-entry" role="doc-biblioentry">
+Frank, Lawrence D, and Peter O Engelke. 2001. <span>“The Built Environment and Human Activity Patterns: Exploring the Impacts of Urban Form on Public Health.”</span> <em>Journal of Planning Literature</em> 16 (2): 202–18.
+</div>
+<div id="ref-frank2005linking" class="csl-entry" role="doc-biblioentry">
+Frank, Lawrence D, Thomas L Schmid, James F Sallis, James Chapman, and Brian E Saelens. 2005. <span>“Linking Objectively Measured Physical Activity with Objectively Measured Urban Form: Findings from SMARTRAQ.”</span> <em>American Journal of Preventive Medicine</em> 28 (2): 117–25.
+</div>
+<div id="ref-geurs2001accessibility" class="csl-entry" role="doc-biblioentry">
+Geurs, Karst T, and Jan R Ritsema van Eck. 2001. <span>“Accessibility Measures: Review and Applications. Evaluation of Accessibility Impacts of Land-Use Transportation Scenarios, and Related Social and Economic Impact.”</span> <em>RIVM Rapport 408505006</em>.
+</div>
+<div id="ref-geurs2004" class="csl-entry" role="doc-biblioentry">
+Geurs, Karst T, and Bert Van Wee. 2004. <span>“Accessibility Evaluation of Land-Use and Transport Strategies: Review and Research Directions.”</span> <em>Journal of Transport Geography</em> 12 (2): 127–40.
+</div>
+<div id="ref-handy1997measuring" class="csl-entry" role="doc-biblioentry">
+Handy, Susan L, and Debbie A Niemeier. 1997. <span>“Measuring Accessibility: An Exploration of Issues and Alternatives.”</span> <em>Environment and Planning A</em> 29 (7): 1175–94.
+</div>
+<div id="ref-hansen1959accessibility" class="csl-entry" role="doc-biblioentry">
+Hansen, Walter G. 1959. <span>“How Accessibility Shapes Land Use.”</span> <em>Journal of the American Institute of Planners</em> 25 (2): 73–76.
+</div>
+<div id="ref-iacono2010" class="csl-entry" role="doc-biblioentry">
+Iacono, Michael, Kevin J Krizek, and Ahmed El-Geneidy. 2010. <span>“Measuring Non-Motorized Accessibility: Issues, Alternatives, and Execution.”</span> <em>Journal of Transport Geography</em> 18 (1): 133–40.
+</div>
+<div id="ref-iacono2008access" class="csl-entry" role="doc-biblioentry">
+Iacono, Michael, Kevin Krizek, and Ahmed M El-Geneidy. 2008. <span>“Access to Destinations: How Close Is Close Enough? Estimating Accurate Distance Decay Functions for Multiple Modes and Different Purposes.”</span>
+</div>
+<div id="ref-itf2017linking" class="csl-entry" role="doc-biblioentry">
+ITF. 2017. <em>Linking People and Places: New Ways of Understanding Spatial Access in Cities</em>. OECD Publishing.
+</div>
+<div id="ref-kanafani1983transportation" class="csl-entry" role="doc-biblioentry">
+Kanafani, Adib. 1983. <span>“Transportation Demand Analysis.”</span>
+</div>
+<div id="ref-krizek2005perspectives" class="csl-entry" role="doc-biblioentry">
+Krizek, Kevin J. 2005. <span>“Perspectives on Accessibility and Travel.”</span> In <em>Access to Destinations</em>, 109–30. Emerald Group Publishing Limited.
+</div>
+<div id="ref-kwan2003recent" class="csl-entry" role="doc-biblioentry">
+Kwan, Mei-Po, Alan T Murray, Morton E O’Kelly, and Michael Tiefelsdorf. 2003. <span>“Recent Advances in Accessibility Research: Representation, Methodology and Applications.”</span> <em>Journal of Geographical Systems</em> 5: 129–38.
+</div>
+<div id="ref-larsen2010beyond" class="csl-entry" role="doc-biblioentry">
+Larsen, Jacob, Ahmed El-Geneidy, and Farhana Yasmin. 2010. <span>“Beyond the Quarter Mile: Re-Examining Travel Distances by Active Transportation.”</span> <em>Canadian Journal of Urban Research</em> 19 (1): 70–88.
+</div>
+<div id="ref-levinson2005access" class="csl-entry" role="doc-biblioentry">
+Levinson, David M, and Kevin J Krizek. 2005. <em>Access to Destinations</em>. Elsevier Publishers.
+</div>
+<div id="ref-luoma1993threshold" class="csl-entry" role="doc-biblioentry">
+Luoma, Martti, Kauko Mikkonen, and Mauri Palomäki. 1993. <span>“The Threshold Gravity Model and Transport Geography: How Transport Development Influences the Distance-Decay Parameter of the Gravity Model.”</span> <em>Journal of Transport Geography</em> 1 (4): 240–47.
+</div>
+<div id="ref-millward2013active" class="csl-entry" role="doc-biblioentry">
+Millward, Hugh, Jamie Spinney, and Darren Scott. 2013. <span>“Active-Transport Walking Behavior: Destinations, Durations, Distances.”</span> <em>Journal of Transport Geography</em> 28: 101–10.
+</div>
+<div id="ref-nassir2016utility" class="csl-entry" role="doc-biblioentry">
+Nassir, Neema, Mark Hickman, Ali Malekzadeh, and Elnaz Irannezhad. 2016. <span>“A Utility-Based Travel Impedance Measure for Public Transit Network Accessibility.”</span> <em>Transportation Research Part A: Policy and Practice</em> 88: 26–39.
+</div>
+<div id="ref-osth2016new" class="csl-entry" role="doc-biblioentry">
+Östh, John, Johan Lyhagen, and Aura Reggiani. 2016. <span>“A New Way of Determining Distance Decay Parameters in Spatial Interaction Models with Application to Job Accessibility Analysis in Sweden.”</span> <em>European Journal of Transport and Infrastructure Research</em> 16 (2).
+</div>
+<div id="ref-papa2012gravity" class="csl-entry" role="doc-biblioentry">
+Papa, Enrica, and Pierluigi Coppola. 2012. <span>“Gravity-Based Accessibility Measures for Integrated Transport-Land Use Planning (GraBAM).”</span> <em>Accessibility Instruments for Planning Practice</em> 117: 124.
+</div>
+<div id="ref-pirie1979measuring" class="csl-entry" role="doc-biblioentry">
+Pirie, Gordon H. 1979. <span>“Measuring Accessibility: A Review and Proposal.”</span> <em>Environment and Planning A</em> 11 (3): 299–312.
+</div>
+<div id="ref-prins2014many" class="csl-entry" role="doc-biblioentry">
+Prins, Richard G, Frank Pierik, Astrid Etman, Reinier P Sterkenburg, Carlijn BM Kamphuis, and FJ Van Lenthe. 2014. <span>“How Many Walking and Cycling Trips Made by Elderly Are Beyond Commonly Used Buffer Sizes: Results from a GPS Study.”</span> <em>Health &amp; Place</em> 27: 127–33.
+</div>
+<div id="ref-reggiani2011accessibility" class="csl-entry" role="doc-biblioentry">
+Reggiani, Aura, Pietro Bucci, and Giovanni Russo. 2011. <span>“Accessibility and Impedance Forms: Empirical Applications to the German Commuting Network.”</span> <em>International Regional Science Review</em> 34 (2): 230–52.
+</div>
+<div id="ref-sallis2004active" class="csl-entry" role="doc-biblioentry">
+Sallis, James F, Lawrence D Frank, Brian E Saelens, and M Katherine Kraft. 2004. <span>“Active Transportation and Physical Activity: Opportunities for Collaboration on Transportation and Public Health Research.”</span> <em>Transportation Research Part A: Policy and Practice</em> 38 (4): 249–68.
+</div>
+<div id="ref-tan2014walking" class="csl-entry" role="doc-biblioentry">
+Tan, Zheng, and Charlie QL Xue. 2014. <span>“Walking as a Planned Activity: Elevated Pedestrian Network and Urban Design Regulation in Hong Kong.”</span> <em>Journal of Urban Design</em> 19 (5): 722–44.
+</div>
+<div id="ref-taylor1975distance" class="csl-entry" role="doc-biblioentry">
+Taylor, Peter. 1975. <span>“Distance Decay Models in Spatial Interactions.”</span> <em>(No Title)</em>.
+</div>
+<div id="ref-vale2017influence" class="csl-entry" role="doc-biblioentry">
+Vale, David S, and Mauro Pereira. 2017. <span>“The Influence of the Impedance Function on Gravity-Based Pedestrian Accessibility Measures: A Comparative Analysis.”</span> <em>Environment and Planning B: Urban Analytics and City Science</em> 44 (4): 740–63.
+</div>
+<div id="ref-vale2016active" class="csl-entry" role="doc-biblioentry">
+Vale, David S, Miguel Saraiva, and Mauro Pereira. 2016. <span>“Active Accessibility: A Review of Operational Measures of Walking and Cycling Accessibility.”</span> <em>Journal of Transport and Land Use</em> 9 (1): 209–35.
+</div>
+<div id="ref-vega2012using" class="csl-entry" role="doc-biblioentry">
+Vega, Amaya. 2012. <span>“Using Place Rank to Measure Sustainable Accessibility.”</span> <em>Journal of Transport Geography</em> 24: 411–18.
+</div>
+<div id="ref-wu2019measuring" class="csl-entry" role="doc-biblioentry">
+Wu, Xueying, Yi Lu, Yaoyu Lin, and Yiyang Yang. 2019. <span>“Measuring the Destination Accessibility of Cycling Transfer Trips in Metro Station Areas: A Big Data Approach.”</span> <em>International Journal of Environmental Research and Public Health</em> 16 (15): 2641.
+</div>
+<div id="ref-yang2012walking" class="csl-entry" role="doc-biblioentry">
+Yang, Yong, and Ana V Diez-Roux. 2012. <span>“Walking Distance by Trip Purpose and Population Subgroups.”</span> <em>American Journal of Preventive Medicine</em> 43 (1): 11–19.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

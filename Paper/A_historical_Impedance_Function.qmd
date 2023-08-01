@@ -1,18 +1,16 @@
 ---
-title: "A historical collection of impedance functions"
+title: "A historical collection of impedance functions for 1"
 author: "MM"
 format:
   docx:
-   reference-doc: custom-reference-doc.docx
+    reference-doc: custom-reference-doc.docx
 editor: source
 bibliography: references.bib
 ---
 
-**A historical collection of impedance functions for active travel accessibility analysis in Canada**
+
 
 ## Abstract
-
-## Active transport accessibility has grown in importance to inform
 
 urban planning as cities strive to become more sustainable. Accessibility analysis employs different methods such as gravity-based models, potential models, etc. An important component of these methods is the impedance function used to represent the responses of travelers to the friction of distance separating origins and destinations. The objective of this study is to investigate active travel behavior in Canada using time use data. Empirical estimates of impedance functions are calibrated to assess the time-willingness to reach different destinations such as work, school, grocery stores, restaurants, and sports places by walking and cycling. This research makes use of Canada's General Social Survey Cycles 2, 7, 12, 19, 24, 29 thus giving a historical perspective on active mobility over the past 35 years. The focus of these surveys is on time use and the datasets contain information on travel time by active modes (cycling and walking) as well as the type of activity at the end of the trip which allows us to classify trips by purpose. Our focus is on Canadian Census Metropolitan Areas (CMAs) and the results indicate that the most common destinations for walking trips after work or school are grocery stores, other stores or malls are the most destinations for walking travels respectively. For trips by bicycle the most common destination after traveling to work or school, is sports centers, field or arena. Strong distance-decay effects are evident from the results. The impedance functions, in addition to providing information about the behavior of active travelers in Canada for the period of time under study, are a valuable resource for implementing active accessibility analysis in Canadian applications.
 
@@ -20,55 +18,53 @@ Keywords: Impedance function, Accessibility, Active travel mode
 
 ## Introduction 
 
-One of the current interests in urban and transportation planning is the notion that cities can and should be modified to influence travel behavior.Accessibility is an important factor in shaping travel behavior. Indeed, increases in density, activity mix, accessibility, and well-connected transportation infrastructure at various locations are meant to encourage more use of public transportation and active modes of transportation[@iacono2008access].Walking and cycling accessibility are frequently confused, and the combination of the two is sometimes referred to as "active accessibility" or "non-motorized accessibility"[@frank2001built; @sallis2004active; @wu2019measuring].
+Urban and transportation planning has shown a growing interest in the idea that cities have the potential to shape travel behavior through intentional modifications. 
 
-A substantial body of literature has contributed to quantifying urban accessibility over the last few decades.The analysis of accessibility levels of active modes of transportation in general, and the study of impedance function for calculating accessibility in particular, has become a sensitive topic and important direction of research which has recently attracted a lot of attention among researchers in transport planning, urban geography, and sustainable development [@nassir2016utility; @currie2010quantifying;@frank2005linking;@iacono2010;@krizek2005perspectives]. The majority of these approaches have agreed on two main components for measuring accessibility [@hansen1959accessibility; @pirie1979measuring; @handy1997measuring;@geurs2001accessibility; @bhat2002development; @church2003measuring; @kwan2003recent;@geurs2004; @levinson2005access; @cascetta2013new]. These two elements are as follows: (1) location and attractiveness of urban opportunities (benefit side); and, (2) impedance of travelling to these locations from residential areas in the network (cost side). Based on these definitions, more accessible areas are the ones that have lower impedance to traveling to attractive locations.
+This notion stems from the recognition that the design and layout of urban environments can significantly influence how people choose to travel within the city. By creating environments that prioritize accessibility and offer diverse transportation options, cities can encourage individuals to opt for sustainable modes of transportation, such as walking, cycling, and the use of public transit. Indeed accessibility plays a crucial role in shaping travel behavior. It refers to the ease with which individuals can access desired destinations, services, and amenities within their city. By improving accessibility, cities aim to make it more convenient and attractive for people to choose sustainable transportation options over private vehicles. Factors such as increased population density, a mix of activities (e.g., residential, commercial, recreational), well-connected transportation infrastructure, and proximity to key destinations like schools, workplaces, and retail centers contribute to enhanced accessibility [@iacono2008access].
 
+It is important to note that walking and cycling accessibility are closely intertwined. Both modes of active transportation contribute to the overall concept of "active accessibility" or "non-motorized accessibility." While walking primarily involves travel on foot, cycling provides an additional mode that combines physical activity with efficient mobility. The integration of walking and cycling infrastructure, along with improved pedestrian and cyclist safety measures, further supports the goal of promoting sustainable travel choices within cities [@frank2001built; @sallis2004active; @wu2019measuring]. By considering and improving accessibility in urban and transportation planning, cities can create environments that facilitate and encourage active modes of transportation. This approach not only helps reduce dependence on private vehicles but also promotes healthier and more sustainable travel behaviors among residents.
 
-The impedance function, in its various forms, represents the willingness to cover the distance to reach those destinations and is a simple tool for analyzing the spatial distribution of travel behavior [@fotheringham1981spatial; @eldridge1991warped;@vale2017influence;@papa2012gravity; @vale2016active]. Specifically, the longer the distance to the destination, the less likely people are to walk or cycle there. Distance decay functions have been used to describe the distribution of walking and cycling as a function of distance for general walking and cycling trips and for specific purposes [@iacono2010; @larsen2010beyond; @iacono2008access]. As the impedance function in evaluating accessibility, several cost decay functions have been used such as threshold functions (e.g., step function) and smooth cost decay functions (e.g., inverse-potential, log-normal, loglogistic, exponential square-root and half-life function) [@de2009exponential;@reggiani2011accessibility; @osth2016new; @itf2017linking]. The same researchers emphasized the importance of selecting an appropriate impedance function, and it can be seen that a wide range of functions are used.Distance-decay functions with a negative exponential form are commonly used in non-motorized accessibility to express how willing people are to walk or cycle to destinations [@handy1997measuring;@geurs2001accessibility; @iacono2010;@vega2012using]. recently Vale and Pereira (2017)conducted a study and figured out that the modified Gaussian and exponential functions were the most robust for modeling walking accessibility in a study that tested 20 pedestrian accessibility measures. Furthermore, the authors presented a new cumulative Gaussian function that employs the cumulative opportunities approach at close distances of 200 or 400 m, as well as a second part of a modified Gaussian curve for longer distances. Prins et al. (2014) investigated bicycle and walking accessibility to grocery stores or markets for the elderly, estimating parameters for distance decay models based on gender, age, and functional limitations.Iacono et al. (2010) calibrated the distance-decay model for five different types of trip "purposes" (work, shopping, school, restaurant, and recreation) and created an accessibility measure for both walking and bicycling.
+A significant body of literature has contributed to the quantification of urban accessibility in recent decades. The assessment of accessibility levels for active modes of transportation, and specifically the calculation of accessibility using impedance functions, has emerged as a crucial research topic that has garnered substantial attention from scholars in the fields of transport planning, urban geography, and sustainable development [@nassir2016utility; @currie2010quantifying; @frank2005linking; @iacono2010; @krizek2005perspectives]. These studies generally agree on two primary components for measuring accessibility include: (1) the location and attractiveness of urban opportunities (benefit side), and (2) the impedance of travel from residential areas in the network to these locations (cost side). According to these definitions, areas with higher accessibility are those characterized by lower impedance when traveling to desirable destinations [@hansen1959accessibility; @pirie1979measuring; @handy1997measuring; @geurs2001accessibility; @bhat2002development; @church2003measuring; @kwan2003recent; @geurs2004; @levinson2005access; @cascetta2013new].
 
-In addition to selecting an impedance function form, the analyst must specify which variable is used to measure separation or impedance (time, cost or both). Both measures have been used in practice, as have some examples of the use of the generalized cost concept [@handy1997measuring;@iacono2010;@yang2012walking; @arranz2019measuring ]. According to previous research, using either time or distance as an impedance variable is acceptable.However, due to the difficulties associated with extracting accurate travel times from existing network models for bicycling and walking, the options for non-motorized travel appear to be limited to the use of distance [@handy1997measuring].
+The impedance function, in its various forms, serves as a measure of the willingness to travel a certain distance to reach desired destinations and is a valuable tool for analyzing spatial patterns of travel behavior and can be used for any mode of transportation planning [@taylor1975distance; @fotheringham1981spatial; @eldridge1991warped; @luoma1993threshold; @vale2017influence; @papa2012gravity; @vale2016active]. Generally, as the distance to a destination increases, the likelihood of walking or cycling decreases. Various distance decay functions have been utilized to describe the distribution of walking and cycling trips, both in general and for specific purposes [@iacono2010; @larsen2010beyond; @iacono2008access]. When assessing accessibility using impedance functions, different cost decay functions have been employed, including **threshold functions** (e.g., step function) and **smooth cost decay functions** (e.g., inverse-potential, log-normal, logistic, exponential square-root, and half-life function) [@de2009exponential; @reggiani2011accessibility; @osth2016new; @itf2017linking]. Scholars place significant emphasis on the selection of an appropriate impedance function, leading to a diverse range of functions being employed. However, despite the numerous specifications of impedance functions used, there is limited available evidence to determine a priori which one might be superior. These various specifications primarily vary in their treatment of the influence of distance, consequently impacting the measurement of accessibility. Negative exponential distance-decay functions are commonly used in assessing non-motorized accessibility, capturing the willingness of individuals to walk or cycle to destinations [@handy1997measuring; @geurs2001accessibility; @iacono2010; @vega2012using; @millward2013active; @vale2017influence]. The negative exponential form presents an advantageous characteristic of a more gradual decline when compared to the power function. This attribute renders it particularly effective in accurately estimating shorter trips, especially those associated with non-motorized modes of transportation [@kanafani1983transportation;@fotheringham1989spatial;@de2009exponential; @iacono2010; @signorino2011gravity; @prins2014many]. In a recent study by Vale and Pereira (2017), the modified Gaussian and exponential functions were found to be the most robust for modeling walking accessibility when examining 20 pedestrian accessibility measures. Additionally, the study introduced a new cumulative Gaussian function that considers cumulative opportunities at close distances (200 or 400 m) and a modified Gaussian curve for longer distances [@vale2017influence]. Prins et al. (2014) investigated bicycle and walking accessibility to grocery stores or markets for the elderly, estimating distance decay model parameters based on factors such as gender, age, and functional limitations [@prins2014many]. Iacono et al. (2010) calibrated the distance-decay model for five different trip purposes (work, shopping, school, restaurant, and recreation) and developed accessibility measures for both walking and cycling [@iacono2008access].
 
-This study aims to generate a historical evidence of people's actual travel behavior, particularly with regard to active modes of transportation from 1986 to 2015 in Canada. Travel behavior is investigated for a variety of trip purposes (including Home, work or school, other's home, outdoors, business,  shopping, Library, museum or theater, restaurant,and Place of worship.) to understand individuals’ willingness to reach their destinations. The method that has been used to understand people's willingness to travel is the impedance functions. Although walking and cycling have some similarities, they also have significant differences [@tan2014walking; @demaio2009bike]. Both are human-powered modes that necessitate certain physical abilities. Cycling, on the other hand, has a faster travel speed and a greater range of distance than walking. Walking, on the other hand, is more adaptable than cycling and does not require any special equipment. Previous research has frequently overlooked the fact that walking and cycling opportunities may compete when both are available for short trips. As a result, people can choose one mode of transportation over another based on their willingness and cost. Therefore, the goal of this article is to calculate the impedance function separately for cycling and walking trips using General Social Survey (GSS) data set in Canada.
-
-
-
-
-
-To calculate impedance values for each mode and trip purpose, household travel survey data were used to fit a negative exponential curve that provided a continuous approximation to the shape of the trip length distribution, using both trip duration and distance data. The same functional form was used for all impedances to ensure consistency of application across modes and trip purposes
-
-
-(Iacono et al., 2010)
-Such issues often result in analysts borrowing assumptions from analysis designed for other purposes. A common example is an analysis borrowing impedance values from a locally-calibrated travel model. The values extracted from these data may be sensitive
-to the environment in which they were collected; particularly for non-motorized behavior, issues related to weather conditions play a big role. Ideally, travel survey data would be collected year round and cover all seasons (Ortuzar and Willumsen, 2001). More commonly, data are collected over a period of several months and reflect weather conditions prevailing at the time the survey data were collected. This is especially important in the case of nonmotorized modes and in locations where significant seasonal climate variations exist. For example, if survey data are collected during warmer, drier months it is possible that changes in travel behavior during colder or wetter months might be missed. These changes might include mode shifts, in which case the number of pedestrians and bicyclists might be overestimated during cold weather periods, and changes in destination choice for discretionary trips, which would affect the length or distance of travel, and hence the relevant impedance values.
-
-Estimating specialized impedance functions specific to nonmotorized modes requires appropriate travel survey data that can capture pedestrian and bicycling behavior. Ideally, this would involve a focused, special-purpose survey designed to oversample these types of behavior or data collected from Global Positioning Systems – a relatively costly alternative. In the absence of such data, a regional household travel survey can be used to the extent that it
-specifically includes trips by non-motorized modes. The current study employed household survey data collected in 2000 for the Minneapolis-St. Paul region. A limitation of this approach, however, is the variety of destinations that can feasibly be studied. Given that walking and bicycling tend to be less heavily-used and often underreported modes in many US cities, any further partitioning of the data can lead to small samples and less robust inferences
-
-
-
-Since the full specification of the gravity model is not applicable for forecasting the distribution of trips by non-motorized modes over a large area, some modifications must be made. One option is to estimate impedance directly from the frequency distribution of trip lengths. While this approach is feasible, it has some serious limitations. Estimating an impedance parameter in the absence of information about the spatial distribution of activities (as is provided in the gravity model) is equivalent to assuming that activities are evenly distributed in space (Sheppard, 1995). Clearly this assumption is not reasonable for most metropolitan regions and
-can lead to biased results.
-
-A second caveat relates to the functional form of the impedance function. While many different specifications of the impedance function have been used, there is little available evidence to suggest a priori which one might be superior. Most of the specifications differ in their treatment of the effects of distance, which would in turn affect accessibility measurement. Here, we choose the negative exponential form (e_bx). This function has the advantage that it declines more gradually than the power function, and thus better estimates shorter trips, such as those made by nonmotorized modes (Kanafani, 1983). This advantage, along with a
-record of numerous empirical applications made it an appropriate functional form to be estimated for the set of impedance functions applied in the current study.
+In addition to determining the form of the impedance function, the analyst must also specify the variable used to measure separation or impedance, which can be either time, cost, or a combination of both. Previous studies have employed both time and distance measures, and there are instances where the generalized cost concept has been applied as well. The choice between time and distance as the impedance variable has been found to be acceptable based on previous research [@iacono2010;; @hull2012accessibility;@sun2012measuring; @lowry2012using; @vasconcelos2012evaluation ]. However, when it comes to non-motorized travel modes like bicycling and walking, extracting accurate travel times from existing network models can be challenging, which limits the options and makes distance a more practical choice [@handy1997measuring; @iacono2010; @yang2012walking; @arranz2019measuring].
 
 
 
 
-
-The impedance function plays a particularly important role in the study of nonwork accessibility, because nonwork travel involves a wide range of trip purposes and travelers
-behave differently depending on the purpose of their trip. Theories of urban form such as Christaller’s (1933=1966) central place theory have long recognized that a person’s willingness to travel long distances varies by the purpose of a trip. Central place theory explains urban form as a hierarchy of places determined in part by a desire of consumers to minimize travel to purchase goods and services (Lo¨sch 1954; O’Sullivan 2000). Different business types have different trade areas. People tend to buy certain goods and services for the convenience of not traveling far—typically near home or work—such as groceries, gasoline, or hair salons.
-Conversely, people tend to travel farther for other kinds of goods and services for which convenience is less important than the ability to make comparisons before a purchase,
-such as furniture, household appliances, or a car. To illustrate, people could easily spend 45 minutes of travel time to purchase a new couch but rarely spend more than about 10 minutes to pick up a carton of milk. Travelers who set out to buy milk feel a greater ‘‘friction’’ compared to going to a furniture store because most people have many milk-selling destinations closer to home than furniture stores, and because the value they derive from buying milk is far lower
-than for making a major purchase like a couch. So the impedance function must be calculated separately for each trip purpose. I calculated impedance functions by using automobile trips from the 2005 household travel survey referenced above (Michigan Department of Transportation, 2005). I used a single, automobile-based impedance function for both modes, in part because the set of transit trips are too small for a reliable estimate, but also because automobile travel more accurately reflects the ‘‘norm’’ of expectations from travelers throughout the region. This assumption is likely to marginally understate the disadvantage experienced by racial and ethnic minorities because they disproportionately constitute transit riders.
+This article aims to separately calculate the impedance function for cycling and walking trips using historical data from the General Social Survey (GSS) dataset from 1986 to 2015 in Canada to gain insights into people's actual travel behavior, specifically focusing on active modes of transportation. While walking and cycling share similarities, they also exhibit notable differences; Both modes rely on human power but vary in terms of travel speed and distance coverage. Cycling allows for faster travel with a greater range, while walking offers adaptability without the need for special equipment. So, individuals may opt for one mode over the other based on their preferences and costs. Previous research has often neglected the competitive nature between walking and cycling for short trips when both options are available. [@tan2014walking; @demaio2009bike]. Therefore, we will compare travel behavior for both walking and cycling modes. In addition, As non-work travel involves diverse trip purposes and distinct traveler behaviors, the impedance function assumes a pivotal role in examining non-work accessibility. Consequently, it becomes crucial to calculate separate impedance functions for each specific trip purpose [@grengs2015nonwork]. So, in this article, the investigation encompasses various trip purposes, such as home, work or school, visiting others' homes, outdoor activities, business-related trips, shopping, visits to libraries, museums or theaters, dining out, and attending places of worship.
 
 
 
+Time diary data has long been recognized as a crucial method for measuring and studying human behavior [@as1978studies;@gershuny2003changing;@meier1959human;@robinson2010time ]. Several recent studies have utilized national time-use surveys to investigate walking behaviors. For instance, Tudor-Locke et al. (2005) conducted studies in Australia and the United States that revealed intriguing differences between walking for leisure and walking for transport [@tudor2005patterns; @tudor2007walking]. These findings were further supported by data from Canadian national health surveys, which explored the self-reported prevalence of walking for exercise [@bryan2009patterns]. In the United Kingdom, Adams (2010) utilized the national Time Use Survey to specifically focus on active-transport (AT) walking and bicycling, while also modeling the characteristics of individuals engaged in AT [@adams2010prevalence]. Similarly, in the United States, the 2009 National Household Travel Survey, based on a 24-hour travel diary, provided valuable data on distances and duration of walking trips, categorizing them into seven broad purpose categories [@yang2012walking].
 
 
-Despite the growth of research on the social and physical environmental features that may be associated with walking, there is little evidence on the amounts and durations of usual walking trips for different purposes among nationally representative samples of U.S. residents 12,19
 
+The study employs impedance functions as a method to understand individuals' willingness to travel. 
+
+
+about GSS : Unlike the Census, the Nationwide Personal
+Transportation Survey (NPTS) and the National Household Travel Survey (NHTS) report
+on travel for all trip purposes, thus providing
+a more comprehensive view of travel behavior
+
+# methods ro tozih bedam va inke khodam mikham che kar konam
+Cycling as a transfer mode has been shown to be affected by various built environment characteristics, such as the urban density, land-use mix, and destination accessibility, that is, the ease with which cyclists can reach their destinations. However, cycling destination accessibility is loosely defined in the literature and the methods of assessing cycling
+accessibility is often assumed to be equivalent to walking accessibility using the same decay curves, such as the negative exponential function, which ignores the competitive relationship between cycling and walking within a short distance range around transit stations. In this study, we aim to fill the above gap by measuring the cycling destination accessibility of metro station areas using data from more than three million bicycle-metro transfer trips from a dockless bicycle-sharing program in Shenzhen, China.
+
+
+
+
+Despite the growth of research on the social and physical environmental features that may be associated with walking, there is little evidence on the amounts and durations of usual walking trips for different purposes among nationally representative samples of U.S. residents. 12,19 Agrawal and Schimek16 described variations in walking-trip distance by purposes and groups in a national U.S. sample in 2001. Pucher et al.17,18 compared the frequency, duration, and distance of walking trips for U.S. adults between 2001 and 2009. Several other existing studies6,20,21 focused on specifıc areas, which restricts generalizability to other contexts.
+
+ino mitunam baraye canada dorost konam = Historical analysis
+
+
+Various studies have employed impedance values derived from locally-calibrated travel models. Nevertheless, it is crucial to recognize that these values can be influenced by the specific environment in which they were collected, particularly in the context of non-motorized transportation, where weather conditions can significantly impact travel behavior. Although the ideal approach would involve year-round data collection, covering all seasons, as suggested by Ortuzar and Willumsen (2001), practical constraints often lead to data collection over a limited period, reflecting prevailing weather conditions at the time of the survey[@iacono2010; @de2011modelling]. This becomes especially important for non-motorized modes and regions with notable seasonal climate variations. For instance, if survey data are gathered during warmer and drier months, changes in travel behavior during colder or wetter months may be overlooked, potentially resulting in overestimating the number of pedestrians and bicyclists during colder weather. Additionally, changes in destination choices for discretionary trips can affect travel distances, consequently influencing the relevant impedance values. Therefore, accurate estimation of specialized impedance functions tailored to non-motorized modes requires access to appropriate travel survey data capable of capturing pedestrian and bicycling behavior. In this study, the impedance function was calculated using the GSS dataset, collected annually over a one-year period through telephone surveys.
+
+
+Estimating specialized impedance functions specific to non-motorized modes requires appropriate travel survey data that can capture pedestrian and bicycling behavior. Ideally, this would involve a focused, special-purpose survey designed to oversample these types of behavior or data collected from Global Positioning Systems—a relatively costly alternative. In the absence of such data, a regional household travel survey can be used to the extent that it specifically includes trips by non-motorized modes. The current study employed household survey data collected in 2000 for the Minneapolis-St. Paul region. A limitation of this approach, however, is the variety of destinations that can feasibly be studied. Given that walking and bicycling tend to be less heavily-used and often underreported modes in many U.S. cities, any further partitioning of the data can lead to small samples and less robust inferences
 
 
 
@@ -78,4 +74,183 @@ Despite the growth of research on the social and physical environmental features
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Background
+
+The examination of distance decay functions concerning different transportation modes and destinations serves as a valuable foundation for comprehending the travel behavior attributed to each mode. The parameters of distance decay functions offer insights into the spatial coverage provided by each mode of transportation. By segmenting modal trips based on their purposes, it becomes possible to compare the distribution of trips between work-related and various non-work purposes for each transportation mode. Empirically derived distance decay functions offer valuable evidence that can be utilized to examine and substantiate various claims pertaining to travel behavior, thus supporting urban planning endeavors. For instance, the current interest in creating "livable" communities revolves around loosely held assumptions regarding individuals' willingness to walk and cycling to different destinations. A common belief is that people are generally willing to walk up to a quarter of a mile to access most locations [@untermann1984accommodating]. However, there remains limited information regarding whether certain individuals are open to walking or cycling longer distances and, if so, how much farther they are willing to travel. Moreover, there is a dearth of evidence concerning the influence of trip characteristics, destination attractiveness, and the personal attributes of travelers in relation to the impact of distance on walking behaviors.
+
+Conducting direct behavioral inquiries naturally leads to another significant application of distance decay functions – the calculation of accessibility measures. Accessibility measures for motorized modes are readily available due to the abundance of data on their usage and their relevance in various planning activities. In contrast, similar measures are seldom computed for walking and cycling trips, as they constitute a smaller proportion of overall urban travel and are less frequently observed. Nevertheless, with data on the spatial distribution of trips and basic indicators of attractiveness for different destinations, it is possible to derive accessibility measures for non-motorized modes. Such measures can prove valuable in illustrating the impacts of planning initiatives aimed at promoting non-motorized transportation or concentrating activities in proximity to specific locations.
+
+Distance decay functions hold significant importance in transportation and land use planning activities, primarily due to their longstanding association with gravity models—a type of spatial interaction model commonly employed to predict trip distribution in transportation planning models. In essence, the unconstrained gravity model used to forecast interactions between zonal units (e.g., traffic analysis zones) in an urban region typically adopts the following form [@fotheringham1989spatial]:
+
+$$
+T_{ij} = kv_{i}^\mu w_{j}^\alpha c_{ij}^{-\beta}
+$$
+
+In this context, the gravity model used for forecasting interactions between different zones in an urban region involves several key components. The variable T_{ij} denotes the number of trips between zones i and j, while v_{i} and w_{j} represent factors indicating the attractiveness or intensity of the origin and destination zones, respectively. The function c_{ij} plays a pivotal role as the distance decay function component of the gravity model, signifying the deterrence or impedance to travel or interaction between locations based on distance while holding all other interaction determinants constant [@fotheringham1981spatial]. Of particular significance within the distance decay function is the parameter \beta, which holds crucial information as it defines the level of deterrence or impedance resulting from distance. Alternatively, this parameter can be interpreted as the willingness of individuals to travel between locations, taking into account the conditions of the transportation network and activity distribution. The distance decay function is commonly presented as a power function in the aforementioned gravity model. Nevertheless, it can also be expressed as the inverse of distance or more frequently as a negative exponential function, exp(-bx), where x represents the distance variable. Irrespective of the mathematical form used, the primary objective of the distance decay function is to illustrate the decline in interaction strength as the distance between locations increases.
+
+In trip distribution modeling, analysts sometimes adopt a simplified approach to the gravity model by assuming known origins and destinations, which is particularly applicable to habitual types of trips like commuting to work or school. This simplification streamlines the gravity model, focusing primarily on estimating its decay or deterrence function. Before reintroducing these functions into a forecasting model, separate estimates are often derived for different trip purposes [@bates2007history].
+
+The distance decay parameter is subject to dynamic changes over time, influenced by the development of transportation networks and alterations in urban spatial structure. For instance, Luoma, Mikkonen, and Palomaki (1993) offer evidence of a decline in the distance decay parameter as a consequence of increased travel speeds and more extensive network development. Subsequent research by Mikkonen and Luoma (1999) aimed to decompose the factors contributing to the observed variations in gravity model parameters over time [@luoma1993threshold; @mikkonen1999parameters].
+
+
+Moreover, the best-fit distance–decay function and associated parameters varies in accordance to the mode of travel (walking or cycling) and the trip purpose (Iacono et al., 2008, 2010; Larsen et al., 2010; Millward et al., 2013),
+reducing the usefulness of trying to generalize a unique distance–decay function, as different combinations of travel modes and purposes will require a different function. However, this is only the case when matching the impedance function with the observed walking behavior, Vale and Pereira 743 which might be different from the perceived behavior of the individual. Moreover, it should be noted that distance–decay is an aggregate concept based on travel frequency characteristics of a group of individuals according to distance. At the individual level, movements are much more complex, with significant variations among individuals (Golledge and Stimson, 1997), partly explaining the weak relationship between personal and place accessibility (Kwan, 1998).
+
+
+The accessibility toolbox implements the five different impedance functions from Kwan (1998):
+
+
+Inverse Power: 
+
+$$
+f(t_{ij}) =
+\begin{cases}
+  1 & \text{for } t_{ij} \le 1 \\
+  0 & \text{otherwise} \ t_{ij}^ {-\beta}
+\end{cases}
+$$ {#eq-Inverse_Power_impedance-function}
+
+Negative Exponential:
+
+$$
+f(t_{ij}) = e ^{-\beta_{t_{ij}}}
+$${#eq-Negative_Exponential_impedance-function}
+
+Modified Gaussian:
+
+$$
+f(t_{ij}) = e ^{{-t_{ij}^2}/2}
+$${#eq-Modified_Gaussian_impedance-function}
+
+Cumulative Opportunities Rectang:
+
+$$
+f(t_{ij}) =
+\begin{cases}
+  1 & \text{for} \ t_{ij} \le \bar {t} \\
+  0 & \text{otherwise}
+\end{cases}
+$$ {#eq-Cumulative_Opportunities_Rectan_impedance-function}
+
+Cumulative Opportunities Linear:
+
+$$
+f(t_{ij}) =
+\begin{cases}
+  1 - {t_{ij}/ \bar t} & \text{for} \ t_{ij} \le \bar {t} \\
+  0 & \text{otherwise}
+\end{cases}
+$$ {#eq-Cumulative_Opportunities_Linear_impedance-function}
+
+Gamma formula: 
+
+$$
+f(c_{ij})^{***} = 
+\begin{cases}
+\frac{1}{\sigma^\alpha\Gamma(\alpha)} c_{ij}^{\alpha-1} \cdot e^{{-c_{ij}}/{\sigma}} & \text{for } 0 \leq c_{ij} < \infty  ; \alpha, \sigma > 0\\
+ \ 0  & \text{otherwise }
+ \end{cases}   
+$${#eq-gamma-imped}
+
+The inverse power, negative exponential, and modified Gaussian functions continuously discount the weight of opportunities as travel time increases using an impedance parameter β that accounts for the cost of travel. With a
+foundation in early gravity models of spatial interaction (Stewart 1948; Zipf 1949), the inverse power function produces a rapid decline in the weight of opportunities as travel time increases. While power functions draw analogs to Newtonian physics, their theoretical relevance to human travel behavior has been questioned (Sen and Smith 1995). The negative exponential function is more gradual and based on its strong theoretical foundations in entropy
+maximization (Wilson 1971) and choice behavior theory (Fotheringham and O’Kelly 1989), this function appears to have become somewhat of a de facto standard in applied accessibility analysis. The modified Gaussian function exhibits a much more gradual rate of decline around its origin and a slower rate of decline overall. While Ingram (Ingram 1971) argues that these properties make the function superior to its inverse power and negative exponential counterparts for explaining observed travel behavior, it appears to be rarely used in the applied literature.
+
+The cumulative rectangular function is an isochronic measure that applies a constant weight to all opportunities reachable within some travel time window whose maximum is defined by &macr;t. Although the application of a constant weight is contrary to the geographic principle of distance deterrence or decay that underpins travel behavior theory, such functions remain popular due to their ease of interpretation. Finally, the cumulative linear function is a hybrid of the continuous and cumulative approaches, linearly discounting opportunities within an isochrone.
+This set of impedance functions is by no means exhaustive. Numerous alternatives have been proposed, such as the exponential–normal, exponential–square root, and log–normal functions reviewed by Reggiani, Bucci, & Russo (Reggiani, Bucci, and Russo 2010) and the Box-Cox, Tanner, and Richards functions reviewed by Martínez & Viegas (Martínez and Viegas 2013). Although these functions could be implemented in future iterations of the tool, the present article's focus on the functions specified in Kwan (1998) introduces some of the most widely used measures of impedance in applied accessibility analysis.
+
+Kwan (1998) sets four impedance parameters for each continuous function designed to produce a weight of about 0.1 at travel times of 5, 10, 15, and 20 min respectively. Figure 1 recreates a figure from Kwan (1998) to visualize
+parameter values for the five functions: the inverse power function with β = 2 (POW2_0), the negative exponential function with β = 0.15 (EXP0_15), the modified Gaussian function with β = 180 (MGAUS180), and the cumulative
+rectangular (CUMR40) and linear (CUML40) functions with &macr;t set to 40 minutes.
+
+
+
+Literature reviews on different formulations and other issues concerning accessibility are provided by Song (17), Handy and Niemeier (18), Handy and Clifton (19), and Iacono et al. (2).  Most of the literature concerns automobile travel. An exception is the research by Iacono et al. (2), which used household surveys to estimate the parameter β in Equation 3 in what they suggested is the first empirical study of its kind in the literature. They showed that the attractiveness of a destination greatly diminishes when the destination is more than a mile away. Iacono et al. calculated accessibility for the parcels of a community in Minnesota. However, their study did not incorporate bicycle suitability (i.e., the perceived comfort and safety of a linear section of bikeway), so it falls short in measuring bikeability.
+
+
+
+
+
+# Materials and Methods
+
+
+
+
+#Results 
+
+mitunam natayeje bedast amade baraye travel behavior dar Canada ro ba natayeje khodam moghayese konam. masalan una ta chand min ro baraye walking va cycling dar nazar gereftan va natayeje man chi ro neshun mide
+mesle introduction Yong 2012
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# References
 
