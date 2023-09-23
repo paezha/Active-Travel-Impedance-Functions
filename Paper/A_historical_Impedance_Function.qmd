@@ -4,11 +4,28 @@ author: "MM"
 format:
   docx:
     reference-doc: custom-reference-doc.docx
+    prefer-html: true
 editor: source
 bibliography: references.bib
 ---
 
-
+```{r echo=FALSE, include=FALSE}
+#load all packages:
+library(fitdistrplus)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(readxl) 
+library(splitstackshape)
+library(tibble)
+library(readr)
+library(tabulate)
+library(janitor)
+library(kableExtra)
+library(flextable)
+library(tidyr)
+library(gt)
+```
 
 ## Abstract
 
@@ -16,110 +33,81 @@ urban planning as cities strive to become more sustainable. Accessibility analys
 
 Keywords: Impedance function, Accessibility, Active travel mode
 
-## Introduction 
+## 1.Introduction
 
-Urban and transportation planning has shown a growing interest in the idea that cities have the potential to shape travel behavior through intentional modifications. 
+Urban and transportation planning has witnessed a growing interest in the idea that cities possess the capacity to shape travel behavior. This is achieved through the establishment of environments that prioritize accessibility and present a variety of transportation choices, ultimately encouraging individuals to adopt sustainable modes of transportation which is more convenient and appealing, such as walking, cycling, and utilizing public transit. In this context, accessibility refers to the ease with which individuals can reach desired destinations, access essential services, and avail themselves of various amenities within their urban environment [@iacono2008access]. As a result, In the past few decades, active transportation modes have garnered significant interest in urban mobility research and policy-making, primarily for their prospective role in enhancing urban sustainability [@hino2014built; @lamiquiz2015effects]. To elucidate, there has been a surge in investigations focused on non-motorized transportation methods, including walking, cycling, and public transit, recognizing their significance in promoting sustainable mobility solutions [@handy1993regional; @clifton2001evaluating; @frank2001built; @krizek2005perspectives; @sallis2004active; @vandenbulcke2009mapping; @wu2019measuring]. It is important to note that walking and cycling accessibility are closely intertwined and both modes of active transportation contribute to the overall concept of "active accessibility" or "non-motorized accessibility." By considering and improving active accessibility in urban and transportation planning, cities can create environments that facilitate and encourage active modes of transportation. This approach not only helps reduce dependence on private vehicles but also promotes healthier and more sustainable travel behaviors among residents.
 
-This notion stems from the recognition that the design and layout of urban environments can significantly influence how people choose to travel within the city. By creating environments that prioritize accessibility and offer diverse transportation options, cities can encourage individuals to opt for sustainable modes of transportation, such as walking, cycling, and the use of public transit. Indeed accessibility plays a crucial role in shaping travel behavior. It refers to the ease with which individuals can access desired destinations, services, and amenities within their city. By improving accessibility, cities aim to make it more convenient and attractive for people to choose sustainable transportation options over private vehicles. Factors such as increased population density, a mix of activities (e.g., residential, commercial, recreational), well-connected transportation infrastructure, and proximity to key destinations like schools, workplaces, and retail centers contribute to enhanced accessibility [@iacono2008access].
+A significant body of literature has contributed to the assessment of accessibility levels for active modes of transportation in recent decades. These studies generally agree on two primary components for measuring accessibility include: (1) the location and attractiveness of urban opportunities (benefit side), and (2) the impedance of travel from origins in the network to the destinations (cost side). Specifically, the calculation of accessibility using impedance functions has emerged as a crucial research topic that has garnered substantial attention from scholars in the fields of transport planning, urban geography, and sustainable development [@frank2005linking; @krizek2005perspectives; @currie2010quantifying; @iacono2010; @yang2012walking; @millward2013active; @nassir2016utility; @saghapour2017measuring; @wu2019measuring]. The impedance function, in its various forms, serves as a measure of the willingness to travel a certain distance to reach desired destinations and is a valuable tool for analyzing spatial patterns of travel behavior and can be used for any mode of transportation planning [@taylor1975distance; @fotheringham1981spatial; @kwan1998space; @eldridge1991warped; @luoma1993threshold; @papa2012gravity; @yang2012walking @millward2013active; @vale2017influence]. According to these definitions, areas with higher accessibility are those characterized by lower impedance when traveling to desirable destinations. In other words,as the distance to a destination increases, the likelihood of walking or cycling decreases[@hansen1959accessibility; @pirie1979measuring; @handy1997measuring; @geurs2001accessibility; @bhat2002development; @church2003measuring; @kwan2003recent; @geurs2004; @levinson2005access; @cascetta2013new]. So, there is a limited information scarce on the willingness of some individuals to walking or cycling greater distances. Equally, there's a paucity of data on how distance affects the nature of the activity, the desirability of the destinations, and the characteristics of those embarking on the trip in different context . Hence, it is imperative to investigate the evolution of impedance function over time due to its inherently dynamic nature, which fluctuates in response to the evolution of transportation networks and shifts in urban spatial configurations [@iacono2008access; @iacono2010]. Luoma, Mikkonen, and Palomaki (1993) provided evidence highlighting a diminishing distance decay parameter over time, attributing this trend to enhanced travel velocities and the maturation of transportation infrastructures [@luoma1993threshold]. Subsequent research by Mikkonen & Luoma (1999) delved into elucidating the factors behind these noted shifts in the parameters of gravity models over periods [@mikkonen1999parameters].
 
-It is important to note that walking and cycling accessibility are closely intertwined. Both modes of active transportation contribute to the overall concept of "active accessibility" or "non-motorized accessibility." While walking primarily involves travel on foot, cycling provides an additional mode that combines physical activity with efficient mobility. The integration of walking and cycling infrastructure, along with improved pedestrian and cyclist safety measures, further supports the goal of promoting sustainable travel choices within cities [@frank2001built; @sallis2004active; @wu2019measuring]. By considering and improving accessibility in urban and transportation planning, cities can create environments that facilitate and encourage active modes of transportation. This approach not only helps reduce dependence on private vehicles but also promotes healthier and more sustainable travel behaviors among residents.
+Various impedance functions have been utilized to describe the distribution of walking and cycling trips, both in general and for specific purposes [@iacono2008access; @iacono2010; @larsen2010beyond; @yang2012walking; @millward2013active; @vale2017influence; @li2020approach]. When assessing accessibility using impedance functions, different cost decay functions have been employed, including **threshold functions** (e.g., step function) and **smooth cost decay functions** (e.g., inverse-potential, log-normal, logistic, exponential square-root, and half-life function) [@de2009exponential; @reggiani2011accessibility; @osth2016new; @itf2017linking]. Scholars place significant emphasis on the selection of an appropriate impedance function, leading to a diverse range of functions being employed. These various specifications primarily vary in their treatment of the influence of distance, consequently impacting the measurement of accessibility. However, negative exponential distance-decay functions are commonly used in assessing non-motorized accessibility, capturing the willingness of individuals to walk or cycle to destinations [@handy1997measuring; @geurs2001accessibility; @iacono2010; @vega2012using; @millward2013active; @vale2017influence; @li2020approach]. The merit of this function lies in its ability to attribute decreasing influences to more remote opportunities, thereby offering a more accurate estimation for shorter journeys, especially those undertaken by non-motorized modes [@iacono2010; @kanafani1983transportation; @fotheringham1989spatial].
 
-A significant body of literature has contributed to the quantification of urban accessibility in recent decades. The assessment of accessibility levels for active modes of transportation, and specifically the calculation of accessibility using impedance functions, has emerged as a crucial research topic that has garnered substantial attention from scholars in the fields of transport planning, urban geography, and sustainable development [@nassir2016utility; @currie2010quantifying; @frank2005linking; @iacono2010; @krizek2005perspectives]. These studies generally agree on two primary components for measuring accessibility include: (1) the location and attractiveness of urban opportunities (benefit side), and (2) the impedance of travel from residential areas in the network to these locations (cost side). According to these definitions, areas with higher accessibility are those characterized by lower impedance when traveling to desirable destinations [@hansen1959accessibility; @pirie1979measuring; @handy1997measuring; @geurs2001accessibility; @bhat2002development; @church2003measuring; @kwan2003recent; @geurs2004; @levinson2005access; @cascetta2013new].
+In addition to determining the form of the impedance function, the analyst must also specify the variable used to measure impedance, which can be either time, cost, or a combination of both. Previous studies have employed both of these measures, and there are instances where the generalized cost concept has been applied as well. The choice between time and distance as the impedance variable has been found to be acceptable based on previous research [@iacono2010; @hull2012accessibility; @sun2012measuring; @lowry2012using; @vasconcelos2012evaluation ]. However, when it comes to non-motorized travel modes, extracting accurate travel times from existing network models can be challenging, which limits the options and makes distance a more practical choice [@handy1997measuring; @iacono2010; @yang2012walking; @arranz2019measuring]. Furthermore, researchers specializing in active modes of transportation have faced challenges stemming from a dearth of objective data concerning walking and cycling behavior. Because Estimating specialized impedance functions specific to non-motorized modes requires appropriate travel survey data that can capture pedestrian and cycle behavior. Often, researchers have resorted to relying on retrospective questionnaires, which assess subjective aspects such as the frequency and duration of walking and cycling activities. Notably, regional household travel surveys, including trips made by non-motorized modes, have been employed for this purpose [@iacono2010; @millward2013active]. In contrast to these localized surveys, there are some dataset that provides a nationwide perspective, encompassing travel for various trip purposes and offering insights into details like travel episode origins, destinations, and time-based lengths. This comprehensive approach furnishes a more holistic understanding of active transportation behavior. Nevertheless, only a few studies have examined active travel behavior in national scale, such as Yang et al (2012).
 
-The impedance function, in its various forms, serves as a measure of the willingness to travel a certain distance to reach desired destinations and is a valuable tool for analyzing spatial patterns of travel behavior and can be used for any mode of transportation planning [@taylor1975distance; @fotheringham1981spatial; @eldridge1991warped; @luoma1993threshold; @vale2017influence; @papa2012gravity; @vale2016active]. Generally, as the distance to a destination increases, the likelihood of walking or cycling decreases. Various distance decay functions have been utilized to describe the distribution of walking and cycling trips, both in general and for specific purposes [@iacono2010; @larsen2010beyond; @iacono2008access]. When assessing accessibility using impedance functions, different cost decay functions have been employed, including **threshold functions** (e.g., step function) and **smooth cost decay functions** (e.g., inverse-potential, log-normal, logistic, exponential square-root, and half-life function) [@de2009exponential; @reggiani2011accessibility; @osth2016new; @itf2017linking]. Scholars place significant emphasis on the selection of an appropriate impedance function, leading to a diverse range of functions being employed. However, despite the numerous specifications of impedance functions used, there is limited available evidence to determine a priori which one might be superior. These various specifications primarily vary in their treatment of the influence of distance, consequently impacting the measurement of accessibility. Negative exponential distance-decay functions are commonly used in assessing non-motorized accessibility, capturing the willingness of individuals to walk or cycle to destinations [@handy1997measuring; @geurs2001accessibility; @iacono2010; @vega2012using; @millward2013active; @vale2017influence]. The negative exponential form presents an advantageous characteristic of a more gradual decline when compared to the power function. This attribute renders it particularly effective in accurately estimating shorter trips, especially those associated with non-motorized modes of transportation [@kanafani1983transportation;@fotheringham1989spatial;@de2009exponential; @iacono2010; @signorino2011gravity; @prins2014many]. In a recent study by Vale and Pereira (2017), the modified Gaussian and exponential functions were found to be the most robust for modeling walking accessibility when examining 20 pedestrian accessibility measures. Additionally, the study introduced a new cumulative Gaussian function that considers cumulative opportunities at close distances (200 or 400 m) and a modified Gaussian curve for longer distances [@vale2017influence]. Prins et al. (2014) investigated bicycle and walking accessibility to grocery stores or markets for the elderly, estimating distance decay model parameters based on factors such as gender, age, and functional limitations [@prins2014many]. Iacono et al. (2010) calibrated the distance-decay model for five different trip purposes (work, shopping, school, restaurant, and recreation) and developed accessibility measures for both walking and cycling [@iacono2008access].
+Acknowledging the existing gaps highlighted earlier, as well as the gap in the utilization of uniform decay curves for both cycling and walking accessibility assessments such as the negative exponential function in previous research [@wu2019measuring], This research seeks to provide a comprehensive solution to these deficiencies. The study delves into the intricacies of actual travel behavior, with a specific focus on active transportation modes, utilizing historical data from the General Social Survey (GSS) spanning the years 1986 to 2015 in Canada. In this pursuit, the primary objective is to calculate the impedance function for both cycling and walking trips. This study, therefore, juxtaposes the travel behavior associated with both modes. Moreover, given that non-work travel encompasses a variety of trip intentions and unique traveler behaviors, the impedance function emerges as a vital tool in analyzing non-work accessibility. This underscores the importance of devising distinct impedance functions tailored to each trip purpose [@grengs2015nonwork]. As such, our analysis will span various trip intents, including commutes to homes, workplaces, or educational institutions, social visits, outdoor engagements, business excursions, shopping expeditions, cultural outings to libraries, museums, or theaters, dining experiences, and religious observances. By incorporating a nationally representative cohort of Canadians, this research aims to bridge the existing gaps in empirical data concerning the frequency and duration of typical pedestrian and cycling ventures across various trip purposes. In doing so, it aims to provide a robust understanding of active mode travel behavior. Through this comprehensive analysis, we seek to contribute to the broader discourse on active transportation and its implications for travel behavior and accessibility.
 
-In addition to determining the form of the impedance function, the analyst must also specify the variable used to measure separation or impedance, which can be either time, cost, or a combination of both. Previous studies have employed both time and distance measures, and there are instances where the generalized cost concept has been applied as well. The choice between time and distance as the impedance variable has been found to be acceptable based on previous research [@iacono2010;; @hull2012accessibility;@sun2012measuring; @lowry2012using; @vasconcelos2012evaluation ]. However, when it comes to non-motorized travel modes like bicycling and walking, extracting accurate travel times from existing network models can be challenging, which limits the options and makes distance a more practical choice [@handy1997measuring; @iacono2010; @yang2012walking; @arranz2019measuring].
+# Describe following section
 
+# 2.Background
 
+Accessibility is conceptualized as the potential to access geographically dispersed opportunities, taking into account the challenges associated with reaching them [@paez2012measuring]. The positioning of resources concerning users, the transportation infrastructure, and how spatial relations and distances impact the potential utilization of amenities are fundamental considerations in accessibility and mobility modeling. Typically, the effect of distance on potential use is encapsulated through "Impedance functions" or "Distance Decay functions" [@hansen1959accessibility; @koenig1980indicators; @fotheringham1981spatial]. These functions are integral in transportation planning, commonly incorporated into forecasting models to interpret urban travel behaviors for each mode. They're typically shaped from estimates grounded in sample data distributions that mirror fluctuations in individuals' propensity to travel over different distances to reach opportunities. This importance is underscored by their prevalent use in understanding accessibility to specific locations and areas covered by different services [@hsiao1997use; @zhao2003forecasting; @iacono2010; @li2020approach]. Fundamentally, accessing opportunities is tied to the travel costs to a destination. Indeed, the main goal of the impedance function is to depict the diminishing intensity of interaction as the separation between locations augments. These functions delineate how an increase in distance or associated travel costs inversely affects potential usage; in essence, distant facilities are less likely to be used compared to those in closer proximity[@hansen1959accessibility; @koenig1980indicators; @fotheringham1981spatial; @skov2001estimation]. In addition, the essence of the impedance function insinuates that adding distance or time matters less for longer trips than for shorter ones [@carrothers1956historical].
 
+The examination of impedance functions concerning different transportation modes and destinations serves as a valuable foundation for comprehending the travel behavior attributed to each mode. The parameters of impedance functions offer insights into the spatial coverage provided by each mode of transportation. By segmenting modal trips based on their purposes, it becomes possible to compare the distribution of trips between various purposes for each transportation mode (work-related and non-work purposes). Empirically derived impedance functions offer valuable evidence that can be utilized to examine and substantiate various claims pertaining to travel behavior, thus supporting urban planning endeavors. For instance, the current interest in creating "livable" communities revolves around loosely held assumptions regarding individuals' willingness to walk and cycle to different destinations. A common belief is that people are generally willing to walk up to a quarter of a mile to access most locations [@untermann1984accommodating]. However, there remains limited information regarding whether certain individuals are open to walking or cycling longer distances and, if so, how much farther they are willing to travel. Moreover, there is a dearth of evidence concerning the influence of trip characteristics, destination attractiveness, and the personal attributes of travelers in relation to the impact of distance on walking and cycling behaviors[@geurs2006accessibility].
 
-This article aims to separately calculate the impedance function for cycling and walking trips using historical data from the General Social Survey (GSS) dataset from 1986 to 2015 in Canada to gain insights into people's actual travel behavior, specifically focusing on active modes of transportation. While walking and cycling share similarities, they also exhibit notable differences; Both modes rely on human power but vary in terms of travel speed and distance coverage. Cycling allows for faster travel with a greater range, while walking offers adaptability without the need for special equipment. So, individuals may opt for one mode over the other based on their preferences and costs. Previous research has often neglected the competitive nature between walking and cycling for short trips when both options are available. [@tan2014walking; @demaio2009bike]. Therefore, we will compare travel behavior for both walking and cycling modes. In addition, As non-work travel involves diverse trip purposes and distinct traveler behaviors, the impedance function assumes a pivotal role in examining non-work accessibility. Consequently, it becomes crucial to calculate separate impedance functions for each specific trip purpose [@grengs2015nonwork]. So, in this article, the investigation encompasses various trip purposes, such as home, work or school, visiting others' homes, outdoor activities, business-related trips, shopping, visits to libraries, museums or theaters, dining out, and attending places of worship.
-
-
-
-Time diary data has long been recognized as a crucial method for measuring and studying human behavior [@as1978studies;@gershuny2003changing;@meier1959human;@robinson2010time ]. Several recent studies have utilized national time-use surveys to investigate walking behaviors. For instance, Tudor-Locke et al. (2005) conducted studies in Australia and the United States that revealed intriguing differences between walking for leisure and walking for transport [@tudor2005patterns; @tudor2007walking]. These findings were further supported by data from Canadian national health surveys, which explored the self-reported prevalence of walking for exercise [@bryan2009patterns]. In the United Kingdom, Adams (2010) utilized the national Time Use Survey to specifically focus on active-transport (AT) walking and bicycling, while also modeling the characteristics of individuals engaged in AT [@adams2010prevalence]. Similarly, in the United States, the 2009 National Household Travel Survey, based on a 24-hour travel diary, provided valuable data on distances and duration of walking trips, categorizing them into seven broad purpose categories [@yang2012walking].
-
-
-
-The study employs impedance functions as a method to understand individuals' willingness to travel. 
-
-
-about GSS : Unlike the Census, the Nationwide Personal
-Transportation Survey (NPTS) and the National Household Travel Survey (NHTS) report
-on travel for all trip purposes, thus providing
-a more comprehensive view of travel behavior
-
-# methods ro tozih bedam va inke khodam mikham che kar konam
-Cycling as a transfer mode has been shown to be affected by various built environment characteristics, such as the urban density, land-use mix, and destination accessibility, that is, the ease with which cyclists can reach their destinations. However, cycling destination accessibility is loosely defined in the literature and the methods of assessing cycling
-accessibility is often assumed to be equivalent to walking accessibility using the same decay curves, such as the negative exponential function, which ignores the competitive relationship between cycling and walking within a short distance range around transit stations. In this study, we aim to fill the above gap by measuring the cycling destination accessibility of metro station areas using data from more than three million bicycle-metro transfer trips from a dockless bicycle-sharing program in Shenzhen, China.
-
-
-
-
-Despite the growth of research on the social and physical environmental features that may be associated with walking, there is little evidence on the amounts and durations of usual walking trips for different purposes among nationally representative samples of U.S. residents. 12,19 Agrawal and Schimek16 described variations in walking-trip distance by purposes and groups in a national U.S. sample in 2001. Pucher et al.17,18 compared the frequency, duration, and distance of walking trips for U.S. adults between 2001 and 2009. Several other existing studies6,20,21 focused on specifıc areas, which restricts generalizability to other contexts.
-
-ino mitunam baraye canada dorost konam = Historical analysis
-
-
-Various studies have employed impedance values derived from locally-calibrated travel models. Nevertheless, it is crucial to recognize that these values can be influenced by the specific environment in which they were collected, particularly in the context of non-motorized transportation, where weather conditions can significantly impact travel behavior. Although the ideal approach would involve year-round data collection, covering all seasons, as suggested by Ortuzar and Willumsen (2001), practical constraints often lead to data collection over a limited period, reflecting prevailing weather conditions at the time of the survey[@iacono2010; @de2011modelling]. This becomes especially important for non-motorized modes and regions with notable seasonal climate variations. For instance, if survey data are gathered during warmer and drier months, changes in travel behavior during colder or wetter months may be overlooked, potentially resulting in overestimating the number of pedestrians and bicyclists during colder weather. Additionally, changes in destination choices for discretionary trips can affect travel distances, consequently influencing the relevant impedance values. Therefore, accurate estimation of specialized impedance functions tailored to non-motorized modes requires access to appropriate travel survey data capable of capturing pedestrian and bicycling behavior. In this study, the impedance function was calculated using the GSS dataset, collected annually over a one-year period through telephone surveys.
-
-
-Estimating specialized impedance functions specific to non-motorized modes requires appropriate travel survey data that can capture pedestrian and bicycling behavior. Ideally, this would involve a focused, special-purpose survey designed to oversample these types of behavior or data collected from Global Positioning Systems—a relatively costly alternative. In the absence of such data, a regional household travel survey can be used to the extent that it specifically includes trips by non-motorized modes. The current study employed household survey data collected in 2000 for the Minneapolis-St. Paul region. A limitation of this approach, however, is the variety of destinations that can feasibly be studied. Given that walking and bicycling tend to be less heavily-used and often underreported modes in many U.S. cities, any further partitioning of the data can lead to small samples and less robust inferences
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#Background
-
-The examination of distance decay functions concerning different transportation modes and destinations serves as a valuable foundation for comprehending the travel behavior attributed to each mode. The parameters of distance decay functions offer insights into the spatial coverage provided by each mode of transportation. By segmenting modal trips based on their purposes, it becomes possible to compare the distribution of trips between work-related and various non-work purposes for each transportation mode. Empirically derived distance decay functions offer valuable evidence that can be utilized to examine and substantiate various claims pertaining to travel behavior, thus supporting urban planning endeavors. For instance, the current interest in creating "livable" communities revolves around loosely held assumptions regarding individuals' willingness to walk and cycling to different destinations. A common belief is that people are generally willing to walk up to a quarter of a mile to access most locations [@untermann1984accommodating]. However, there remains limited information regarding whether certain individuals are open to walking or cycling longer distances and, if so, how much farther they are willing to travel. Moreover, there is a dearth of evidence concerning the influence of trip characteristics, destination attractiveness, and the personal attributes of travelers in relation to the impact of distance on walking behaviors.
-
-Conducting direct behavioral inquiries naturally leads to another significant application of distance decay functions – the calculation of accessibility measures. Accessibility measures for motorized modes are readily available due to the abundance of data on their usage and their relevance in various planning activities. In contrast, similar measures are seldom computed for walking and cycling trips, as they constitute a smaller proportion of overall urban travel and are less frequently observed. Nevertheless, with data on the spatial distribution of trips and basic indicators of attractiveness for different destinations, it is possible to derive accessibility measures for non-motorized modes. Such measures can prove valuable in illustrating the impacts of planning initiatives aimed at promoting non-motorized transportation or concentrating activities in proximity to specific locations.
-
-Distance decay functions hold significant importance in transportation and land use planning activities, primarily due to their longstanding association with gravity models—a type of spatial interaction model commonly employed to predict trip distribution in transportation planning models. In essence, the unconstrained gravity model used to forecast interactions between zonal units (e.g., traffic analysis zones) in an urban region typically adopts the following form [@fotheringham1989spatial]:
+Since Hansen's foundational research, various categories of accessibility measures have been developed, such as active-based, infrastructure-based, individual-based, and utility-based indicators [@hansen1959accessibility; @geurs2004]. Accessibility metrics, particularly those of the gravity type or potential measures have been extensively utilized in active modes [@miller2005place]. These measures primarily stem from the gravity model's denominator, where opportunities are weighed by an impedance function. In fact, these are designed by weighting opportunities within an area according to an attraction measure and then diminishing each based on an impedance measure [for example @geertman1995gis; @handy1993regional]. The general representation of the accessibility equation can be expressed as:
 
 $$
-T_{ij} = kv_{i}^\mu w_{j}^\alpha c_{ij}^{-\beta}
+A_{ik} ^ {pt} = \sum_ {j=1}{ g(O^t _ {jk}) f(C_{ij} ^ p)}
+$$ {#eq:1-general accessibility function}
+
+Research demonstrates that two primary types of accessibility indicators are predominantly used in studies. First one revolves around **Opportunities** are weighted by an impedance (characterized by a relevant decreasing function of either travel cost or time required to access these opportunities(equation)). The accessibility measure A \^pt\_{ik} signifies accessibility from an origin i at a specific time t to a certain destination type k tailored for an individual of type p. The function g(O \^t\_{jk} quantifies the appeal of opportunities categorized under type k situated at destination j, accessible at time t. Simultaneously, f(C \^p\_{ij}) represents the impedance while traveling from origin i to destination j for a person belonging to type p. It's worth noting that the functional form f() delineates an impedance decay function. Meanwhile, C\^p\_{ij} signifies the generalized travel cost, potentially encompassing factors such as time, distance, and exertion.
+
+Within the gravity model, the second variable concerns the cost associated with the spatial gap between a trip's start point and its endpoint (origins and destinations). Moreover, the third pivotal variable, crucial for constructing this model, involves the mathematical formulation delineating the travel impedance between origins and destinations. This "cost" can be articulated in terms of physical distance, duration of travel, financial outlay, or a fusion of these elements. Among these, travel duration emerges as the chief measure of cost and is the metric chosen for this particular investigation[@handy1993regional; @fotheringham1989spatial; @grengs2004measuring; @hess2005access]. In fact, when selecting a format for the impedance function, the researcher must determine which variable (time, cost, or both) will serve as the measure of impedance. Historically, both these measures have been employed, with certain instances incorporating the concept of generalized cost [@handy1997measuring]. For non-motorized travel modes, however, the prevalent choice seems to be distance, attributed to the challenges in obtaining precise travel times from existing network models designed for walking and bicycling. Previous studies indicate that adopting either time or distance as the impedance variable is appropriate [@handy1997measuring]. While the first two variables are derived from the attributes of the built environment, the impedance parameter captures aspects of human behavior, making its determination an intricate undertaking.
+
+The second type pertains to the **Cumulative-opportunity** metrics, often referred to as **isochronic indices**, which evaluate accessibility by determining the count or proportion of opportunities available within specified travel duration or distances from a reference point. These metrics avoid making presumptions about travel decay. They utilize a rectangular function, categorizing travel as "acceptable" within certain thresholds and "unacceptable" beyond them. One of the main complexities with these metrics is deciding on the appropriate cutoff point. This decision can be based on prevailing mobility patterns of the population, or it can mirror established norms, conventions, or the researcher's informed projections [@vickerman1974accessibility]. This metric can be interpreted as a specialized solution of Equation (1). In this context, the impedance function is designated as 1 when C\_{ij} \< x and 0 when C\_{ij} \> x.
+
+$$
+C_{ij} =
+\begin{cases}
+  1 & \text{for } c_{ij} \le x \\
+  0 & \text{for} \ c_{ij} > x
+\end{cases}
 $$
 
-In this context, the gravity model used for forecasting interactions between different zones in an urban region involves several key components. The variable T_{ij} denotes the number of trips between zones i and j, while v_{i} and w_{j} represent factors indicating the attractiveness or intensity of the origin and destination zones, respectively. The function c_{ij} plays a pivotal role as the distance decay function component of the gravity model, signifying the deterrence or impedance to travel or interaction between locations based on distance while holding all other interaction determinants constant [@fotheringham1981spatial]. Of particular significance within the distance decay function is the parameter \beta, which holds crucial information as it defines the level of deterrence or impedance resulting from distance. Alternatively, this parameter can be interpreted as the willingness of individuals to travel between locations, taking into account the conditions of the transportation network and activity distribution. The distance decay function is commonly presented as a power function in the aforementioned gravity model. Nevertheless, it can also be expressed as the inverse of distance or more frequently as a negative exponential function, exp(-bx), where x represents the distance variable. Irrespective of the mathematical form used, the primary objective of the distance decay function is to illustrate the decline in interaction strength as the distance between locations increases.
+The domain of transportation research has seen an increased focus on various formulations related to accessibility. Pre-eminent research in this domain has been presented by the likes of Song (1996), Handy and Niemeier (1997), Handy and Clifton (2001), and Iacono et al. (2010)[@song1996some; @handy1997measuring; @clifton2001evaluating; @iacono2010]. While a predominant chunk of these studies is devoted to automobile transportation, the researches by Iacono et. al. (2010), Millward et. al. (2013),and Vale et. al. (2017) uniquely distinctively explored active modes of transportation, such as walking and cycling. They determined the parameter β for the computation of the impedance function. Their findings indicate a significant decline in the attractiveness of destinations positioned beyond a mile's distance.
 
-In trip distribution modeling, analysts sometimes adopt a simplified approach to the gravity model by assuming known origins and destinations, which is particularly applicable to habitual types of trips like commuting to work or school. This simplification streamlines the gravity model, focusing primarily on estimating its decay or deterrence function. Before reintroducing these functions into a forecasting model, separate estimates are often derived for different trip purposes [@bates2007history].
+1.  The study of travel behaviors has, over time, led to the development of various mathematical functions, meticulously crafted by juxtaposing observed walking and cycling trips with predefined mathematical distributions. The choice of the impedance function is critical, as it's deeply intertwined with the gravitational force of travel, subsequently influencing accessibility evaluation outcomes [@breheny1978measurement; @kwan1998space; @talen1998assessing].
 
-The distance decay parameter is subject to dynamic changes over time, influenced by the development of transportation networks and alterations in urban spatial structure. For instance, Luoma, Mikkonen, and Palomaki (1993) offer evidence of a decline in the distance decay parameter as a consequence of increased travel speeds and more extensive network development. Subsequent research by Mikkonen and Luoma (1999) aimed to decompose the factors contributing to the observed variations in gravity model parameters over time [@luoma1993threshold; @mikkonen1999parameters].
+While the negative exponential function remains dominant in traditional transportation planning models [@meyer1984urban; @gutierrez1996european; @kwan1998space; @apparicio2008comparing; @iacono2008access; @iacono2010; @larsen2010beyond; @millward2013active], the best impedance function and its parameters can differ based on the specific travel mode, especially for active modes, and the underlying purpose of the trip [@iacono2008access; @iacono2010; @larsen2010beyond; @millward2013active].
 
+Despite many overlooking the specific nuances of the impedance function, reviews have indicated a preference for exponential and power functions in Gravity models. Still, more adaptable functions like the Box-Cox, logistic, and the Tanner functions have been explored [@gaudry1981inverse; @mandel1997disaggregate; @tiefelsdorf2003misspecifications; @richardson1969elements; @de2011modelling].
 
-Moreover, the best-fit distance–decay function and associated parameters varies in accordance to the mode of travel (walking or cycling) and the trip purpose (Iacono et al., 2008, 2010; Larsen et al., 2010; Millward et al., 2013),
-reducing the usefulness of trying to generalize a unique distance–decay function, as different combinations of travel modes and purposes will require a different function. However, this is only the case when matching the impedance function with the observed walking behavior, Vale and Pereira 743 which might be different from the perceived behavior of the individual. Moreover, it should be noted that distance–decay is an aggregate concept based on travel frequency characteristics of a group of individuals according to distance. At the individual level, movements are much more complex, with significant variations among individuals (Golledge and Stimson, 1997), partly explaining the weak relationship between personal and place accessibility (Kwan, 1998).
+2.  Furthermore, the literature reveals four distinct types of impedance functions highlighting spatial interaction effects, with the derived indicators seldom undergoing empirical evaluations to determine their efficacy in illustrating location attractiveness [@willigers2007accessibility]. The distance-decay function's shape is notably influenced by both travel mode and purpose. For instance, while Zhao et al. (2003) shed light on the walking distance's impact on public transport accessibility, leaning towards the exponential function, other studies, such as those by Gutiérrez et al. (2011) and Mamuna et al. (2013), ventured into the complexities of multi-modal intra-urban riderships and time distances, respectively.
 
+3.  More commonly, the impedance function is represented using a straightforward inverse power function or a negative exponential function based on distance or travel time. In 1971, Ingram highlighted that both these formulations tend to wane too swiftly in proximity to the origin when compared to empirical data. He posited that a modified Gaussian function is more advantageous, primarily because of its slower decline rate near the origin and a less precipitous drop to zero at larger distances, compared to the negative exponential and inverse power functions [@ingram1971concept]. Although a theoretical proposition advocates for the utilization of a Gaussian function (Ingram, 1971), the reviews revealed no research applying it specifically to gauge active mode accessibility. To the best of our knowledge, only Kwan (1998) employed a Gaussian function for assessing automobile accessibility [@kwan1998space; @vale2017influence].
+
+4.  Scholarly consensus aligns with the view that inverse distance-decay functions in geographical applications rarely trace a linear trajectory. Simplistic functions often falter in mirroring observed data trends on distance-interaction intensity graphs. This discord has necessitated the development of more intricate distance-decay functions, as advocated by luminaries like Taylor (1983) and Robinson (1998). Among the various models, those characterized by bell-shaped curves, such as Tanner's function and the Box-Cox function, have gained prominence. They are predominantly directed by two parameters, offering a more nuanced approach to spatial interaction effects.
+
+5.  Researchers, from Stewart (1941) to Haggett (2001), have reached consensus regarding the non-linear nature of inverse distance-decay functions in human geographical applications [@stewart1941; @goux1962; @taylor1971a; @taylor1983; @johnston1973; @wilson1974; @alonso1978; @sheppard1978; @robinson1998; @haggett2001]. While simplistic functions may not aptly reflect the observed data on distance-interaction intensity graphs, intricate distance-decay functions have been promoted by luminaries like Taylor (1983) and Robinson (1998). Among these functions, bell-shaped curves, such as the Tanner function, March's function, and the Box-Cox function, have gained prominence, directed by multiple parameters [@taylor1983; @robinson1998; @openshaw1977; @tanner1978; @nakaya2001; @celik2004; @langford2012; @martinez2013]. Mozolin et al. (2000) introduced an approach that integrates distance and employment numbers, visualized in a 3D diagrammatic representation [@mozolin2000]. However, while these functions provide precise fits for specific scenarios, their general application across varying contexts may be limited.
+
+??
+
+8.  why using negative exponential is more popular? Although the impedance function may take many forms, the negative exponential form has been used more often than others in recent studies and is also the most closely tied to travel behavior theory.
+
+s, it found that an accessibility measure with an exponential distance-decay function (e-r'i) is the most useful in explaining population distribution @article{song1996some, title={Some tests of alternative accessibility measures: A population density approach}, author={Song, Shunfeng}, journal={Land Economics}, pages={474--482}, year={1996}, publisher={JSTOR} }
+
+Here, we choose the negative exponential form (e-βx). This function has the advantage that it declines more gradually than the power function, and thus better estimates shorter trips, such as those made by non-motorized modes (Kanafani 1983). This advantage, along with a record of numerous empirical applications made it an appropriate functional form to be estimated for the set of impedance functions applied in the current study.
+
+The negative exponential form presents an advantageous characteristic of a more gradual decline when compared to the power function. This attribute renders it particularly effective in accurately estimating shorter trips, especially those associated with non-motorized modes of transportation [@kanafani1983transportation; @fotheringham1989spatial; @de2009exponential; @iacono2010; @signorino2011gravity; @prins2014many]. In a recent study by Vale and Pereira (2017), the modified Gaussian and exponential functions were found to be the most robust for modeling walking accessibility when examining 20 pedestrian accessibility measures. Additionally, the study introduced a new cumulative Gaussian function that considers cumulative opportunities at close distances (200 or 400 m) and a modified Gaussian curve for longer distances [@vale2017influence].
+
+I #Additionally, the literature occasionally references s-shaped functions, such as bell-shaped and logistic functions [@paez2012measuring; @halas2014distance; @martinez2013new; @van2001accessibility].
+
+'0
+
+However, this is only the case when matching the impedance function with the observed walking behavior,which might be different from the perceived behavior of the individual. Moreover, it should be noted that distance--decay is an aggregate concept based on travel frequency characteristics of a group of individuals according to distance. At the individual level, movements are much more complex, with significant variations among individuals (Golledge and Stimson, 1997), partly explaining the weak relationship between personal and place accessibility (Kwan, 1998).
 
 The accessibility toolbox implements the five different impedance functions from Kwan (1998):
 
-
-Inverse Power: 
+Inverse Power:
 
 $$
 f(t_{ij}) =
@@ -133,13 +121,19 @@ Negative Exponential:
 
 $$
 f(t_{ij}) = e ^{-\beta_{t_{ij}}}
-$${#eq-Negative_Exponential_impedance-function}
+$$ {#eq-Negative_Exponential_impedance-function}
 
 Modified Gaussian:
 
 $$
 f(t_{ij}) = e ^{{-t_{ij}^2}/2}
-$${#eq-Modified_Gaussian_impedance-function}
+$$ {#eq-Modified_Gaussian_impedance-function}
+
+A logarithmic normal distribution function [@wu2019measuring]:
+
+$$
+f(c_{ij})= \alpha \frac {1}{ \sqrt {2\pi}x \sigma } e ^ {-\frac {(\ln t - \mu)^2}{2\sigma ^ 2}}
+$$ where the variable "x" symbolizes the distance covered during active modes. The parameters denoted as \alpha , mu, and \sigma play a pivotal role in this analysis, as they are subject to estimation. Collectively, these parameters wield influence over the configuration of the curve under examination [@wu2019measuring].
 
 Cumulative Opportunities Rectang:
 
@@ -161,7 +155,7 @@ f(t_{ij}) =
 \end{cases}
 $$ {#eq-Cumulative_Opportunities_Linear_impedance-function}
 
-Gamma formula: 
+Gamma formula:
 
 $$
 f(c_{ij})^{***} = 
@@ -169,88 +163,1274 @@ f(c_{ij})^{***} =
 \frac{1}{\sigma^\alpha\Gamma(\alpha)} c_{ij}^{\alpha-1} \cdot e^{{-c_{ij}}/{\sigma}} & \text{for } 0 \leq c_{ij} < \infty  ; \alpha, \sigma > 0\\
  \ 0  & \text{otherwise }
  \end{cases}   
-$${#eq-gamma-imped}
+$$ {#eq-gamma-imped}
 
-The inverse power, negative exponential, and modified Gaussian functions continuously discount the weight of opportunities as travel time increases using an impedance parameter β that accounts for the cost of travel. With a
-foundation in early gravity models of spatial interaction (Stewart 1948; Zipf 1949), the inverse power function produces a rapid decline in the weight of opportunities as travel time increases. While power functions draw analogs to Newtonian physics, their theoretical relevance to human travel behavior has been questioned (Sen and Smith 1995). The negative exponential function is more gradual and based on its strong theoretical foundations in entropy
-maximization (Wilson 1971) and choice behavior theory (Fotheringham and O’Kelly 1989), this function appears to have become somewhat of a de facto standard in applied accessibility analysis. The modified Gaussian function exhibits a much more gradual rate of decline around its origin and a slower rate of decline overall. While Ingram (Ingram 1971) argues that these properties make the function superior to its inverse power and negative exponential counterparts for explaining observed travel behavior, it appears to be rarely used in the applied literature.
+log-logistic decay functions: @article{geurs2016multi, title={A multi-modal network approach to model public transport accessibility impacts of bicycle-train integration policies}, author={Geurs, Karst T and La Paix, Lissy and Van Weperen, Sander}, journal={European transport research review}, volume={8}, number={4}, pages={1--15}, year={2016}, publisher={SpringerOpen} }
 
-The cumulative rectangular function is an isochronic measure that applies a constant weight to all opportunities reachable within some travel time window whose maximum is defined by &macr;t. Although the application of a constant weight is contrary to the geographic principle of distance deterrence or decay that underpins travel behavior theory, such functions remain popular due to their ease of interpretation. Finally, the cumulative linear function is a hybrid of the continuous and cumulative approaches, linearly discounting opportunities within an isochrone.
-This set of impedance functions is by no means exhaustive. Numerous alternatives have been proposed, such as the exponential–normal, exponential–square root, and log–normal functions reviewed by Reggiani, Bucci, & Russo (Reggiani, Bucci, and Russo 2010) and the Box-Cox, Tanner, and Richards functions reviewed by Martínez & Viegas (Martínez and Viegas 2013). Although these functions could be implemented in future iterations of the tool, the present article's focus on the functions specified in Kwan (1998) introduces some of the most widely used measures of impedance in applied accessibility analysis.
+$$
+f(c_{ij}) = \frac {1}{1+ \exp(a + b\ln t_{ij})}
+$$
 
-Kwan (1998) sets four impedance parameters for each continuous function designed to produce a weight of about 0.1 at travel times of 5, 10, 15, and 20 min respectively. Figure 1 recreates a figure from Kwan (1998) to visualize
-parameter values for the five functions: the inverse power function with β = 2 (POW2_0), the negative exponential function with β = 0.15 (EXP0_15), the modified Gaussian function with β = 180 (MGAUS180), and the cumulative
-rectangular (CUMR40) and linear (CUML40) functions with &macr;t set to 40 minutes.
+In this context, the variable t\_{ij} denotes the travel time between locations i and j, while parameters a and b are the subject of estimation [@thorsen1999network].
 
+9.  The inverse power, negative exponential, and modified Gaussian functions continuously discount the weight of opportunities as travel time increases using an impedance parameter β that accounts for the cost of travel. With a foundation in early gravity models of spatial interaction (Stewart 1948; Zipf 1949), the inverse power function produces a rapid decline in the weight of opportunities as travel time increases. While power functions draw analogs to Newtonian physics, their theoretical relevance to human travel behavior has been questioned (Sen and Smith 1995). The negative exponential function is more gradual and based on its strong theoretical foundations in entropy maximization (Wilson 1971) and choice behavior theory (Fotheringham and O'Kelly 1989), this function appears to have become somewhat of a de facto standard in applied accessibility analysis. The modified Gaussian function exhibits a much more gradual rate of decline around its origin and a slower rate of decline overall. While Ingram (Ingram 1971) argues that these properties make the function superior to its inverse power and negative exponential counterparts for explaining observed travel behavior, it appears to be rarely used in the applied literature.
 
+This set of impedance functions is by no means exhaustive. Numerous alternatives have been proposed, such as the exponential--normal, exponential--square root, and log--normal functions reviewed by Reggiani, Bucci, & Russo (Reggiani, Bucci, and Russo 2010) and the Box-Cox, Tanner, and Richards functions reviewed by Martínez & Viegas (Martínez and Viegas 2013). Although these functions could be implemented in future iterations of the tool, the present article's focus on the functions specified in Kwan (1998) introduces some of the most widely used measures of impedance in applied accessibility analysis.
 
-Literature reviews on different formulations and other issues concerning accessibility are provided by Song (17), Handy and Niemeier (18), Handy and Clifton (19), and Iacono et al. (2).  Most of the literature concerns automobile travel. An exception is the research by Iacono et al. (2), which used household surveys to estimate the parameter β in Equation 3 in what they suggested is the first empirical study of its kind in the literature. They showed that the attractiveness of a destination greatly diminishes when the destination is more than a mile away. Iacono et al. calculated accessibility for the parcels of a community in Minnesota. However, their study did not incorporate bicycle suitability (i.e., the perceived comfort and safety of a linear section of bikeway), so it falls short in measuring bikeability.
+Kwan (1998) sets four impedance parameters for each continuous function designed to produce a weight of about 0.1 at travel times of 5, 10, 15, and 20 min respectively. Figure 1 recreates a figure from Kwan (1998) to visualize parameter values for the five functions: the inverse power function with β = 2 (POW2_0), the negative exponential function with β = 0.15 (EXP0_15), the modified Gaussian function with β = 180 (MGAUS180), and the cumulative rectangular (CUMR40) and linear (CUML40) functions with ¯t set to 40 minutes.
 
+Third, people's sensitivities to increases in travel distance or time vary depending on travel purposes and their personal and household characteristics. Variation in the magnitude of the parameters in the impedance function indicates such variation in sensitivity to spatial separation.
 
+mention to maghalehaye ghabli: (Sagharpour et al., 2018)
 
+EX:(Gutiérrez et al., 2011) stations. Untermann (1984) found a distance-decay relationship in which most people were willing to walk 500 ft, 40% would walk 1000 ft, but only 10% would walk a half mile. Zhao et al. (2003) conducted an onboard transit survey to determine the effect of walking distance on transit use, showing that transit use deteriorates exponentially with walking distance to transit stops. Levinson and Brown-West (1984) classified bus riders by walking distance and car ownership rates, and comparedthemto thenumber of dwelling units in each status. A series of ridership penetration curves were calculated, showing that patronage declines linearly with increasing walking distance.
 
+EX: Millward, Spinney, and Scott (2013) analysed active-transport behaviour focusing on distance, duration, purposes and destinations of trips, while other studies have focused on calculating non-motorized accessibility. For instance, Iacono et al. (2010) developed an accessibility measure for non-motorized modes, namely bicycling and walking. Mavoa, Witten, Mccreanor, and O'sullivan (2012) also introduced a combined public transit and walking accessibility index, highlighting the importance of accessibility for the potential use of non-motorized modes of transport
 
-# Materials and Methods
+**EX:**Prins et al. (2014) investigated bicycle and walking accessibility to grocery stores or markets for the elderly, estimating distance decay model parameters based on factors such as gender, age, and functional limitations [@prins2014many]. Iacono et al. (2010) calibrated the distance-decay model for five different trip purposes (work, shopping, school, restaurant, and recreation) and developed accessibility measures for both walking and cycling [@iacono2008access].
 
+# 3. Materials and Methods
 
-
-
-#Results 
-
-mitunam natayeje bedast amade baraye travel behavior dar Canada ro ba natayeje khodam moghayese konam. masalan una ta chand min ro baraye walking va cycling dar nazar gereftan va natayeje man chi ro neshun mide
-mesle introduction Yong 2012
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+**ino mitunam baraye canada dorost konam = Historical analysis**
+
+##3.1. The GSS survey
+
+To derive impedance functions tailored for non-motorized modes, it's imperative to have suitable travel survey data that encapsulates pedestrian and cycling activities. The optimal approach would involve a dedicated survey, intricately designed to predominantly capture these specific behaviors, or data garnered from Global Positioning Systems---an option that usually incurs higher costs. When these specific datasets are not available, a broader regional household travel survey can be employed, provided it encompasses trips made by non-motorized means [@iacono2010]. In this research, we utilized data from the General Social Survey (GSS) to delve into active travel behavior in Canada, which is administered by Statistics Canada. The GSS provides a comprehensive cross-sectional snapshot of the Canadian populace through telephone surveys which is established in 1985. The study area for the GSS encompasses the entirety of Canada, from the bustling urban centers of cities like Toronto, Vancouver, and Montreal to the more serene and remote locales in provinces like Newfoundland and Labrador, Nunavut, and Yukon. By casting such a wide net, the GSS ensures a diverse and comprehensive representation of the Canadian demographic and lifestyle mosaic. These surveys encompass an array of socio-demographic inquiries, combined with questions concentrating on specific core themes, such as health, time use, and aspects like social support and aging (Statistics Canada, 2015). One of the standout features of the GSS is its recurring "time use" cycle, which delves into the daily activities of Canadians. This cycle not only captures the amount of time individuals allocate to various tasks, but also the sequence, location, and concurrent activities, offering a holistic view of Canadians' daily lives. The questions within this cycle have been adapted and refined over the years to reflect the changing dynamics of daily life, ensuring that the data remains pertinent and contemporary.
+
+For the purpose of this study, six cycles of the GSS were meticulously examined, namely those from the years 1986, 1992, 1998, 2005, 2010, and 2015. A salient feature of these selected cycles is their emphasis on time use, collected in the form of detailed diaries. Of notable significance is the 1986 cycle, as it stands out as the inaugural national random sample that delved into Canadian time-use patterns. Given the research focus on travel behaviors, particularly walking and cycling behavior, data filtering was imperative. This entailed an exhaustive extraction of entries relevant to these two travel modes. Estimates from each GSS Cycle are derived from two microdata sources: the Main file and the Episode file. The Main file comprises questionnaire responses and associated data from participants, while the Episode files furnishes detailed insights into every activity episode reported by the respondents. For the purposes of this study, we employed the episode files to establish a comprehensive dataset for impedance function analysis. This dataset encompasses variables such as individual ID, start time, end time, time duration, origins and destinations of each walking and cycling trip, and weight. It should be noted that each record epitomizes a single activity in a respondent's day, ensuring that all episodes collectively span twenty-four hours (or 1440 minutes). The weight parameter signifies the number of time use episodes that a particular record in the Episode File represents.
+
+Prior to the in-depth analysis, a series of preparatory steps were indispensable to guarantee the consistency across the data sets. It was observed that different time-use surveys employed varied activity and contextual coding schemes. This called for the imperative of standardizing these schemes across the various surveys in question. Over the years, the coding categorizations for various activities have experienced shifts. To standardize the data and accurately determine the origin and destination of each trip, we aligned the activity categories from 2005, 2010, and 2015 with each other, and similarly, the classifications from 1986, 1992, and 1998 were made consistent with each other. Consequently, for the years 1986, 1992, and 1998, trip origins and destinations were defined as "home", "other's home", "work or school". In the subsequent years of 2005 and 2010, and 2015 these categories were broadened to encompass "home", "other's home", "work or school", "Restaurant, bar or club", "Place of worship", "Grocery store, other stores or mall", "outdoors", and "Library, museum or theater".It's pertinent to highlight that the 1986 dataset is exclusively focused on walking data, devoid of any cycling trip records for that particular year.
+
+The decision to tap into the time series data of the GSS is motivated by the opportunity it offers to discern and analyze evolving patterns over an extended time frame. By spanning three decades, this approach facilitates a comprehensive longitudinal assessment of walking and cycling trends in Canada. This depth of temporal coverage is instrumental in capturing the nuances and shifts in travel behaviors over time.
+
+## 3.2 Estimating impedance function parameters
+
+The foundation of our study rested upon the calculation of impedance functions for walking and cycling trips in each of the six years (1986, 1992, 1998, 2005, 2010, and 2015) under investigation. As before mentioned, the impedance function is a fundamental construct for examining travel behavior, encapsulating the factors that influence the ease or difficulty of traversing a particular route. Diving deeper into travel behavior variations, we acknowledged that behaviors are shaped by mode of travel (such as walking or cycling), the trip's purpose, and the location specifics of the trip's origin and destination [@geurs2006accessibility; @iacono2008access; @iacono2010; @larsen2010beyond; @millward2013active]. This insight underscored the challenge in generalizing a single impedance function, given that different travel modes and purposes necessitate differing functions. So, in this research, we endeavored to compute the impedance function individually for each destination and mode of transportation. To initiate this process, we employed the R programming language and leveraged the "fitdistrplus" package. Our approach was methodical, commencing with a comprehensive exploratory analysis. We generated skewness and kurtosis graphs, providing valuable visual representations of the distributional characteristics inherent in the travel time duration for walking and cycling trips in each year.
+
+The selection of an appropriate probability distribution played a pivotal role in our analysis. By closely scrutinizing the skewness and kurtosis graphs, we aimed to identify the probability distribution that most faithfully mirrored the empirical characteristics of our data. This step was crucial to ensure the subsequent calculations accurately captured the underlying travel behavior. In the quest for the optimal distribution, we systematically evaluated various probability distribution models, including but not limited to the normal, gamma, exponential, and Weibull distributions. Our choice of the most suitable distribution hinged on statistical metrics, including the Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC). These criteria facilitated a quantitative assessment of the goodness of fit for different distributional models. Additionally, we leveraged the maximum likelihood estimation (MLE) method, utilizing the Nelder-Mead optimization algorithm available within the {fitdistrplus} package [@delignette2015fitdistrplus]. This ensured precise estimation of distribution parameters, underlining the rigor of our impedance function calculation.
+
+After the comprehensive model selection and parameter estimation process, we advanced to compute the impedance function. This integral construct calculated the resistance or challenges linked with walking and cycling trips for each year and destination, factoring in the varying weights of determinants. To delineate the impedance function, travel time emerged as our pivotal measure to gauge trip impedance (cost), rooted in the understanding that walking and cycling typically have no direct monetary expenditures [@hamidi2014applying].
+
+# 4. Results and discusion
+
+In our detailed examination of active travel behavior in Canada, the General Social Survey (GSS) data emerged as an invaluable repository. It provided a comprehensive view of individual preferences and behaviors pertaining to active modes of transportation, specifically walking and cycling. By focusing on the years 1986 to 2015, we sought to capture the evolution of active travel against the backdrop of crucial urban development changes, societal shifts in attitudes towards health and environment, and modifications in transportation infrastructure and policies.
+
+```{r, include=FALSE, cache=FALSE}
+#Read main file:
+gss_e_2015 <- read.csv("D:/GSS Data/gss-e.csv")
+gss_e_2005 <- read.csv("D:/First Article/Data/Time use_2005/gss-12M0019-E-2005-c-19-e_F1.csv")
+gss_e_2010 <- read.csv("D:/First Article/Data/Time use_2010/gss-12M0018-E-2010-c-24-tus-ef_F1.csv")
+gss_e_1998 <- read.csv("D:/First Article/Data/Time use_1998/gss-12M0012-E-1998-c-12e_F1.csv")
+gss_e_1992 <- read.csv("D:/First Article/Data/Time use_1992/gss-12M0007-E-1992-c-7-ep_F1.csv")
+gss_e_1986 <- read.csv("D:/First Article/Data/Time use_1986/gss-12M0002-E-1986-c-2-ep_F1.csv")
+```
+
+```{r creating dataset for walking 2015, include=FALSE, cache=FALSE}
+
+# **walking 2015**
+# Creating data of origins and destinations of walking trip 2015
+inds = which(gss_e_2015$LOCATION == 315)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_2015 <- gss_e_2015 [unlist(rows),] %>% 
+  dplyr::select(PUMFID:LOCATION) %>% 
+  mutate(origin = lag(LOCATION, order_by = PUMFID)) %>% 
+  mutate(destination = lead(LOCATION, order_by = PUMFID)) %>% 
+  group_by(PUMFID) %>% 
+  filter(LOCATION == 315) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walk_2015 <- walk_2015 %>%  filter(destination == 300 | destination == 301 | destination == 303 | destination == 302 | destination == 305 |destination == 306 | destination == 307 |destination == 309 | destination == 310 ) %>% filter(origin == 300 | origin == 301 | origin == 303 | origin == 302 | origin == 305 | origin == 306 | origin == 307  | origin == 309 | origin == 310 ) %>% 
+  mutate(dest =
+                     case_when(destination == 300 ~ "home", 
+                               destination == 301 ~ "work or school",
+                               destination == 303 ~ "other's home",
+                               destination == 302 ~ "business",
+                               destination == 305 ~ "outdoors",
+                               destination == 306 ~ "Grocery store, other stores or mall",
+                               destination == 307 ~ "Library, museum or theatre",
+                               destination == 309 ~ "Restaurant, bar or club",
+                               destination == 310 ~ "Place of worship")) %>% 
+  mutate(orig =
+                     case_when(origin == 300 ~ "home", 
+                               origin == 301 ~ "work or school",
+                               origin == 303 ~ "other's home",
+                               origin == 302 ~ "business",
+                               origin == 305 ~ "outdoors",
+                               origin == 306 ~ "Grocery store, other stores or mall",
+                               origin == 307 ~ "Library, museum or theatre",
+                               origin == 309 ~ "Restaurant, bar or club",
+                               origin == 310 ~ "Place of worship"))
+
+walk_2015 <- walk_2015 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walk_2015$YEAR <-  2015
+walk_2015$MODE <-  "walking"
+```
+
+```{r creating dataset for cycling 2015, include=FALSE, cache=FALSE}
+
+# cycling _2015
+# Creating data of origins and destinations of cycling trip 2015
+inds = which(gss_e_2015$LOCATION == 318)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycle_2015 <- gss_e_2015[unlist(rows),] %>% 
+  dplyr::select(PUMFID:LOCATION) %>% 
+  mutate(origin = lag(LOCATION, order_by = PUMFID)) %>% 
+  mutate(destination = lead(LOCATION, order_by = PUMFID)) %>% 
+  group_by(PUMFID) %>% 
+  filter(LOCATION == 318)
+
+# change destination and origins to text column
+cycle_2015 <- cycle_2015 %>%  filter(destination == 300 | destination == 301 | destination == 303 | destination == 302 | destination == 305 |destination == 306 | destination == 307 | destination == 309 | destination == 310 ) %>% filter(origin == 300 | origin == 301 | origin == 303 | origin == 302 | origin == 305 | origin == 306 | origin == 307 | origin == 309 | origin == 310) %>% 
+  mutate(dest =
+                     case_when(destination == 300 ~ "home", 
+                               destination == 301 ~ "work or school",
+                               destination == 303 ~ "other's home",
+                               destination == 302 ~ "business",
+                               destination == 305 ~ "outdoors",
+                               destination == 306 ~ "Grocery store, other stores or mall",
+                               destination == 307 ~ "Library, museum or theatre",
+                               destination == 309 ~ "Restaurant, bar or club",
+                               destination == 310 ~ "Place of worship")) %>% 
+  mutate(orig =
+                     case_when(origin == 300 ~ "home", 
+                               origin == 301 ~ "work or school",
+                               origin == 303 ~ "other's home",
+                               origin == 302 ~ "business",
+                               origin == 305 ~ "outdoors",
+                               origin == 306 ~ "Grocery store, other stores or mall",
+                               origin == 307 ~ "Library, museum or theatre",
+                               origin == 309 ~ "Restaurant, bar or club",
+                               origin == 310 ~ "Place of worship"))
+
+cycle_2015 <- cycle_2015 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycle_2015$YEAR <-  2015
+cycle_2015$MODE <-  "cycling"
+```
+
+```{r creating dataset for walking 2010, include=FALSE, cache=FALSE}
+
+# **walking 2010**
+# Creating data of origins and destinations of walking trip 2010
+inds = which(gss_e_2010$PLACE == 14)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_2010 <- gss_e_2010 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 14) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walk_2010 <- walk_2010 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 4 | destination == 5 |destination == 6 | destination == 7 | destination == 8 | destination == 9 | destination == 10 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 4 | origin == 5 | origin == 6 | origin == 7 | origin == 8 | origin == 9 | origin == 10) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 4 ~ "Restaurant/bar",
+                               destination == 5 ~ "Place of worship",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 8 ~ "work or school",
+                               destination == 9 ~ "Outdoors away from home",
+                               destination == 10 ~ "Library" )) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 4 ~ "Restaurant/bar",
+                               origin == 5 ~ "Place of worship",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 8 ~ "work or school",
+                               origin == 9 ~ "Outdoors away from home",
+                               origin == 10 ~ "Library"))
+
+walk_2010 <- walk_2010 %>%
+  rename(PUMFID = RECID,
+         LOCATION = PLACE)
+
+walk_2010 <- walk_2010 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walk_2010$YEAR <-  2010
+walk_2010$MODE <-  "walking"
+```
+
+```{r creating dataset for cycling 2010, include=FALSE, cache=FALSE}
+
+# cycling _2010
+# Creating data of origins and destinations of cycling trip 2010
+inds = which(gss_e_2010$PLACE == 17)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycle_2010 <- gss_e_2010[unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 17)
+
+# change destination and origins to text column
+cycle_2010 <- cycle_2010 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 6 | destination == 7 | destination == 8 | destination == 9 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 6 | origin == 7 | origin == 8 | origin == 9 ) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 8 ~ "work or school",
+                               destination == 9 ~ "Outdoors away from home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 8 ~ "work or school",
+                               origin == 9 ~ "Outdoors away from home"))
+
+cycle_2010 <- cycle_2010 %>%
+  rename(PUMFID = RECID,
+         LOCATION = PLACE)
+
+cycle_2010 <- cycle_2010 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycle_2010$YEAR <-  2010
+cycle_2010$MODE <-  "cyclingtrip"
+```
+
+```{r creating dataset for walking 2005, include=FALSE, cache=FALSE}
+
+# **walking 2005**
+# Creating data of origins and destinations of walking trip 2005
+inds = which(gss_e_2005$PLACE == 14)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_2005 <- gss_e_2005 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 14) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walk_2005 <- walk_2005 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 8 | destination == 4 | destination == 5 | destination == 6 | destination == 7 | destination == 9 | destination == 10 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 8 | origin == 4 | origin == 5 | origin == 6 | origin == 7 | origin == 9 | origin == 10) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 8 ~ "work or school",
+                               destination == 4 ~ "Restaurant, bar or club",
+                               destination == 5 ~ "Place of worship",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 9 ~ "outdoors",
+                               destination == 10 ~ "Library, museum or theatre")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 8 ~ "work or school",
+                               origin == 4 ~ "Restaurant, bar or club",
+                               origin == 5 ~ "Place of worship",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 9 ~ "outdoors",
+                               origin == 10 ~ "Library, museum or theatre"))
+
+walk_2005 <- walk_2005 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    LOCATION = PLACE)
+
+walk_2005 <- walk_2005 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walk_2005$YEAR <-  2005
+walk_2005$MODE <-  "walking"
+```
+
+```{r creating dataset for cycling 2005, include=FALSE, cache=FALSE}
+
+# **CYCLING 2005**
+# Creating data of origins and destinations of cycling trip 2005
+inds = which(gss_e_2005$PLACE == 17)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycle_2005 <- gss_e_2005 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 17) %>% 
+  ungroup()
+
+# change destination and origins to text column
+cycle_2005 <- cycle_2005 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 8 | destination == 4 |  destination == 6 | destination == 7 | destination == 9 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 8 | origin == 4 | origin == 6 | origin == 7 | origin == 9 ) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 8 ~ "work or school",
+                               destination == 4 ~ "Restaurant, bar or club",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 9 ~ "outdoors")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 8 ~ "work or school",
+                               origin == 4 ~ "Restaurant, bar or club",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 9 ~ "outdoors"))
+
+cycle_2005 <- cycle_2005 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    LOCATION = PLACE) %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycle_2005$YEAR <-  2005
+cycle_2005$MODE <-  "cycling"
+```
+
+```{r creating dataset for walking 1998, include=FALSE, cache=FALSE}
+
+# **walking 1998**
+# Creating data of origins and destinations of walking trip 1998
+inds = which(gss_e_1998$PLACE == 7)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_1998 <- gss_e_1998 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 7) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walk_1998 <- walk_1998 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+walk_1998 <- walk_1998 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    WGHT_EPI = WGHTEPI,
+    LOCATION = PLACE) %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walk_1998$YEAR <-  1998
+walk_1998$MODE <-  "walking"
+```
+
+```{r creating dataset for cycling 1998, include=FALSE, cache=FALSE}
+
+# **Cycling 1998**
+# Creating data of origins and destinations of cycling trip 1998
+inds = which(gss_e_1998$PLACE == 9)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycle_1998 <- gss_e_1998 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 9) %>% 
+  ungroup()
+
+# change destination and origins to text column
+cycle_1998 <- cycle_1998 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+cycle_1998 <- cycle_1998 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    WGHT_EPI = WGHTEPI,
+    LOCATION = PLACE) %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycle_1998$YEAR <-  1998
+cycle_1998$MODE <-  "cycling"
+```
+
+```{r creating dataset for walking 1992, include=FALSE, cache=FALSE}
+# **walking 1992**
+# Creating data of origins and destinations of walking trip 1992
+inds = which(gss_e_1992$PLACE == 7)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_1992 <- gss_e_1992 [unlist(rows),] %>% 
+  dplyr::select(SEQNUM, DDAY, NOEPISO, ACTCODE, STARTIME, ENDTIME, DURATION, PLACE, TIMEWGT) %>% 
+  mutate(origin = lag(PLACE, order_by = SEQNUM)) %>% 
+  mutate(destination = lead(PLACE, order_by = SEQNUM)) %>% 
+  group_by(SEQNUM) %>% 
+  filter(PLACE == 7) %>% 
+  ungroup()
+
+# change NA's Weight to 1 
+
+
+# change destination and origins to text column
+walk_1992 <- walk_1992 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+walk_1992 <- walk_1992 %>% dplyr::rename(
+    PUMFID = SEQNUM,
+    LOCATION = PLACE, WGHT_EPI = TIMEWGT) %>%  dplyr::select(PUMFID, DDAY, STARTIME:orig) 
+walk_1992$YEAR <-  1992
+walk_1992$MODE <-  "walking"
+walk_1992$STARTMIN <-  1
+walk_1992$ENDMIN <-  1
+```
+
+```{r creating dataset for cycling 1992, include=FALSE, cache=FALSE}
+
+# **Cycling 1992**
+# Creating data of origins and destinations of cycling trip 1992
+inds = which(gss_e_1992$PLACE == 9)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycle_1992 <- gss_e_1992 [unlist(rows),] %>% 
+  dplyr::select(SEQNUM, DDAY, NOEPISO, ACTCODE, STARTIME, ENDTIME, DURATION, PLACE, TIMEWGT) %>% 
+  mutate(origin = lag(PLACE, order_by = SEQNUM)) %>% 
+  mutate(destination = lead(PLACE, order_by = SEQNUM)) %>% 
+  group_by(SEQNUM) %>% 
+  filter(PLACE == 9) %>% 
+  ungroup()
+
+# change destination and origins to text column
+cycle_1992 <- cycle_1992 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+cycle_1992 <- cycle_1992 %>% dplyr::rename(
+    PUMFID = SEQNUM,
+    LOCATION = PLACE,WGHT_EPI = TIMEWGT) %>%  dplyr::select(PUMFID, DDAY, STARTIME:orig) 
+cycle_1992$YEAR <-  1992
+cycle_1992$MODE <-  "cycling"
+cycle_1992$STARTMIN <-  1
+cycle_1992$ENDMIN <-  1
+
+```
+
+```{r creating dataset for walking 1986, include=FALSE, cache=FALSE}
+
+# **walking 1986**
+# Creating data of origins and destinations of walking trip 1986
+inds = which(gss_e_1986$PLACE == 7)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_1986 <- gss_e_1986 [unlist(rows),] %>% 
+  dplyr::select(SEQNUM, DDAY, NO_EPISO, ACT_CODE, STRTTIME, ENDTIME, DURATION, PLACE, FWGT_MS) %>% 
+  mutate(origin = lag(PLACE, order_by = SEQNUM)) %>% 
+  mutate(destination = lead(PLACE, order_by = SEQNUM)) %>% 
+  group_by(SEQNUM) %>% 
+  filter(PLACE == 7) %>% 
+  ungroup()
+summary(walk_1986$PLACE)
+
+# change destination and origins to text column
+walk_1986 <- walk_1986 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+walk_1986 <- walk_1986 %>% dplyr::rename(
+    PUMFID = SEQNUM,
+    LOCATION = PLACE, WGHT_EPI = FWGT_MS, STARTIME = STRTTIME) %>%  dplyr::select(PUMFID, DDAY, STARTIME:orig) 
+walk_1986$YEAR <-  1986
+walk_1986$MODE <-  "walking"
+walk_1986$STARTMIN <-  1
+walk_1986$ENDMIN <-  1
+```
+
+```{r, include=FALSE,  cache=FALSE}
+# creating an integrated data frame from 1992 to 2015
+trip <- rbind(walk_2015, cycle_2015, walk_2010,cycle_2010, walk_2005, cycle_2005, cycle_1998, walk_1998, walk_1992, cycle_1992, walk_1986)
+
+#change cyclingtrip in cycling_2010 to cycling 
+unique_modes <- unique(trip$MODE)
+print(unique_modes)
+trip$MODE[trip$MODE == "cyclingtrip"] <- "cycling"
+
+
+#change of the name of some values in the dest column in the dataset 
+
+trip <- trip %>%
+  mutate(dest = case_when(
+    dest == "Restaurant/bar" ~ "Restaurant, bar or club",
+    dest == "Outdoors away from home" ~ "outdoors",
+    dest == "Library" ~ "Library, museum or theatre",
+    TRUE ~ dest  # This line ensures other values remain unchanged
+  ))
+
+```
+
+```{r, echo=FALSE, cache=FALSE}
+# Calculate the count of trips for each mode and year
+trip_counts <- trip %>%
+  group_by(YEAR, MODE) %>%
+  summarise(Count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = YEAR, values_from = Count)
+
+# Process the data for the desired format
+stats_data <- trip %>%
+  group_by(YEAR, MODE) %>%
+  summarise(
+    min = min(DURATION),
+    mean = mean(DURATION),
+    max = max(DURATION),
+    .groups = "drop"
+  ) %>%
+  pivot_longer(cols = c(min, mean, max), names_to = "Statistic", values_to = "Value") %>%
+  pivot_wider(names_from = YEAR, values_from = Value)
+
+# Combining counts and stats_data
+final_data <- bind_rows(
+  trip_counts %>% mutate(Statistic = "Count"),
+  stats_data
+) %>%
+  mutate(MODE = factor(MODE, levels = c("walking", "cycling"))) %>%
+  arrange(MODE, Statistic) %>%
+  select(MODE, Statistic, everything())
+
+## Add a helper column to enforce ordering
+final_data <- final_data %>%
+  mutate(order_helper = case_when(
+    MODE == "walking" ~ 1,
+    MODE == "cycling" ~ 2,
+    TRUE ~ 3
+  )) %>%
+  arrange(order_helper, Statistic) %>%
+  select(-order_helper)
+
+```
+
+```{r  echo=FALSE, cache=FALSE, warning=FALSE}
+table_1 <- final_data %>%
+  gt() %>%
+  tab_header(
+    title = "Descriptive statistics pertaining to walking and cycling trips from 1986 to 2015"
+  ) %>%
+  fmt_number(
+    columns = c(-"MODE", -"Statistic"),
+    decimals = 1
+  ) %>%
+  data_color(
+    columns = c(-1, -2),
+    fn = scales::col_numeric(
+      palette = c("white", "lightblue"),
+      domain = NULL
+    )
+  ) %>%
+  tab_style(
+    style = cell_fill(color = "lightgray"),
+    locations = cells_body(rows = 1:4)
+  ) %>%
+  tab_style(
+    style = cell_text(align = "center"),  # Center-align content for body cells
+    locations = cells_body()
+  ) %>%
+  tab_style(
+    style = cell_text(align = "center", weight = "bold"),  # Center-align and bold content for column labels
+    locations = cells_column_labels(columns = everything())
+  ) %>%
+  # Add the row grouping for the 'MODE' column
+  tab_row_group(
+    label = "walking",
+    rows = 1:4
+  ) %>%
+  tab_row_group(
+    label = "cycling",
+    rows = 5:8
+  ) %>%
+  # Hide the MODE column
+  cols_hide(columns = c("MODE"))
+
+table_1
+
+```
+
+Our primary method was rooted in descriptive analysis. We parsed vast quantities of data to discern overarching patterns and trends. A salient feature emerging from this analysis was the duration of trips undertaken. As highlighted in Table 1, throughout the 30-year span under study, the duration of walking trips was consistently lower than that of cycling trips. To quantify this discrepancy, the mean duration for walking trips was approximately 33% of the corresponding duration for cycling trips, underscoring the inherent differences in these modes of transportation. An intriguing trend was observed between the years 1986 to 2005. During this 20-year span, there was a palpable contraction in the average duration of both walking and cycling trips. Various factors might have precipitated this trend, such as urban sprawl, increased reliance on motorized transport, or societal preferences for quicker modes of transport. However, the subsequent decade (2005-2015) witnessed a marked reversal in this trend. The average duration for both walking and cycling trips not only stabilized but began to show signs of resurgence. This could be indicative of a multitude of factors: growing urbanization leading to more accessible destinations, increased awareness and initiatives promoting health and sustainability, changes in urban planning that prioritize active modes of travel and improving required infrastructure, or a combination of these elements. This resurgence suggests a renewed and possibly growing affinity towards walking and cycling as viable modes of transportation.
+
+```{r echo=FALSE, cache=FALSE, warning=FALSE}
+
+# Filter for walking and cycling trips, selected years, and calculate statistics
+trip_stats_data <- trip %>%
+  filter(MODE %in% c("walking", "cycling"), YEAR %in% c(1986, 1992, 1998)) %>%
+  group_by(YEAR, dest, MODE) %>%
+  summarise(
+    Count = n(),
+    min = min(DURATION),
+    median = median(DURATION),
+    max = max(DURATION),
+    .groups = "drop"
+  )
+
+# Calculate percentages
+total_counts <- trip_stats_data %>% group_by(YEAR, MODE) %>% summarise(total_count = sum(Count), .groups = "drop")
+trip_stats_data <- left_join(trip_stats_data, total_counts, by = c("YEAR", "MODE"))
+trip_stats_data$Percentage <- round((trip_stats_data$Count / trip_stats_data$total_count) * 100, 1)
+
+# Pivot data for the table layout
+wide_data <- trip_stats_data %>%
+  pivot_wider(
+    id_cols = c(dest, MODE),
+    names_from = YEAR,
+    values_from = c(min, median, max, Percentage)
+  )
+
+# Arrange rows based on the decreasing percentage of year 2015
+wide_data <- wide_data %>%
+  arrange(desc(Percentage_1998))
+
+
+# Generate table with gt
+gt_output <- wide_data %>%
+  gt(rowname_col = "dest", groupname_col = "MODE") %>%
+  tab_header(
+    title = "Trip Statistics by Mode and Destination for 1986, 1992 and 1998"
+  ) %>%
+  cols_label(
+    dest = "Destination",
+    MODE = "Mode",
+    min_1986 = "Min",
+    median_1986 = "Median",
+    max_1986 = "Max",
+    Percentage_1986 = "Percentage",
+    min_1992 = "Min",
+    median_1992 = "Median",
+    max_1992 = "Max",
+    Percentage_1992 = "Percentage",
+    min_1998 = "Min",
+    median_1998 = "Median",
+    max_1998 = "Max",
+    Percentage_1998 = "Percentage"
+  ) %>%
+  tab_style(
+    style = cell_fill(color = "lightgray"),
+    locations = cells_body()
+  ) %>%
+  tab_spanner(
+    label = "1986",
+    columns = vars(min_1986, median_1986, max_1986, Percentage_1986)
+  ) %>%
+  tab_spanner(
+    label = "1992",
+    columns = vars(min_1992, median_1992, max_1992, Percentage_1992)
+  ) %>%
+  tab_spanner(
+    label = "1998",
+    columns = vars(min_1998, median_1998, max_1998, Percentage_1998)
+  ) %>%
+  tab_style(
+    style = cell_borders(side = "right", weight = px(2), color = "darkgray"),
+    locations = cells_body(columns = vars(Percentage_1986, Percentage_1992))
+  ) %>%
+  tab_style(
+    style = cell_borders(side = "right", weight = px(2), color = "darkgray"),
+    locations = cells_column_labels(columns = vars(Percentage_1986, Percentage_1992))
+  ) %>%
+  cols_align(
+    align = "center",
+    columns = everything()
+  )
+
+# Display the table
+gt_output
+
+
+```
+
+```{r echo=FALSE, cache=FALSE, warning=FALSE}
+
+# Filter for walking and cycling trips, selected years, and calculate statistics
+trip_stats_data <- trip %>%
+  filter(MODE %in% c("walking", "cycling"), YEAR %in% c(2005, 2010, 2015)) %>%
+  group_by(YEAR, dest, MODE) %>%
+  summarise(
+    Count = n(),
+    min = min(DURATION),
+    median = median(DURATION),
+    max = max(DURATION),
+    .groups = "drop"
+  )
+
+# Calculate percentages
+total_counts <- trip_stats_data %>% group_by(YEAR, MODE) %>% summarise(total_count = sum(Count), .groups = "drop")
+trip_stats_data <- left_join(trip_stats_data, total_counts, by = c("YEAR", "MODE"))
+trip_stats_data$Percentage <- round((trip_stats_data$Count / trip_stats_data$total_count) * 100, 1)
+
+# Pivot data to have years as columns and MODE as rows
+wide_data <- trip_stats_data %>%
+  pivot_wider(
+    id_cols = c(dest, MODE),
+    names_from = YEAR,
+    values_from = c(min, median, max, Percentage)
+  )
+# Arrange rows based on the decreasing percentage of year 2015
+wide_data <- wide_data %>%
+  arrange(desc(Percentage_2015))
+
+# Generate table with gt
+gt_output <- wide_data %>%
+  gt(rowname_col = "dest", groupname_col = "MODE") %>%
+  tab_header(
+    title = "Trip Statistics by Mode and Destination for 2005, 2010, and 2015"
+  ) %>%
+  cols_label(
+    dest = "Destination",
+    MODE = "Mode",
+    min_2005 = "Min",
+    median_2005 = "Median",
+    max_2005 = "Max",
+    Percentage_2005 = "Percentage",
+    min_2010 = "Min",
+    median_2010 = "Median",
+    max_2010 = "Max",
+    Percentage_2010 = "Percentage",
+    min_2015 = "Min",
+    median_2015 = "Median",
+    max_2015 = "Max",
+    Percentage_2015 = "Percentage"
+  ) %>%
+  tab_spanner(
+    label = "2005",
+    columns = vars(min_2005, median_2005, max_2005, Percentage_2005)
+  ) %>%
+  tab_spanner(
+    label = "2010",
+    columns = vars(min_2010, median_2010, max_2010, Percentage_2010)
+  ) %>%
+  tab_spanner(
+    label = "2015",
+    columns = vars(min_2015, median_2015, max_2015, Percentage_2015)
+  ) %>%
+  tab_style(
+    style = cell_fill(color = "lightgray"),
+    locations = cells_body()
+  ) %>%
+  tab_style(
+    style = cell_borders(side = "right", weight = px(2), color = "darkgray"),
+    locations = cells_body(columns = vars(Percentage_2005, Percentage_2010))
+  ) %>%
+  tab_style(
+    style = cell_borders(side = "right", weight = px(2), color = "darkgray"),
+    locations = cells_column_labels(columns = vars(Percentage_2005, Percentage_2010))
+  ) %>%
+  cols_align(
+    align = "center",
+    columns = everything()
+  )
+
+# Display the table
+gt_output
+
+```
+
+Table 2 and Table 3 provide a detailed descriptive analysis of walking and cycling trips based on varied destinations. It's evident from the data that bicycle trips consistently outlast walking trips in duration. To put this into perspective, in 2015, the average trip spanned 23.4 minutes for cycling compared to a slightly shorter 18 minutes for walking.
+
+Diving deeper into the data from 1992 to 2015, home and either work or school emerged as primary cycling destinations. This pattern is pronounced, with approximately 50% of all trips across these years being directed towards home. Subsequent to these, from 1992 to 2005, visits to "other's homes" marked a significant fraction of the trips. As we transition to 2005 and 2010, after the customary trips to the home and work or school, cyclists seemed to favor grocery stores, followed by other's homes, and then outdoor recreational spots. However, by 2015, a slight shift was noticeable. The top destinations reorient to homes, work or school, grocery outlets, other's homes, and then to eateries like restaurants and bars. It's intriguing to note that certain destinations, like outdoor locales which were popular in 2005 and 2010, dwindled in preference, capturing just about 0.9% of the trips in 2015.
+
+On the walking front, the period from 1986 to 1998 saw homes as the dominant destination. Following closely were work or school and other's homes, mirroring the patterns observed in cycling. An upward trend was spotted, with a rising number of individuals opting to walk to their work or school. Furthermore, from the period of 2005 to 2015, the walking data paints a picture of preferences leaning towards homes, followed by work or school, other's homes, grocery ventures, and leisurely visits to restaurants and bars. The evolution of these patterns provides a fascinating glimpse into the shifting mobility preferences of the population.
+
+```{r walking_2015, include=FALSE, cache=FALSE}
+
+# **walking 2015**
+# Creating data of origins and destinations of walking trip 2015
+inds = which(gss_e_2015$LOCATION == 315)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walking_2015 <- gss_e_2015 [unlist(rows),] %>% 
+  dplyr::select(PUMFID:LOCATION) %>% 
+  mutate(origin = lag(LOCATION, order_by = PUMFID)) %>% 
+  mutate(destination = lead(LOCATION, order_by = PUMFID)) %>% 
+  group_by(PUMFID) %>% 
+  filter(LOCATION == 315) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walking_2015 <- walking_2015 %>%  filter(destination == 300 | destination == 301 | destination == 303 | destination == 302 | destination == 305 |destination == 306 | destination == 307 |destination == 309 | destination == 310 ) %>% filter(origin == 300 | origin == 301 | origin == 303 | origin == 302 | origin == 305 | origin == 306 | origin == 307  | origin == 309 | origin == 310 ) %>% 
+  mutate(dest =
+                     case_when(destination == 300 ~ "home", 
+                               destination == 301 ~ "work or school",
+                               destination == 303 ~ "other's home",
+                               destination == 302 ~ "business",
+                               destination == 305 ~ "outdoors",
+                               destination == 306 ~ "Grocery store, other stores or mall",
+                               destination == 307 ~ "Library, museum or theatre",
+                               destination == 309 ~ "Restaurant, bar or club",
+                               destination == 310 ~ "Place of worship")) %>% 
+  mutate(orig =
+                     case_when(origin == 300 ~ "home", 
+                               origin == 301 ~ "work or school",
+                               origin == 303 ~ "other's home",
+                               origin == 302 ~ "business",
+                               origin == 305 ~ "outdoors",
+                               origin == 306 ~ "Grocery store, other stores or mall",
+                               origin == 307 ~ "Library, museum or theatre",
+                               origin == 309 ~ "Restaurant, bar or club",
+                               origin == 310 ~ "Place of worship"))
+
+walking_2015 <- walking_2015 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walking_2015$YEAR <-  2015
+walking_2015$MODE <-  "walking"
+```
+
+```{r cycling_2015, include=FALSE, cache=FALSE}
+
+# cycling _2015
+# Creating data of origins and destinations of cycling trip 2015
+inds = which(gss_e_2015$LOCATION == 318)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycling_2015 <- gss_e_2015[unlist(rows),] %>% 
+  dplyr::select(PUMFID:LOCATION) %>% 
+  mutate(origin = lag(LOCATION, order_by = PUMFID)) %>% 
+  mutate(destination = lead(LOCATION, order_by = PUMFID)) %>% 
+  group_by(PUMFID) %>% 
+  filter(LOCATION == 318)
+
+# change destination and origins to text column
+cycling_2015 <- cycling_2015 %>%  filter(destination == 300 | destination == 301 | destination == 303 | destination == 302 | destination == 305 |destination == 306 | destination == 307 | destination == 309 | destination == 310 ) %>% filter(origin == 300 | origin == 301 | origin == 303 | origin == 302 | origin == 305 | origin == 306 | origin == 307 | origin == 309 | origin == 310) %>% 
+  mutate(dest =
+                     case_when(destination == 300 ~ "home", 
+                               destination == 301 ~ "work or school",
+                               destination == 303 ~ "other's home",
+                               destination == 302 ~ "business",
+                               destination == 305 ~ "outdoors",
+                               destination == 306 ~ "Grocery store, other stores or mall",
+                               destination == 307 ~ "Library, museum or theatre",
+                               destination == 309 ~ "Restaurant, bar or club",
+                               destination == 310 ~ "Place of worship")) %>% 
+  mutate(orig =
+                     case_when(origin == 300 ~ "home", 
+                               origin == 301 ~ "work or school",
+                               origin == 303 ~ "other's home",
+                               origin == 302 ~ "business",
+                               origin == 305 ~ "outdoors",
+                               origin == 306 ~ "Grocery store, other stores or mall",
+                               origin == 307 ~ "Library, museum or theatre",
+                               origin == 309 ~ "Restaurant, bar or club",
+                               origin == 310 ~ "Place of worship"))
+
+cycling_2015 <- cycling_2015 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycling_2015$YEAR <-  2015
+cycling_2015$MODE <-  "cycling"
+```
+
+```{r walking_2010, include=FALSE, cache=FALSE}
+
+# **walking 2010**
+# Creating data of origins and destinations of walking trip 2010
+inds = which(gss_e_2010$PLACE == 14)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walking_2010 <- gss_e_2010 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 14) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walking_2010 <- walking_2010 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 4 | destination == 5 |destination == 6 | destination == 7 | destination == 8 | destination == 9 | destination == 10 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 4 | origin == 5 | origin == 6 | origin == 7 | origin == 8 | origin == 9 | origin == 10) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 4 ~ "Restaurant/bar",
+                               destination == 5 ~ "Place of worship",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 8 ~ "work or school",
+                               destination == 9 ~ "Outdoors away from home",
+                               destination == 10 ~ "Library" )) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 4 ~ "Restaurant/bar",
+                               origin == 5 ~ "Place of worship",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 8 ~ "work or school",
+                               origin == 9 ~ "Outdoors away from home",
+                               origin == 10 ~ "Library"))
+
+walking_2010 <- walking_2010 %>%
+  rename(PUMFID = RECID,
+         LOCATION = PLACE)
+
+walking_2010 <- walking_2010 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walking_2010$YEAR <-  2010
+walking_2010$MODE <-  "walking"
+```
+
+```{r cycling_2010, include=FALSE, cache=FALSE}
+
+# cycling _2010
+# Creating data of origins and destinations of cycling trip 2010
+inds = which(gss_e_2010$PLACE == 17)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycling_2010 <- gss_e_2010[unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 17)
+
+# change destination and origins to text column
+cycling_2010 <- cycling_2010 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 6 | destination == 7 | destination == 8 | destination == 9 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 6 | origin == 7 | origin == 8 | origin == 9 ) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 8 ~ "work or school",
+                               destination == 9 ~ "Outdoors away from home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 8 ~ "work or school",
+                               origin == 9 ~ "Outdoors away from home"))
+
+cycling_2010 <- cycling_2010 %>%
+  rename(PUMFID = RECID,
+         LOCATION = PLACE)
+
+cycling_2010 <- cycling_2010 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycling_2010$YEAR <-  2010
+cycling_2010$MODE <-  "cyclingtrip"
+```
+
+```{r walking_2005, include=FALSE, cache=FALSE}
+
+# **walking 2005**
+# Creating data of origins and destinations of walking trip 2005
+inds = which(gss_e_2005$PLACE == 14)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walking_2005 <- gss_e_2005 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 14) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walking_2005 <- walking_2005 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 8 | destination == 4 | destination == 5 | destination == 6 | destination == 7 | destination == 9 | destination == 10 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 8 | origin == 4 | origin == 5 | origin == 6 | origin == 7 | origin == 9 | origin == 10) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 8 ~ "work or school",
+                               destination == 4 ~ "Restaurant, bar or club",
+                               destination == 5 ~ "Place of worship",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 9 ~ "outdoors",
+                               destination == 10 ~ "Library, museum or theatre")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 8 ~ "work or school",
+                               origin == 4 ~ "Restaurant, bar or club",
+                               origin == 5 ~ "Place of worship",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 9 ~ "outdoors",
+                               origin == 10 ~ "Library, museum or theatre"))
+
+walking_2005 <- walking_2005 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    LOCATION = PLACE)
+
+walking_2005 <- walking_2005 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walking_2005$YEAR <-  2005
+walking_2005$MODE <-  "walking"
+```
+
+```{r cycling_2005, include=FALSE, cache=FALSE}
+
+# **CYCLING 2005**
+# Creating data of origins and destinations of cycling trip 2005
+inds = which(gss_e_2005$PLACE == 17)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycling_2005 <- gss_e_2005 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 17) %>% 
+  ungroup()
+
+# change destination and origins to text column
+cycling_2005 <- cycling_2005 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 8 | destination == 4 |  destination == 6 | destination == 7 | destination == 9 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 8 | origin == 4 | origin == 6 | origin == 7 | origin == 9 ) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 8 ~ "work or school",
+                               destination == 4 ~ "Restaurant, bar or club",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 9 ~ "outdoors")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 8 ~ "work or school",
+                               origin == 4 ~ "Restaurant, bar or club",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 9 ~ "outdoors"))
+
+cycling_2005 <- cycling_2005 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    LOCATION = PLACE) %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycling_2005$YEAR <-  2005
+cycling_2005$MODE <-  "cycling"
+```
+
+```{r  walking_1998, include=FALSE, cache=FALSE}
+
+# **walking 1998**
+# Creating data of origins and destinations of walking trip 1998
+inds = which(gss_e_1998$PLACE == 7)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walking_1998 <- gss_e_1998 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 7) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walking_1998 <- walking_1998 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+walking_1998 <- walking_1998 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    WGHT_EPI = WGHTEPI,
+    LOCATION = PLACE) %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walking_1998$YEAR <-  1998
+walking_1998$MODE <-  "walking"
+```
+
+```{r  cycling_1998, include=FALSE, cache=FALSE}
+
+# **Cycling 1998**
+# Creating data of origins and destinations of cycling trip 1998
+inds = which(gss_e_1998$PLACE == 9)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycling_1998 <- gss_e_1998 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 9) %>% 
+  ungroup()
+
+# change destination and origins to text column
+cycling_1998 <- cycling_1998 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+cycling_1998 <- cycling_1998 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    WGHT_EPI = WGHTEPI,
+    LOCATION = PLACE) %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycling_1998$YEAR <-  1998
+cycling_1998$MODE <-  "cycling"
+```
+
+```{r  walking_1992, include=FALSE, cache=FALSE}
+# **walking 1992**
+# Creating data of origins and destinations of walking trip 1992
+inds = which(gss_e_1992$PLACE == 7)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walking_1992 <- gss_e_1992 [unlist(rows),] %>% 
+  dplyr::select(SEQNUM, DDAY, NOEPISO, ACTCODE, STARTIME, ENDTIME, DURATION, PLACE, TIMEWGT) %>% 
+  mutate(origin = lag(PLACE, order_by = SEQNUM)) %>% 
+  mutate(destination = lead(PLACE, order_by = SEQNUM)) %>% 
+  group_by(SEQNUM) %>% 
+  filter(PLACE == 7) %>% 
+  ungroup()
+
+# change NA's Weight to 1 
+
+
+# change destination and origins to text column
+walking_1992 <- walking_1992 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+walking_1992 <- walking_1992 %>% dplyr::rename(
+    PUMFID = SEQNUM,
+    LOCATION = PLACE, WGHT_EPI = TIMEWGT) %>%  dplyr::select(PUMFID, DDAY, STARTIME:orig) 
+walking_1992$YEAR <-  1992
+walking_1992$MODE <-  "walking"
+walking_1992$STARTMIN <-  1
+walking_1992$ENDMIN <-  1
+```
+
+```{r  cycling_1992, include=FALSE, cache=FALSE}
+
+# **Cycling 1992**
+# Creating data of origins and destinations of cycling trip 1992
+inds = which(gss_e_1992$PLACE == 9)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycling_1992 <- gss_e_1992 [unlist(rows),] %>% 
+  dplyr::select(SEQNUM, DDAY, NOEPISO, ACTCODE, STARTIME, ENDTIME, DURATION, PLACE, TIMEWGT) %>% 
+  mutate(origin = lag(PLACE, order_by = SEQNUM)) %>% 
+  mutate(destination = lead(PLACE, order_by = SEQNUM)) %>% 
+  group_by(SEQNUM) %>% 
+  filter(PLACE == 9) %>% 
+  ungroup()
+
+# change destination and origins to text column
+cycling_1992 <- cycling_1992 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+cycling_1992 <- cycling_1992 %>% dplyr::rename(
+    PUMFID = SEQNUM,
+    LOCATION = PLACE,WGHT_EPI = TIMEWGT) %>%  dplyr::select(PUMFID, DDAY, STARTIME:orig) 
+cycling_1992$YEAR <-  1992
+cycling_1992$MODE <-  "cycling"
+cycling_1992$STARTMIN <-  1
+cycling_1992$ENDMIN <-  1
+
+```
+
+```{r  walking_1986, include=FALSE, cache=FALSE}
+
+# **walking 1986**
+# Creating data of origins and destinations of walking trip 1986
+inds = which(gss_e_1986$PLACE == 7)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walking_1986 <- gss_e_1986 [unlist(rows),] %>% 
+  dplyr::select(SEQNUM, DDAY, NO_EPISO, ACT_CODE, STRTTIME, ENDTIME, DURATION, PLACE, FWGT_MS) %>% 
+  mutate(origin = lag(PLACE, order_by = SEQNUM)) %>% 
+  mutate(destination = lead(PLACE, order_by = SEQNUM)) %>% 
+  group_by(SEQNUM) %>% 
+  filter(PLACE == 7) %>% 
+  ungroup()
+summary(walking_1986$PLACE)
+
+# change destination and origins to text column
+walking_1986 <- walking_1986 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+walking_1986 <- walking_1986 %>% dplyr::rename(
+    PUMFID = SEQNUM,
+    LOCATION = PLACE, WGHT_EPI = FWGT_MS, STARTIME = STRTTIME) %>%  dplyr::select(PUMFID, DDAY, STARTIME:orig) 
+walking_1986$YEAR <-  1986
+walking_1986$MODE <-  "walking"
+walking_1986$STARTMIN <-  1
+walking_1986$ENDMIN <-  1
+```
+
+![Fig.1 Percentage of walking Trips Categorized by Origin and Destination](images/walking_heatmap_1.jpg)
+
+As illustrated in Figure 1, a comprehensive breakdown of pedestrian travel patterns for the year 2015 reveals nuanced trends in travel behaviors. The majority of pedestrian trips---amounting to a significant portion of the total---were initiated from residential areas, leading to either workplaces or educational institutions. This underscores the reliance on walking as a primary mode for commuting, suggesting an eco-friendly and health-conscious shift in transportation dynamics during this year. Subsequent to this, the next most frequent pedestrian trip was between home to other's homes, underscoring the significance of interpersonal visits. Additionally, a significant number of pedestrian trips originated from shopping centers and culminated at homes. This suggests that many individuals chose walking as their preferred mode for daily errands, possibly due to the closeness of retail establishments to residential areas or a prevailing preference for walking over driving, especially for shorter distances. The 2010 data paints a slightly different picture. The year saw an uptick in trips from home to home, potentially signaling a surge in neighborhood interactions or a preference for social visits over other activities. it can be caused and enjoyed for many purposes by students, retirees, and other non-workforce individuals. This was closely followed by trips to grocery stores and from homes to workplaces or schools, emphasizing the balance between social, commercial, and work-related activities. In the data presented for 2005, as depicted in the corresponding figures, a notable trend emerges. Trips that began at home and terminated at either educational institutions or workplaces constituted the majority of the pedestrian trips for that year, followed by trips from home to another home, from school or workplace to home, and from the supermarket to home. The return trips, which encompassed commutes from schools or workplaces back to residences, also held a considerable proportion. Another insightful observation was the frequency of pedestrian journeys that started at supermarkets and culminated at homes, suggesting a possible inclination toward walking for routine shopping errands, or perhaps hinting at the spatial proximity of retail zones to residential areas. Furthermore, from 1986 to 1998, most trips from home to other's home had the highest percentage. Interestingly, there was a noticeable uptick in individuals choosing to walk to their work or school, suggesting a broader societal shift towards sustainable travel. Fast forward to 2005-2015, the data highlights homes as the primary destination for walkers, followed closely by work or school, other's homes, grocery shopping, and then visits to restaurants and bars. It's also worth noting that certain destinations, such as cultural centers or local community hubs, though not making the top list. In addition, throughout these analyzed years, one common thread is evident: the significance of pedestrian journeys between homes. These aren't merely routine trips; they include diverse activities such as leisurely strolls, walks with pets, and nature observations, underlining the multi-faceted nature of pedestrian movements.
+
+![Fig 2. Percentage of cycling Trips Categorized by Origin and Destination](images/cycling_heatmap_1.jpg)
+
+In the landscape of active travel behavior, bicycle trips offer a unique lens through which urban mobility, lifestyle choices, and environmental consciousness intersect. Analyzing the trends, as depicted in our dataset from 1992 to 2015, provides revealing insights into the nuances of bicycle-based transit within Canadian urban settings (Fig 2). For the year 2015, it is manifestly evident that commutes between homes and foundational institutions -- notably schools and workplaces -- dominate the spectrum of bicycle trips. Such patterns resonate with the broader global shift towards promoting bicycling as an efficient, eco-friendly, and health-conscious mode of transportation. Within the Canadian context, this could be attributed to several factors. For instance, cities like Vancouver, Toronto, and Montreal have been at the forefront of introducing and expanding dedicated bicycle lanes, bolstering safety, and ensuring smoother commutes for cyclists. Coupled with the increasing costs of motorized transport and concerns about traffic congestion, the tilt towards bicycling for routine commutes to workplaces or educational institutions seems both practical and preferred. However, while the data from 1992 to 2015 shows consistent trends in bicycling to certain destinations, it's intriguing to observe the relatively infrequent use of bicycles to travel to places like restaurants, bars, libraries, and other cultural or recreational hubs. This could be a reflection of the spatial layouts of cities, where such destinations might be further away from residential areas or might not be as accessible to cyclists due to infrastructure limitations. Alternatively, it could highlight cultural or societal preferences, where dining out or visiting entertainment venues might be associated with non-bicycling modes of transport due to convenience, weather considerations, or even dress codes.
+
+![Fig 3. Modeling distance decay curves of walking for various destinations](images/impedance_walking-01.jpg)
+
+
+The distance decay curves for walking and cycling to different destinations and for different years from 1986 to 2015 were analyzed. The analysis revealed that the shape of the distance decay curves varied depending on the destination and the mode(Fig.3. and Fig.4.). The destinations for which these functions were estimated vary across different years, modes of transportation (walking and cycling), and the available data. For instance, in 2005, 2010, and 2015, the walking destinations encompassed a wide range, including home, work or school, other people's homes, grocery stores, other retail stores or malls, outdoor spaces, restaurants, bars or clubs, libraries, museums, theaters, and places of worship. In contrast, the destinations for 1986, 1992, and 1998 were limited to just three categories: home, other people's homes, and work or school.
+
+Between 1986 and 1998, the highest frequency of walking trips occurred within the 5-10 minute range. Subsequently, from 1998 to 2010, the peak shifted to the 0-5 minute range, only to return to the 5-10 minute range during the period from 2010 to 2015. Based on the findings presented in Figure 3, it is evident that in 2015, the majority of walking trips had a duration of less than 50 minutes. The graphical representations of walking trip patterns exhibit similar trends for destinations such as home, work or school, other people's homes, and grocery stores. However, when it comes to recreational destinations like outdoor locations, restaurants, bars or clubs, places of worship, and libraries, individuals tend to walk for a shorter duration, typically around 40 minutes. This observation underscores the discretionary nature of entertainment-related trips, which often do not adhere to strict time constraints within an individual's daily activity schedule. In 2010, individuals exhibited a willingness to engage in walking trips of less than 40 minutes duration, regardless of their intended purposes. However, this trend experienced a decline in 2005, with the average walking trip duration decreasing to approximately less than 30 minutes for all purposes. Furthermore, between 1986 and 1998, there was a notable decrease in people's willingness to engage in walking trips to reach destinations such as their own homes, others' homes, work, and school. Specifically, the average walking duration decreased from 70 minutes in 1986 to 40 minutes in 1998.
+
+![Fig 4. Modeling distance decay curves of cycling for various destinations](images/impedance_cycling.jpg)
+
+Apart from walking trips, cycling trips have shown variations in their choice of destinations between 1992 and 2015. However, due to the limited availability of data for cycling trips across different years, it was not feasible to calculate the impedance function for various destination categories. Consequently, we derived the impedance function for specific destinations, namely home, other people's homes, work or school, grocery stores, restaurants or bars, and outdoor locations, for the years 2005, 2010, and 2015. For the years 1992 and 1998, the impedance function was specifically computed for destinations such as home, other people's homes, and work or school. It's essential to highlight that data regarding cycling trips for the year 1986 was not accessible for analysis.
+
+In 1992, individuals exhibited a notable willingness to engage in cycling trips for an approximate duration of 90 minutes when traveling to their residences. This indicates that during that period, people were more inclined to use cycling for longer commutes to their homes. In contrast, for destinations such as others' homes and work or school, this time was notably shorter, approximately 45 minutes. This could suggest that cycling was favored for shorter-distance trips to these destinations, possibly due to convenience or the availability of cycling infrastructure. By 1998, the inclination to cycle for all purposes reduced to around 70 minutes. This suggests a shift in preferences towards slightly shorter cycling trips. During this time, the willingness to cycle to reach various destinations appeared to converge, possibly indicating a more balanced use of cycling for different trip types.
+
+Furthermore, in 2005, individuals tended to cyc; le for approximately 70 minutes to reach their homes and work or school, while the duration for other destinations like grocery shopping, restaurants and bars, outdoor activities, and others was roughly 40 minutes. This might imply that, in 2005, cycling was primarily preferred for commuting to homes and workplaces or schools. The shorter durations for other destinations may be attributed to the availability of alternative modes of transportation or the proximity of these destinations. However, the willingness to cycle to reach homes and work or school decreased to 60 and 50 minutes in 2010, respectively. This reduction in cycling time may indicate a shift towards shorter commutes or a preference for alternative transportation methods during this period. Meanwhile, this duration increased to 80 minutes for cycling trips to reach homes and grocery shopping, possibly indicating an emphasis on active transportation for these essential activities. Conversely, the time required to reach work and school decreased to 60 minutes, possibly reflecting changes in commuting patterns.
+
+Our findings are consistent with previous studies that have shown that walking trips tend to be shorter in duration than cycling or driving trips. For example, Iacono et al. (2010) found that walking trips were typically shorter than cycling trips, and Vale et al. (2017) found that walking trips were more likely to be for utilitarian purposes than for leisure. Yang et al. (2012) found that the distance decay effect was more pronounced for walking trips than for cycling trips, and Wu et al. (2019) found that the impedance function for walking trips was affected by factors such as land use, street connectivity, and pedestrian infrastructure. Millward et al. (2013) found that the duration of walking trips varied depending on the destination, with shorter trips being more common for utilitarian purposes[@iacono2008access; @iacono2010; @millward2013active; @wu2019measuring; @yang2012walking].
+
+# 5. Conclusion
+
+This study presents a comprehensive exploration of active travel behavior trends in Canada spanning three decades, from 1986 to 2015. The analysis is underpinned by data from the General Social Survey (GSS), affording a unique window into individual preferences and behaviors regarding walking and cycling. These insights hold particular significance as they encapsulate a transformative period in Canada, marked by substantial urban development, evolving societal attitudes towards health and the environment, and shifts in transportation infrastructure and policies.
+
+A prominent finding of this research underscores the consistent disparity in trip durations between walking and cycling, with walking trips consistently shorter, accounting for approximately one-third of the time spent on cycling trips. However, this disparity experienced a notable contraction from 1986 to 2005, suggesting multifaceted dynamics influenced by factors such as urban sprawl, increasing reliance on motorized transport, or evolving preferences. The subsequent decade, from 2005 to 2015, witnessed a resurgence in both walking and cycling trip durations, potentially attributed to increased urbanization, heightened awareness of health and sustainability, evolving urban planning emphasizing active transportation, or a combination of these factors.
+
+Detailed analyses of specific destinations unveiled intriguing patterns. In 2015, cycling trips predominantly gravitated towards homes, schools, and workplaces, reflecting the rise of cycling as an eco-conscious and efficient commuting mode. Conversely, walking trips in 2015 frequently initiated from residential areas, leading to workplaces and educational institutions, indicative of a shift towards walking for eco-friendly and health-conscious commuting. This trend was accompanied by substantial pedestrian journeys from shopping centers to homes, signifying a preference for walking in daily errands, possibly due to retail proximity to residential zones.
+
+The distance decay curves illuminated nuanced travel behavior trends. Varied impedance functions derived for different years, transportation modes, and available data showcased dynamic preferences. For instance, walking destinations in 2005, 2010, and 2015 encompassed a wide range, including homes, workplaces, grocery stores, retail outlets, outdoor spaces, restaurants, bars, libraries, museums, theaters, and places of worship. In contrast, destinations for 1986, 1992, and 1998 were limited to just three categories: home, other people's homes, and work or school.
+
+While this study offers valuable insights into active travel behavior in Canada, it is crucial to acknowledge its limitations. The utilization of the GSS dataset, while valuable, comes with inherent constraints, particularly regarding the range of destinations that can be adequately explored within this dataset. Given that walking and cycling are often underrepresented in surveys, further segmenting the data to investigate specific destinations may yield relatively small sample sizes, potentially affecting the robustness of our findings.
+
+To address these limitations, future research in the realm of active travel should focus on enhancing data collection methods. Special attention should be given to capturing user and trip characteristics, as well as preferences for facility design, to improve the precision of accessibility models. Additionally, exploring alternative data sources or incorporating complementary methodologies may provide a more comprehensive understanding of active travel behavior.
+
+In conclusion, our study paints a vivid picture of how Canadian active travel behaviors have evolved over the years. The resurgence of walking and cycling as prominent modes of transportation in the latter part of our study period suggests a growing inclination towards sustainable and healthy mobility options. These findings offer valuable insights for urban planners, policymakers, and researchers working towards creating more sustainable and active transportation systems in Canada and beyond. Future investigations could delve deeper into the underlying factors driving these travel behavior trends and explore potential interventions to further promote active travel.
 
 
 # References
-
