@@ -1,0 +1,1453 @@
+---
+title: "Calculating Walking and cycling trips impedance function- 2015 "
+output: html_notebook
+---
+
+# Active-transport walking and cycling behaviour in Canada
+
+## Introduction
+
+## Data and Method
+
+Data on walking and cycling trips to different destinations was derived from Canada's General Social Survey (GSS) from 1986 to 2015. GSS is a social trends survey in order to monitor changes in the living conditions and well-being of Canadians and to provide information on specific social policy issues. one of the important information of GSS is about Time-use surveys. This survey collects information on all human activities and can therefore inform a broad range of policies. Statistics Canada has been conducting time-use surveys since 1986 at approximately five- to seven- year intervals, most recently in 2015.The GSS on time use employs a retrospective 24-hour time diary to collect information on respondents' participation in, and time spent on, a wide variety of day-to-day activities. In addition, information is collected on the location where these activities occurred (e.g., at home, at work, etc.).in addition, This dataset contains travel time data of Many of the Census Metropolitan Areas (CMAs) and non-CMA areas all over Canada. CMAs are including St. John's, Halifax, Saint John, Montreal, Quebec City, Toronto, Ottawa, Hamilton, Winnipeg, Regina, Saskatoon, Calgary, Edmonton, and Vancouver. and the non-CMA areas of each of the ten provinces were also grouped to form ten more strata.
+
+walking and cycling data are categorized based on the three different destinations such as home, school and work, and others' homes. every episode includes, the start and end time of each event, duration, weight, and concurrent contextual information, such as the location of the activities (e.g., home, work, schools,...).
+
+complete method
+
+# Result
+
+First load all of the libraries
+
+```{r load-packages, include=FALSE, cache=FALSE}
+#load all packages:
+library(fitdistrplus)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(readxl) 
+library(splitstackshape)
+library(tibble)
+library(readr)
+library(tabulate)
+library(janitor)
+library(kableExtra)
+library(flextable)
+```
+
+Here, we are loading all the primary files of the GSS dataset to create our database for analysis.
+
+```{r, include=FALSE, cache=FALSE}
+#Read main file:
+gss_e_2015 <- read.csv("D:/GSS Data/gss-e.csv")
+#gss_e_2005 <- read.csv("D:/First Article/Data/Time use_2005/gss-12M0019-E-2005-c-19-e_F1.csv")
+#gss_e_2010 <- read.csv("D:/First Article/Data/Time use_2010/gss-12M0018-E-2010-c-24-tus-ef_F1.csv")
+#gss_e_1998 <- read.csv("D:/First Article/Data/Time use_1998/gss-12M0012-E-1998-c-12e_F1.csv")
+#gss_e_1992 <- read.csv("D:/First Article/Data/Time use_1992/gss-12M0007-E-1992-c-7-ep_F1.csv")
+#gss_e_1986 <- read.csv("D:/First Article/Data/Time use_1986/gss-12M0002-E-1986-c-2-ep_F1.csv")
+```
+
+First, we create a dataset about walking and cycling trips in 2015. Then, we add two extra columns to this data. These columns show where people started their walks and where they ended them (origin and destination). Here's how we do it:
+
+
+```{r creating dataset for walking 2015, include=FALSE, cache=FALSE}
+
+# **walking 2015**
+# Creating data of origins and destinations of walking trip 2015
+inds = which(gss_e_2015$LOCATION == 315)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walking_2015 <- gss_e_2015 [unlist(rows),] %>% 
+  dplyr::select(PUMFID:LOCATION) %>% 
+  mutate(origin = lag(LOCATION, order_by = PUMFID)) %>% 
+  mutate(destination = lead(LOCATION, order_by = PUMFID)) %>% 
+  group_by(PUMFID) %>% 
+  filter(LOCATION == 315) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walking_2015 <- walking_2015 %>%  filter(destination == 300 | destination == 301 | destination == 303 | destination == 302 | destination == 305 |destination == 306 | destination == 307 |destination == 309 | destination == 310 ) %>% filter(origin == 300 | origin == 301 | origin == 303 | origin == 302 | origin == 305 | origin == 306 | origin == 307  | origin == 309 | origin == 310 ) %>% 
+  mutate(dest =
+                     case_when(destination == 300 ~ "home", 
+                               destination == 301 ~ "work or school",
+                               destination == 303 ~ "other's home",
+                               destination == 302 ~ "business",
+                               destination == 305 ~ "outdoors",
+                               destination == 306 ~ "Grocery store, other stores or mall",
+                               destination == 307 ~ "Library, museum or theatre",
+                               destination == 309 ~ "Restaurant, bar or club",
+                               destination == 310 ~ "Place of worship")) %>% 
+  mutate(orig =
+                     case_when(origin == 300 ~ "home", 
+                               origin == 301 ~ "work or school",
+                               origin == 303 ~ "other's home",
+                               origin == 302 ~ "business",
+                               origin == 305 ~ "outdoors",
+                               origin == 306 ~ "Grocery store, other stores or mall",
+                               origin == 307 ~ "Library, museum or theatre",
+                               origin == 309 ~ "Restaurant, bar or club",
+                               origin == 310 ~ "Place of worship"))
+
+walking_2015 <- walking_2015 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walking_2015$YEAR <-  2015
+walking_2015$MODE <-  "walking"
+```
+
+
+```{r creating dataset for cycling 2015, include=FALSE, cache=FALSE}
+
+# cycling _2015
+# Creating data of origins and destinations of cycling trip 2015
+inds = which(gss_e_2015$LOCATION == 318)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycling_2015 <- gss_e_2015[unlist(rows),] %>% 
+  dplyr::select(PUMFID:LOCATION) %>% 
+  mutate(origin = lag(LOCATION, order_by = PUMFID)) %>% 
+  mutate(destination = lead(LOCATION, order_by = PUMFID)) %>% 
+  group_by(PUMFID) %>% 
+  filter(LOCATION == 318)
+
+# change destination and origins to text column
+cycling_2015 <- cycling_2015 %>%  filter(destination == 300 | destination == 301 | destination == 303 | destination == 302 | destination == 305 |destination == 306 | destination == 307 | destination == 309 | destination == 310 ) %>% filter(origin == 300 | origin == 301 | origin == 303 | origin == 302 | origin == 305 | origin == 306 | origin == 307 | origin == 309 | origin == 310) %>% 
+  mutate(dest =
+                     case_when(destination == 300 ~ "home", 
+                               destination == 301 ~ "work or school",
+                               destination == 303 ~ "other's home",
+                               destination == 302 ~ "business",
+                               destination == 305 ~ "outdoors",
+                               destination == 306 ~ "Grocery store, other stores or mall",
+                               destination == 307 ~ "Library, museum or theatre",
+                               destination == 309 ~ "Restaurant, bar or club",
+                               destination == 310 ~ "Place of worship")) %>% 
+  mutate(orig =
+                     case_when(origin == 300 ~ "home", 
+                               origin == 301 ~ "work or school",
+                               origin == 303 ~ "other's home",
+                               origin == 302 ~ "business",
+                               origin == 305 ~ "outdoors",
+                               origin == 306 ~ "Grocery store, other stores or mall",
+                               origin == 307 ~ "Library, museum or theatre",
+                               origin == 309 ~ "Restaurant, bar or club",
+                               origin == 310 ~ "Place of worship"))
+
+cycling_2015 <- cycling_2015 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycling_2015$YEAR <-  2015
+cycling_2015$MODE <-  "cycling"
+```
+
+
+
+### Calculating impedance function for walking in 2015
+
+using a skew vs. kurtois graph to descriptive statistics of data
+
+
+```{r}
+
+count <- sum(walking_2015$DURATION > 100)
+print (count)
+
+walking_2015 <- walking_2015 %>% filter(DURATION <= 100)
+summary(walking_2015$DURATION)
+```
+
+
+```{r creating Cullen and Frey graph for walkig 2015}
+# creating a skew vs. kurtois graph for walking 2015
+
+descdist(walking_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+gamma_w_2015_ <- fitdistrplus::fitdist(data=walking_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(walking_2015$WGHT_EPI))
+
+fit_dgamma <- data.frame(f = dgamma(walking_2015$DURATION, shape = gamma_w_2015_$estimate[1], rate = gamma_w_2015_$estimate[2]), x = walking_2015$DURATION, type = "Gamma")
+
+summary(gamma_w_2015_)
+
+plot(x= fit_dgamma$x, y=fit_dgamma$f)
+
+
+#Calculating exponential distribution
+exp_w_2015_ <- fitdistrplus::fitdist(data=walking_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(walking_2015$WGHT_EPI))
+
+summary(exp_w_2015_)
+
+fit_dexp <- data.frame(f = dexp(walking_2015$DURATION,  exp_w_2015_$estimate[1]), 
+                       x = walking_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp$x, y = fit_dexp$f)
+
+#plot <- ggplot(walking_2015, aes(x = DURATION, y =f)) +
+  #geom_line(aes(group = 1)) +  # Ensure there's a group aesthetic for line plots
+  #labs(title = "Line Chart", x = "X Axis Label", y = "Y Axis Label") +
+  #theme_minimal()
+
+#print(plot)
+```
+
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(walking_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(walking_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for walking trips in 2015!
+
+```{r}
+walking_2015_gamma <- gamma_w_2015_
+walking_2015 <- walking_2015 %>%
+ mutate(f = dgamma(DURATION, walking_2015_gamma$estimate["shape"], walking_2015_gamma$estimate["rate"])) 
+summary(walking_2015$f)
+
+```
+
+
+
+### Calculating impedance function for walking in 2015 based on different purposes
+
+###Destination : Walking - Home (300),2015
+
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for walkig 2015- Home 300}
+# creating a skew vs. kurtois graph for walking 2015
+
+# Filter the data based on the "destination" column
+ w_300_2015 <- walking_2015 %>%
+  filter(destination == "300")   
+descdist(w_300_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, weibull and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+gamma_w300_2015_ <- fitdistrplus::fitdist(data=w_300_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(w_300_2015$WGHT_EPI))
+
+fit_dgamma_w30015 <- data.frame(f_300 = dgamma(w_300_2015$DURATION, shape = gamma_w300_2015_$estimate[1], rate = gamma_w300_2015_$estimate[2]), x = w_300_2015$DURATION, type = "Gamma")
+
+summary(gamma_w300_2015_)
+
+plot(x= fit_dgamma_w30015$x, y=fit_dgamma_w30015$f)
+
+#Calculating weibull distribution
+weibull_w300_2015_ <- fitdistrplus::fitdist(data=w_300_2015$DURATION%>% unlist() %>% as.numeric(), "weibull", method="mle", optim.method="Nelder-Mead", weights = round(w_300_2015$WGHT_EPI))
+
+summary(weibull_w300_2015_)
+
+fit_dweibull_w30015 <- data.frame(f = dweibull(w_300_2015$DURATION, shape = weibull_w300_2015_$estimate[1], scale = weibull_w300_2015_$estimate[2]), x = w_300_2015$DURATION, type = "weibull")
+
+plot(x= fit_dweibull_w30015$x, y=fit_dweibull_w30015$f)
+
+#Calculating exponential distribution
+exp_w300_2015_ <- fitdistrplus::fitdist(data=w_300_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(w_300_2015$WGHT_EPI))
+
+summary(exp_w300_2015_)
+
+# Get the estimated rate parameter from the fitted distribution
+rate_estimate <- exp_w300_2015_$estimate[1]
+
+# Create a data frame for the fitted exponential distribution
+fit_dexp_w30015 <- data.frame(f = dexp(w_300_2015$DURATION, rate = rate_estimate), 
+                       x = w_300_2015$DURATION, type = "exp")
+
+# Plot the fitted exponential distribution
+plot(x = fit_dexp_w30015$x, y = fit_dexp_w30015$f)
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(w_300_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(w_300_2015$DURATION%>% unlist() %>% as.numeric(),"weibull"))
+broom::glance(MASS::fitdistr(w_300_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for walking trips in 2015!
+
+```{r}
+walking_30015_gamma <- gamma_w300_2015_
+w_300_2015 <- w_300_2015 %>%
+ mutate(f_300 = dgamma(DURATION, walking_30015_gamma$estimate["shape"], walking_30015_gamma$estimate["rate"])) 
+summary(w_300_2015$f_300)
+```
+
+###Destination : Walking - work or school (301), 2015
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for walkig 2015 - work or school 301}
+# creating a skew vs. kurtois graph for walking 2015
+
+# Filter the data based on the "destination" column
+ w_301_2015 <- walking_2015 %>%
+  filter(destination == "301")   
+descdist(w_301_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, weibull, lognormal and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+
+gamma_w301_2015_ <- fitdistrplus::fitdist(data=w_301_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(w_301_2015$WGHT_EPI))
+
+fit_dgamma_30115 <- data.frame(f = dgamma(w_301_2015$DURATION, shape = gamma_w301_2015_$estimate[1], rate = gamma_w301_2015_$estimate[2]), x = w_301_2015$DURATION, type = "Gamma")
+
+summary(gamma_w301_2015_)
+
+plot(x= fit_dgamma_30115$x, y=fit_dgamma_30115$f)
+
+#Calculating weibull distribution
+weibull_w301_2015_ <- fitdistrplus::fitdist(data=w_301_2015$DURATION%>% unlist() %>% as.numeric(), "weibull", method="mle", optim.method="Nelder-Mead", weights = round(w_301_2015$WGHT_EPI))
+
+summary(weibull_w301_2015_)
+
+fit_dweibull_30115 <- data.frame(f = dweibull(w_301_2015$DURATION, shape = weibull_w301_2015_$estimate[1], scale = weibull_w301_2015_$estimate[2]), x = w_301_2015$DURATION, type = "weibull")
+
+plot(x= fit_dweibull_30115$x, y=fit_dweibull_30115$f)
+
+#Calculating exponential distribution
+exp_w301_2015_ <- fitdistrplus::fitdist(data=w_301_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(w_301_2015$WGHT_EPI))
+
+summary(exp_w301_2015_)
+
+# Get the estimated rate parameter from the fitted distribution
+rate_estimate <- exp_w301_2015_$estimate[1]
+
+# Create a data frame for the fitted exponential distribution
+fit_dexp_30115 <- data.frame(f = dexp(w_301_2015$DURATION, rate = rate_estimate), 
+                       x = w_301_2015$DURATION, type = "exp")
+
+# Plot the fitted exponential distribution
+plot(x = fit_dexp_30115$x, y = fit_dexp_30115$f)
+
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(w_301_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(w_301_2015$DURATION%>% unlist() %>% as.numeric(),"weibull"))
+broom::glance(MASS::fitdistr(w_301_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for walking trips in 2015!(301)
+
+```{r}
+walking_30115_gamma <- gamma_w301_2015_
+w_301_2015 <- w_301_2015 %>%
+ mutate(f_301 = dgamma(DURATION, walking_30115_gamma$estimate["shape"], walking_30115_gamma$estimate["rate"])) 
+summary(w_301_2015$f_301)
+```
+
+
+###Destination : Business (302)
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for walkig 2015_ Business destination}
+# creating a skew vs. kurtois graph for walking 2015 _ Business destination
+
+# Filter the data based on the "destination" column
+ w_302_2015 <- walking_2015 %>%
+  filter(destination == "302")   
+summary(w_302_2015)
+
+descdist(w_302_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=100)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, poisson and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating pois distribution 
+pois_w302_2015_ <- fitdistrplus::fitdist(data=w_302_2015$DURATION%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead", weights = round(w_302_2015$WGHT_EPI))
+
+fit_dpois_30215 <- data.frame(f = dpois(w_302_2015$DURATION, lambda = pois_w302_2015_$estimate[1]), x = w_302_2015$DURATION, type = "pois")
+
+summary(pois_w302_2015_)
+
+plot(x= fit_dpois_30215$x, y=fit_dpois_30215$f)
+
+
+#Calculating gamma distribution 
+gamma_w302_2015_ <- fitdistrplus::fitdist(data=w_302_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(w_302_2015$WGHT_EPI))
+
+fit_dgamma_30215 <- data.frame(f = dgamma(w_302_2015$DURATION, shape = gamma_w302_2015_$estimate[1], rate = gamma_w302_2015_$estimate[2]), x = w_302_2015$DURATION, type = "gamma")
+
+summary(gamma_w302_2015_)
+
+plot(x= fit_dgamma_30215$x, y=fit_dgamma_30215$f)
+
+
+#Calculating exponential distribution
+exp_w302_2015_ <- fitdistrplus::fitdist(data=w_302_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(w_302_2015$WGHT_EPI))
+
+summary(exp_w302_2015_)
+
+rate_estimate <- exp_w302_2015_$estimate[1]
+
+fit_dexp_30215 <- data.frame(f = dexp(w_302_2015$DURATION, rate = rate_estimate), x = w_302_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp_30215$x, y = fit_dexp_30215$f)
+
+
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(w_302_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+broom::glance(MASS::fitdistr(w_302_2015$DURATION%>% unlist() %>% as.numeric(),"poisson"))
+broom::glance(MASS::fitdistr(w_302_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for walking trips in 2015!(302)
+
+```{r}
+walking_30215_exp <- exp_w302_2015_
+w_302_2015 <- w_302_2015 %>%
+ mutate(f_302 = dexp(DURATION, walking_30215_exp$estimate["rate"])) 
+summary(w_302_2015$f_302)
+```
+
+###Destination : At someone else's home or property (303)
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for walkig 2015 - other home or property (303) }
+# creating a skew vs. kurtois graph for walking 2015
+
+# Filter the data based on the "destination" column
+ w_303_2015 <- walking_2015 %>%
+  filter(destination == "303")   
+descdist(w_303_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, weibull and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+
+gamma_w303_2015_ <- fitdistrplus::fitdist(data=w_303_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(w_303_2015$WGHT_EPI))
+
+fit_dgamma_30315 <- data.frame(f = dgamma(w_303_2015$DURATION, shape = gamma_w303_2015_$estimate[1], rate = gamma_w303_2015_$estimate[2]), x = w_303_2015$DURATION, type = "Gamma")
+
+summary(gamma_w303_2015_)
+
+plot(x= fit_dgamma_30315$x, y=fit_dgamma_30315$f)
+
+#Calculating weibull distribution
+weibull_w303_2015_ <- fitdistrplus::fitdist(data=w_303_2015$DURATION%>% unlist() %>% as.numeric(), "weibull", method="mle", optim.method="Nelder-Mead", weights = round(w_303_2015$WGHT_EPI))
+
+summary(weibull_w303_2015_)
+
+fit_dweibull_30315 <- data.frame(f = dweibull(w_303_2015$DURATION, shape = weibull_w303_2015_$estimate[1], scale = weibull_w303_2015_$estimate[2]), x = w_303_2015$DURATION, type = "weibull")
+
+plot(x= fit_dweibull_30315$x, y=fit_dweibull_30315$f)
+
+#Calculating exponential distribution
+exp_w303_2015_ <- fitdistrplus::fitdist(data=w_303_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(w_303_2015$WGHT_EPI))
+
+summary(exp_w303_2015_)
+
+fit_dexp_30315 <- data.frame(f = dexp(w_303_2015$DURATION, rate = exp_w303_2015_$estimate[1]), 
+                       x = w_303_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp_30315$x, y = fit_dexp_30315$f)
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(w_303_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(w_303_2015$DURATION%>% unlist() %>% as.numeric(),"weibull"))
+broom::glance(MASS::fitdistr(w_303_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for walking trips in 2015!(303)
+
+```{r}
+walking_30315_gamma <- gamma_w303_2015_
+w_303_2015 <- w_303_2015 %>%
+ mutate(f_303 = dgamma(DURATION, walking_30315_gamma$estimate["shape"], walking_30315_gamma$estimate["rate"])) 
+summary(w_303_2015$f_303)
+```
+
+
+
+###Destination : Outdoors (305)
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for walkig 2015 - Outdoors (305)}
+# creating a skew vs. kurtois graph for walking 2015
+
+# Filter the data based on the "destination" column
+ w_305_2015 <- walking_2015 %>%
+  filter(destination == "305")   
+descdist(w_305_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, poisson, weibull and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+
+gamma_w305_2015_ <- fitdistrplus::fitdist(data=w_305_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(w_305_2015$WGHT_EPI))
+
+fit_dgamma_30515 <- data.frame(f = dgamma(w_305_2015$DURATION, shape = gamma_w305_2015_$estimate[1], rate = gamma_w305_2015_$estimate[2]), x = w_305_2015$DURATION, type = "Gamma")
+
+summary(gamma_w305_2015_)
+
+plot(x= fit_dgamma_30515$x, y=fit_dgamma_30515$f)
+
+
+#Calculating exponential distribution
+exp_w305_2015_ <- fitdistrplus::fitdist(data=w_305_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(w_305_2015$WGHT_EPI))
+
+summary(exp_w305_2015_)
+
+fit_dexp_30515 <- data.frame(f = dexp(w_305_2015$DURATION, rate = exp_w305_2015_$estimate[1]), 
+                       x = w_305_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp_30515$x, y = fit_dexp_30515$f)
+
+#Calculating pois distribution 
+pois_w305_2015_ <- fitdistrplus::fitdist(data=w_305_2015$DURATION%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead", weights = round(w_305_2015$WGHT_EPI))
+
+fit_dpois_30515 <- data.frame(f = dpois(w_305_2015$DURATION, lambda = pois_w305_2015_$estimate[1]), x = w_305_2015$DURATION, type = "pois")
+
+summary(pois_w305_2015_)
+
+plot(x= fit_dpois_30515$x, y=fit_dpois_30515$f)
+
+#Calculating weibull distribution 
+weibull_w305_2015_ <- fitdistrplus::fitdist(data=w_305_2015$DURATION%>% unlist() %>% as.numeric(), "weibull", method="mle", optim.method="Nelder-Mead", weights = round(w_305_2015$WGHT_EPI))
+
+fit_dweibull_30515 <- data.frame(f = dweibull(w_305_2015$DURATION, shape = weibull_w305_2015_$estimate[1], scale = weibull_w305_2015_$estimate[2]), x = w_305_2015$DURATION, type = "weibull")
+
+summary(weibull_w305_2015_)
+
+plot(x= fit_dweibull_30515$x, y=fit_dweibull_30515$f)
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(w_305_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(w_305_2015$DURATION%>% unlist() %>% as.numeric(),"poisson"))
+broom::glance(MASS::fitdistr(w_305_2015$DURATION%>% unlist() %>% as.numeric(),"weibull"))
+broom::glance(MASS::fitdistr(w_305_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for walking trips in 2015!(305)
+
+```{r}
+walking_30515_gamma <- gamma_w305_2015_
+w_305_2015 <- w_305_2015 %>%
+ mutate(f_305 = dgamma(DURATION, walking_30515_gamma$estimate["shape"], walking_30515_gamma$estimate["rate"])) 
+summary(w_305_2015$f_305)
+```
+
+
+
+###Destination : Grocery store, other stores or mall (306)
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for walkig 2015- Grocery store, other stores or mall (306)}
+# creating a skew vs. kurtois graph for walking 2015
+
+# Filter the data based on the "destination" column
+ w_306_2015 <- walking_2015 %>%
+  filter(destination == "306")   
+descdist(w_306_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, weibull and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+
+gamma_w306_2015_ <- fitdistrplus::fitdist(data=w_306_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(w_306_2015$WGHT_EPI))
+
+fit_dgamma_30615 <- data.frame(f = dgamma(w_306_2015$DURATION, shape = gamma_w306_2015_$estimate[1], rate = gamma_w306_2015_$estimate[2]), x = w_306_2015$DURATION, type = "Gamma")
+
+summary(gamma_w306_2015_)
+
+plot(x= fit_dgamma_30615$x, y=fit_dgamma_30615$f)
+
+
+#Calculating exponential distribution
+exp_w306_2015_ <- fitdistrplus::fitdist(data=w_306_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(w_306_2015$WGHT_EPI))
+
+summary(exp_w306_2015_)
+
+fit_dexp_30615 <- data.frame(f = dexp(w_306_2015$DURATION, rate = exp_w306_2015_$estimate[1]), 
+                       x = w_306_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp_30615$x, y = fit_dexp_30615$f)
+
+#Calculating weibull distribution
+weibull_w306_2015_ <- fitdistrplus::fitdist(data=w_306_2015$DURATION%>% unlist() %>% as.numeric(), "weibull", method="mle", optim.method="Nelder-Mead", weights = round(w_306_2015$WGHT_EPI))
+
+summary(weibull_w306_2015_)
+
+fit_dweibull_30615 <- data.frame(f = dweibull(w_306_2015$DURATION, shape = weibull_w306_2015_$estimate[1], scale = weibull_w306_2015_$estimate[2]), x = w_306_2015$DURATION, type = "weibull")
+
+plot(x= fit_dweibull_30615$x, y=fit_dweibull_30615$f)
+
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(w_306_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(w_306_2015$DURATION%>% unlist() %>% as.numeric(),"weibull"))
+broom::glance(MASS::fitdistr(w_306_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for walking trips in 2015!(306)
+
+```{r}
+walking_30615_gamma <- gamma_w306_2015_
+w_306_2015 <- w_306_2015 %>%
+ mutate(f_306 = dgamma(DURATION, walking_30615_gamma$estimate["shape"], walking_30615_gamma$estimate["rate"])) 
+summary(w_306_2015$f_306)
+```
+
+
+
+###Destination : Library, museum or theatre (307)
+
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for walkig 2015 - Library, museum or theatre (307)}
+# creating a skew vs. kurtois graph for walking 2015
+
+# Filter the data based on the "destination" column
+ w_307_2015 <- walking_2015 %>%
+  filter(destination == "307")   
+descdist(w_307_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, weibull, lognormal and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+
+gamma_w307_2015_ <- fitdistrplus::fitdist(data=w_307_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(w_307_2015$WGHT_EPI))
+
+fit_dgamma_30715 <- data.frame(f = dgamma(w_307_2015$DURATION, shape = gamma_w307_2015_$estimate[1], rate = gamma_w307_2015_$estimate[2]), x = w_307_2015$DURATION, type = "Gamma")
+
+summary(gamma_w307_2015_)
+
+plot(x= fit_dgamma_30715$x, y=fit_dgamma_30715$f)
+
+#Calculating weibull distribution 
+
+weibull_w307_2015_ <- fitdistrplus::fitdist(data=w_307_2015$DURATION%>% unlist() %>% as.numeric(), "weibull", method="mle", optim.method="Nelder-Mead", weights = round(w_307_2015$WGHT_EPI))
+
+fit_dweibull_30715 <- data.frame(f = dweibull(w_307_2015$DURATION, shape = weibull_w307_2015_$estimate[1], scale = weibull_w307_2015_$estimate[2]), x = w_307_2015$DURATION, type = "weibull")
+
+summary(weibull_w307_2015_)
+
+plot(x= fit_dweibull_30715$x, y=fit_dweibull_30715$f)
+
+
+#Calculating lognormal distribution 
+
+lnorm_w307_2015_ <- fitdistrplus::fitdist(data=w_307_2015$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(w_307_2015$WGHT_EPI))
+
+fit_dlnorm_30715 <- data.frame(f = dlnorm(w_307_2015$DURATION, meanlog = lnorm_w307_2015_$estimate[1], sdlog = lnorm_w307_2015_$estimate[2]), x = w_307_2015$DURATION, type = "lnorm")
+
+summary(lnorm_w307_2015_)
+
+plot(x= fit_dlnorm_30715$x, y=fit_dlnorm_30715$f)
+
+
+
+#Calculating exponential distribution
+exp_w307_2015_ <- fitdistrplus::fitdist(data=w_307_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(w_307_2015$WGHT_EPI))
+
+summary(exp_w307_2015_)
+
+fit_dexp_30715 <- data.frame(f = dexp(w_307_2015$DURATION, rate = exp_w307_2015_$estimate[1]), 
+                       x = w_307_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp_30715$x, y = fit_dexp_30715$f)
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(w_307_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(w_307_2015$DURATION%>% unlist() %>% as.numeric(),"weibull"))
+broom::glance(MASS::fitdistr(w_307_2015$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+broom::glance(MASS::fitdistr(w_307_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+```
+
+So, lognormal has largest logLik and the smallest AIC and BIC. we will pick lognormal function for walking trips in 2015!(307)
+
+```{r}
+walking_30715_lnorm <- lnorm_w307_2015_
+w_307_2015 <- w_307_2015 %>%
+ mutate(f_307 = dlnorm(DURATION, walking_30715_lnorm$estimate["meanlog"], walking_30715_lnorm$estimate["sdlog"])) 
+summary(w_307_2015$f_307)
+```
+
+
+###Destination : Restaurant, bar or club (309)
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for walkig 2015- Restaurant, bar or club (309)}
+# creating a skew vs. kurtois graph for walking 2015
+
+# Filter the data based on the "destination" column
+ w_309_2015 <- walking_2015 %>%
+  filter(destination == "309")   
+
+descdist(w_309_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+
+gamma_w309_2015_ <- fitdistrplus::fitdist(data=w_309_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(w_309_2015$WGHT_EPI))
+
+fit_dgamma_30915 <- data.frame(f = dgamma(w_309_2015$DURATION, shape = gamma_w309_2015_$estimate[1], rate = gamma_w309_2015_$estimate[2]), x = w_309_2015$DURATION, type = "Gamma")
+
+summary(gamma_w309_2015_)
+
+plot(x= fit_dgamma_30915$x, y=fit_dgamma_30915$f)
+
+
+#Calculating exponential distribution
+exp_w309_2015_ <- fitdistrplus::fitdist(data=w_309_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(w_309_2015$WGHT_EPI))
+
+summary(exp_w309_2015_)
+
+fit_dexp_30915 <- data.frame(f = dexp(w_309_2015$DURATION, rate = exp_w309_2015_$estimate[1]), 
+                       x = w_309_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp_30915$x, y = fit_dexp_30915$f)
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(w_309_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(w_309_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for walking trips in 2015!(309)
+
+```{r}
+walking_30915_gamma <- gamma_w309_2015_
+w_309_2015 <- w_309_2015 %>%
+ mutate(f_309 = dgamma(DURATION, walking_30915_gamma$estimate["shape"], walking_30915_gamma$estimate["rate"])) 
+summary(w_309_2015$f_309)
+```
+
+###Destination : Place of worship (310)
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for walkig 2015 - Place of worship (310)}
+# creating a skew vs. kurtois graph for walking 2015
+
+# Filter the data based on the "destination" column
+ w_310_2015 <- walking_2015 %>%
+  filter(destination == "310")   
+
+descdist(w_310_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, normal, weibull, lognormal and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+
+gamma_w310_2015_ <- fitdistrplus::fitdist(data=w_310_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(w_310_2015$WGHT_EPI))
+
+fit_dgamma_31015 <- data.frame(f = dgamma(w_310_2015$DURATION, shape = gamma_w310_2015_$estimate[1], rate = gamma_w310_2015_$estimate[2]), x = w_310_2015$DURATION, type = "Gamma")
+
+summary(gamma_w310_2015_)
+
+plot(x= fit_dgamma_31015$x, y=fit_dgamma_31015$f)
+
+
+#Calculating exponential distribution
+exp_w310_2015_ <- fitdistrplus::fitdist(data=w_310_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(w_310_2015$WGHT_EPI))
+
+summary(exp_w310_2015_)
+
+fit_dexp_31015 <- data.frame(f = dexp(w_310_2015$DURATION, rate = exp_w310_2015_$estimate[1]), 
+                       x = w_310_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp_31015$x, y = fit_dexp_31015$f)
+
+
+#Calculating normal distribution 
+
+norm_w310_2015_ <- fitdistrplus::fitdist(data=w_310_2015$DURATION%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead", weights = round(w_310_2015$WGHT_EPI))
+
+summary(norm_w310_2015_)
+fit_dnorm_31015 <- data.frame(f = dnorm(w_310_2015$DURATION, mean = norm_w310_2015_$estimate[1], sd = norm_w310_2015_$estimate[2]), x = w_310_2015$DURATION, type = "norm")
+
+plot(x= fit_dnorm_31015$x, y=fit_dnorm_31015$f)
+
+#Calculating lognormal distribution 
+
+lnorm_w310_2015_ <- fitdistrplus::fitdist(data=w_310_2015$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(w_310_2015$WGHT_EPI))
+
+summary(lnorm_w310_2015_)
+fit_dlnorm_31015 <- data.frame(f = dlnorm(w_310_2015$DURATION, meanlog = lnorm_w310_2015_$estimate[1], sdlog = lnorm_w310_2015_$estimate[2]), x = w_310_2015$DURATION, type = "lnorm")
+
+plot(x= fit_dlnorm_31015$x, y=fit_dlnorm_31015$f)
+
+#Calculating weibull distribution 
+
+weibull_w310_2015_ <- fitdistrplus::fitdist(data=w_310_2015$DURATION%>% unlist() %>% as.numeric(), "weibull", method="mle", optim.method="Nelder-Mead", weights = round(w_310_2015$WGHT_EPI))
+
+summary(weibull_w310_2015_)
+fit_dweibull_31015 <- data.frame(f = dweibull(w_310_2015$DURATION, shape = weibull_w310_2015_$estimate[1], scale = weibull_w310_2015_$estimate[2]), x = w_310_2015$DURATION, type = "weibull")
+
+plot(x= fit_dweibull_31015$x, y=fit_dweibull_31015$f)
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(w_310_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(w_310_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+broom::glance(MASS::fitdistr(w_310_2015$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(w_310_2015$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+broom::glance(MASS::fitdistr(w_310_2015$DURATION%>% unlist() %>% as.numeric(),"weibull"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for walking trips in 2015!(310)
+
+```{r}
+walking_31015_gamma <- gamma_w310_2015_
+w_310_2015 <- w_310_2015 %>%
+ mutate(f_310 = dgamma(DURATION, walking_31015_gamma$estimate["shape"], walking_31015_gamma$estimate["rate"])) 
+summary(w_310_2015$f_310)
+```
+
+
+## Calculating impedance function for cycling in 2015
+
+```{r}
+
+count <- sum(cycling_2015$DURATION > 100)
+print (count)
+
+cycling_2015 <- cycling_2015 %>% filter(DURATION < 100)
+summary(cycling_2015$DURATION)
+```
+
+
+using a skew vs. kurtois graph to descriptive statistics of data:
+
+```{r creating Cullen and Frey graph for cycling 2015}
+# creating a skew vs. kurtois graph for cycling 2015
+
+descdist(cycling_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, weibull and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+summary(cycling_2015$DURATION)
+```
+
+```{r}
+
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution
+
+gamma_c_2015_ <- fitdistrplus::fitdist(data=cycling_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2015$WGHT_EPI))
+
+
+fit_dgamma <- data.frame(f = dgamma(cycling_2015$DURATION, shape = gamma_c_2015_$estimate[1], rate = gamma_c_2015_$estimate[2]), x = cycling_2015$DURATION, type = "gamma")
+
+summary(gamma_c_2015_)
+
+plot(x= fit_dgamma$x, y=fit_dgamma$f)
+
+
+#Calculating weibul distribution
+
+weibull_c_2015_ <- fitdistrplus::fitdist(data=cycling_2015$DURATION%>% unlist() %>% as.numeric(), "weibull", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2015$WGHT_EPI))
+
+
+fit_dweibull <- data.frame(f = dweibull(cycling_2015$DURATION, shape = weibull_c_2015_$estimate[1], scale = weibull_c_2015_$estimate[2]), x = cycling_2015$DURATION, type = "weibull")
+
+summary(weibull_c_2015_)
+
+plot(x= fit_dweibull$x, y=fit_dweibull$f)
+
+
+#Calculating exponential distribution
+exp_c_2015_ <- fitdistrplus::fitdist(data=cycling_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(cycling_2015$WGHT_EPI))
+
+summary(exp_c_2015_)
+
+fit_dexp <- data.frame(f = dexp(cycling_2015$DURATION, rate = exp_c_2015_$estimate[1]), x = cycling_2015$DURATION, type = "exp")
+
+plot(x= fit_dexp$x, y=fit_dexp$f)
+
+
+```
+
+Now let's compare these models based on AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(cycling_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(cycling_2015$DURATION%>% unlist() %>% as.numeric(),"weibull"))
+broom::glance(MASS::fitdistr(cycling_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for cycling trips in 2015!
+
+```{r}
+cycling_2015_gamma <- gamma_c_2015_
+cycling_2015 <- cycling_2015 %>%
+ mutate(f = dgamma(DURATION, cycling_2015_gamma$estimate["shape"], cycling_2015_gamma$estimate["rate"] )) 
+summary(cycling_2015$f)
+
+```
+
+
+###Destination : Cycling- Home (300), 2015
+
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for cycling 2015 - Home (300)}
+# creating a skew vs. kurtois graph for cycling 2015
+
+# Filter the data based on the "destination" column
+ c_300_2015 <- cycling_2015 %>%
+  filter(destination == "300")   
+descdist(c_300_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, weibull and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+gamma_c300_2015_ <- fitdistrplus::fitdist(data=c_300_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(c_300_2015$WGHT_EPI))
+
+fit_dgamma_c30015 <- data.frame(f_300 = dgamma(c_300_2015$DURATION, shape = gamma_c300_2015_$estimate[1], rate = gamma_c300_2015_$estimate[2]), x = c_300_2015$DURATION, type = "Gamma")
+
+summary(gamma_c300_2015_)
+
+plot(x= fit_dgamma_c30015$x, y=fit_dgamma_c30015$f)
+
+#Calculating weibull distribution
+weibull_c300_2015_ <- fitdistrplus::fitdist(data=c_300_2015$DURATION%>% unlist() %>% as.numeric(), "weibull", method="mle", optim.method="Nelder-Mead", weights = round(c_300_2015$WGHT_EPI))
+
+summary(weibull_c300_2015_)
+
+fit_dweibull_c30015 <- data.frame(f = dweibull(c_300_2015$DURATION, shape = weibull_c300_2015_$estimate[1], scale = weibull_c300_2015_$estimate[2]), x = c_300_2015$DURATION, type = "weibull")
+
+plot(x= fit_dweibull_c30015$x, y=fit_dweibull_c30015$f)
+
+#Calculating exponential distribution
+exp_c300_2015_ <- fitdistrplus::fitdist(data=c_300_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(c_300_2015$WGHT_EPI))
+
+summary(exp_c300_2015_)
+
+fit_dexp_c30015 <- data.frame(f = dexp(c_300_2015$DURATION, exp_c300_2015_$estimate[1]), 
+                       x = c_300_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp_c30015$x, y = fit_dexp_c30015$f)
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(c_300_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(c_300_2015$DURATION%>% unlist() %>% as.numeric(),"weibull"))
+broom::glance(MASS::fitdistr(c_300_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for cycling trips in 2015!
+
+```{r}
+cycling_30015_gamma <- gamma_c300_2015_
+c_300_2015 <- c_300_2015 %>%
+ mutate(f_300 = dgamma(DURATION, cycling_30015_gamma$estimate["shape"], cycling_30015_gamma$estimate["rate"])) 
+summary(c_300_2015$f_300)
+```
+
+
+
+###Destination : Cycling - work or school (301), 2015
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for cycling 2015 - work or school (301)}
+# creating a skew vs. kurtois graph for cycling 2015
+
+# Filter the data based on the "destination" column
+ c_301_2015 <- cycling_2015 %>%
+  filter(destination == "301")   
+descdist(c_301_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, weibull, normal, lognormal and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+
+gamma_c301_2015_ <- fitdistrplus::fitdist(data=c_301_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(c_301_2015$WGHT_EPI))
+
+fit_dgamma_30115 <- data.frame(f = dgamma(c_301_2015$DURATION, shape = gamma_c301_2015_$estimate[1], rate = gamma_c301_2015_$estimate[2]), x = c_301_2015$DURATION, type = "Gamma")
+
+summary(gamma_c301_2015_)
+
+plot(x= fit_dgamma_30115$x, y=fit_dgamma_30115$f)
+
+#Calculating weibull distribution
+weibull_c301_2015_ <- fitdistrplus::fitdist(data=c_301_2015$DURATION%>% unlist() %>% as.numeric(), "weibull", method="mle", optim.method="Nelder-Mead", weights = round(c_301_2015$WGHT_EPI))
+
+summary(weibull_c301_2015_)
+
+fit_dweibull_30115 <- data.frame(f = dweibull(c_301_2015$DURATION, shape = weibull_c301_2015_$estimate[1], scale = weibull_c301_2015_$estimate[2]), x = c_301_2015$DURATION, type = "weibull")
+
+plot(x= fit_dweibull_30115$x, y=fit_dweibull_30115$f)
+
+#Calculating exponential distribution
+exp_c301_2015_ <- fitdistrplus::fitdist(data=c_301_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(c_301_2015$WGHT_EPI))
+
+summary(exp_c301_2015_)
+
+fit_dexp_30115 <- data.frame(f = dexp(w_301_2015$DURATION, rate =exp_w301_2015_$estimate[1]), 
+                       x = w_301_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp_30115$x, y = fit_dexp_30115$f)
+
+#Calculating normal distribution
+norm_c301_2015_ <- fitdistrplus::fitdist(data=c_301_2015$DURATION%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead", weights = round(c_301_2015$WGHT_EPI))
+
+summary(norm_c301_2015_)
+
+fit_dnorm_30115 <- data.frame(f = dnorm(c_301_2015$DURATION, mean = norm_c301_2015_$estimate[1], sd = norm_c301_2015_$estimate[2]), x = c_301_2015$DURATION, type = "norm")
+
+plot(x= fit_dnorm_30115$x, y=fit_dnorm_30115$f)
+
+#Calculating lognormal distribution
+lnorm_c301_2015_ <- fitdistrplus::fitdist(data=c_301_2015$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(c_301_2015$WGHT_EPI))
+
+summary(lnorm_c301_2015_)
+
+fit_dlnorm_30115 <- data.frame(f = dlnorm(c_301_2015$DURATION, meanlog = lnorm_c301_2015_$estimate[1], sdlog = lnorm_c301_2015_$estimate[2]), x = c_301_2015$DURATION, type = "lnorm")
+
+plot(x= fit_dlnorm_30115$x, y=fit_dlnorm_30115$f)
+
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(c_301_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(c_301_2015$DURATION%>% unlist() %>% as.numeric(),"weibull"))
+broom::glance(MASS::fitdistr(c_301_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+broom::glance(MASS::fitdistr(c_301_2015$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(c_301_2015$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for cycling trips in 2015!(301)
+
+```{r}
+cycling_30115_gamma <- gamma_c301_2015_
+c_301_2015 <- c_301_2015 %>%
+ mutate(f_301 = dgamma(DURATION, cycling_30115_gamma$estimate["shape"], cycling_30115_gamma$estimate["rate"])) 
+summary(c_301_2015$f_301)
+```
+
+
+###Destination : Cycling- Business (302), 2015
+using a skew vs. kurtois graph to descriptive statistics of data
+
+
+```{r creating Cullen and Frey graph for cycling 2015_ Business (302)}
+# creating a skew vs. kurtois graph for cycling 2015 _ Business destination
+
+# Filter the data based on the "destination" column
+ c_302_2015 <- cycling_2015 %>%
+  filter(destination == "302") 
+count <- sum(cycling_2015$destination == "302")
+print(count)
+
+```
+
+There is no available data pertaining to cycling directed towards business destinations.
+
+###Destination : Cycling- At someone else's home or property (303), 2015
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for cycling 2015 - At someone else home or property (303)}
+# creating a skew vs. kurtois graph for cycling 2015
+
+# Filter the data based on the "destination" column
+ c_303_2015 <- cycling_2015 %>%
+  filter(destination == "303")   
+descdist(c_303_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, poisson, normal and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+
+gamma_c303_2015_ <- fitdistrplus::fitdist(data=c_303_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(c_303_2015$WGHT_EPI))
+
+fit_dgamma_30315 <- data.frame(f = dgamma(c_303_2015$DURATION, shape = gamma_c303_2015_$estimate[1], rate = gamma_c303_2015_$estimate[2]), x = c_303_2015$DURATION, type = "Gamma")
+
+summary(gamma_c303_2015_)
+
+plot(x= fit_dgamma_30315$x, y=fit_dgamma_30315$f)
+
+
+#Calculating exponential distribution
+exp_c303_2015_ <- fitdistrplus::fitdist(data=c_303_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(c_303_2015$WGHT_EPI))
+
+summary(exp_c303_2015_)
+
+fit_dexp_30315 <- data.frame(f = dexp(c_303_2015$DURATION, rate = exp_c303_2015_$estimate[1]), 
+                       x = c_303_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp_30315$x, y = fit_dexp_30315$f)
+
+#Calculating pois distribution 
+pois_c303_2015_ <- fitdistrplus::fitdist(data=c_303_2015$DURATION%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead", weights = round(c_303_2015$WGHT_EPI))
+
+fit_dpois_30315 <- data.frame(f = dpois(c_303_2015$DURATION, lambda = pois_c303_2015_$estimate[1]), x = c_303_2015$DURATION, type = "pois")
+
+summary(pois_c303_2015_)
+
+plot(x= fit_dpois_30315$x, y=fit_dpois_30315$f)
+
+#Calculating normal distribution 
+norm_c303_2015_ <- fitdistrplus::fitdist(data=c_303_2015$DURATION%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead", weights = round(c_303_2015$WGHT_EPI))
+
+fit_dnorm_30315 <- data.frame(f = dnorm(c_303_2015$DURATION, mean = norm_c303_2015_$estimate[1], sd = norm_c303_2015_$estimate[2]), x = c_303_2015$DURATION, type = " norm")
+
+summary(norm_c303_2015_)
+
+plot(x= fit_dnorm_30315$x, y=fit_dnorm_30315$f)
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(c_303_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(c_303_2015$DURATION%>% unlist() %>% as.numeric(),"poisson"))
+broom::glance(MASS::fitdistr(c_303_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+broom::glance(MASS::fitdistr(c_303_2015$DURATION%>% unlist() %>% as.numeric(),"normal"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for cycling trips in 2015!(303)
+
+```{r}
+cycling_30315_gamma <- gamma_c303_2015_
+c_303_2015 <- c_303_2015 %>%
+ mutate(f_303 = dgamma(DURATION, cycling_30315_gamma$estimate["shape"], cycling_30315_gamma$estimate["rate"])) 
+summary(c_303_2015$f_303)
+```
+
+
+
+###Destination : Cycling - Outdoors (305), 2015
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for cycling 2015 - Outdoors (305)}
+# creating a skew vs. kurtois graph for cycling 2015
+
+# Filter the data based on the "destination" column
+ c_305_2015 <- cycling_2015 %>%
+  filter(destination == "305") 
+
+count <- sum(cycling_2015$destination == "305")
+print(count)
+
+#descdist(c_305_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+
+###Destination : Cycling - Grocery store, other stores or mall (306), 2015
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for cycling 2015- Grocery store, other stores or mall (306)}
+# creating a skew vs. kurtois graph for cycling 2015
+
+# Filter the data based on the "destination" column
+ c_306_2015 <- cycling_2015 %>%
+  filter(destination == "306")   
+descdist(c_306_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that normal, gamma, lognormal and logistic will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating normal distribution 
+
+norm_c306_2015_ <- fitdistrplus::fitdist(data=c_306_2015$DURATION%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead", weights = round(c_306_2015$WGHT_EPI))
+
+summary(norm_c306_2015_)
+
+fit_dnorm_30615 <- data.frame(f = dnorm(c_306_2015$DURATION, mean = norm_c306_2015_$estimate[1], sd = norm_c306_2015_$estimate[2]), x = c_306_2015$DURATION, type = "norm")
+
+plot(x= fit_dnorm_30615$x, y=fit_dnorm_30615$f)
+
+#Calculating lognormal distribution 
+
+lnorm_c306_2015_ <- fitdistrplus::fitdist(data=c_306_2015$DURATION%>% unlist() %>% as.numeric(), "lnorm", method="mle", optim.method="Nelder-Mead", weights = round(c_306_2015$WGHT_EPI))
+
+summary(lnorm_c306_2015_)
+
+fit_dlnorm_30615 <- data.frame(f = dlnorm(c_306_2015$DURATION, meanlog = lnorm_c306_2015_$estimate[1], sdlog = lnorm_c306_2015_$estimate[2]), x = c_306_2015$DURATION, type = "lnorm")
+
+plot(x= fit_dlnorm_30615$x, y=fit_dlnorm_30615$f)
+
+#Calculating gamma distribution 
+
+gamma_c306_2015_ <- fitdistrplus::fitdist(data=c_306_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(c_306_2015$WGHT_EPI))
+
+summary(gamma_c306_2015_)
+
+fit_dgamma_30615 <- data.frame(f = dgamma(c_306_2015$DURATION, shape = gamma_c306_2015_$estimate[1], rate = gamma_c306_2015_$estimate[2]), x = c_306_2015$DURATION, type = "gamma")
+
+plot(x= fit_dgamma_30615$x, y=fit_dgamma_30615$f)
+
+#Calculating logistic distribution
+logis_c306_2015_ <- fitdistrplus::fitdist(data=c_306_2015$DURATION%>% unlist() %>% as.numeric(), "logis", method="mle", optim.method="Nelder-Mead", weights = round(c_306_2015$WGHT_EPI))
+
+summary(logis_c306_2015_)
+
+fit_dlogis_30615 <- data.frame(f = dlogis(c_306_2015$DURATION, location = logis_c306_2015_$estimate[1], scale = logis_c306_2015_$estimate[2]), x = c_306_2015$DURATION, type = "logis")
+
+plot(x= fit_dlogis_30615$x, y=fit_dlogis_30615$f)
+
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(w_306_2015$DURATION%>% unlist() %>% as.numeric(),"logistic"))
+broom::glance(MASS::fitdistr(w_306_2015$DURATION%>% unlist() %>% as.numeric(),"lognormal"))
+broom::glance(MASS::fitdistr(w_306_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(w_306_2015$DURATION%>% unlist() %>% as.numeric(),"normal"))
+```
+
+So, lognormal has largest logLik and the smallest AIC and BIC. we will pick lognormal function for walking trips in 2015!(306)
+
+```{r}
+cycling_30615_lnorm <- lnorm_c306_2015_
+c_306_2015 <- c_306_2015 %>%
+ mutate(f_306 = dlnorm(DURATION, cycling_30615_lnorm$estimate["meanlog"], cycling_30615_lnorm$estimate["sdlog"])) 
+summary(c_306_2015$f_306)
+```
+
+
+
+###Destination : Cycling - Library, museum or theatre (307), 2015
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for cycling 2015 - Library, museum or theatre (307)}
+# creating a skew vs. kurtois graph for cycling 2015
+
+# Filter the data based on the "destination" column
+ c_307_2015 <- cycling_2015 %>%
+  filter(destination == "307")  
+count <- sum(cycling_2015$destination == "307")
+print(count)
+
+#descdist(c_307_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+
+###Destination : Cycling - Restaurant, bar or club (309), 2015
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for cycling 2015 - Restaurant, bar or club (309)}
+# creating a skew vs. kurtois graph for cycling 2015
+
+# Filter the data based on the "destination" column
+ c_309_2015 <- cycling_2015 %>%
+  filter(destination == "309")   
+
+descdist(c_309_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+As shown in the Cullen and Frey graph, we see that gamma, normal, poisson and exponential will likely be the best fit according to the graph above. Then we compare these models to find the best model.
+
+```{r}
+# Based on the skew vs. kurtois graph the best distribution
+
+#Calculating gamma distribution 
+
+gamma_c309_2015_ <- fitdistrplus::fitdist(data=c_309_2015$DURATION%>% unlist() %>% as.numeric(), "gamma", method="mle", optim.method="Nelder-Mead", weights = round(c_309_2015$WGHT_EPI))
+
+fit_dgamma_30915 <- data.frame(f = dgamma(c_309_2015$DURATION, shape = gamma_c309_2015_$estimate[1], rate = gamma_c309_2015_$estimate[2]), x = c_309_2015$DURATION, type = "Gamma")
+
+summary(gamma_c309_2015_)
+
+plot(x= fit_dgamma_30915$x, y=fit_dgamma_30915$f)
+
+#Calculating pois distribution 
+pois_c309_2015_ <- fitdistrplus::fitdist(data=c_309_2015$DURATION%>% unlist() %>% as.numeric(), "pois", method="mle", optim.method="Nelder-Mead", weights = round(c_309_2015$WGHT_EPI))
+
+fit_dpois_30915 <- data.frame(f = dpois(c_309_2015$DURATION, lambda = pois_c309_2015_$estimate[1]), x = c_309_2015$DURATION, type = "pois")
+
+summary(pois_c309_2015_)
+
+plot(x= fit_dpois_30915$x, y=fit_dpois_30915$f)
+
+
+#Calculating normal distribution
+norm_c309_2015_ <- fitdistrplus::fitdist(data=c_309_2015$DURATION%>% unlist() %>% as.numeric(), "norm", method="mle", optim.method="Nelder-Mead", weights = round(c_309_2015$WGHT_EPI))
+
+summary(norm_c309_2015_)
+
+fit_dnorm_30915 <- data.frame(f = dnorm(c_309_2015$DURATION, mean = norm_c309_2015_$estimate[1], sd = norm_c309_2015_$estimate[2]), x = c_309_2015$DURATION, type = "norm")
+
+plot(x= fit_dnorm_30915$x, y=fit_dnorm_30915$f)
+
+
+#Calculating exponential distribution
+exp_c309_2015_ <- fitdistrplus::fitdist(data=c_309_2015$DURATION%>% unlist() %>% as.numeric(), "exp", method="mle", optim.method="Nelder-Mead", weights = round(c_309_2015$WGHT_EPI))
+
+summary(exp_c309_2015_)
+
+fit_dexp_30915 <- data.frame(f = dexp(c_309_2015$DURATION, rate = exp_c309_2015_$estimate[1]), 
+                       x = c_309_2015$DURATION, type = "exp")
+
+plot(x = fit_dexp_30915$x, y = fit_dexp_30915$f)
+
+```
+
+Now let's compare these models AIC and BIC to see which fits the walk data best:
+
+```{r}
+#comparing these models AIC and BIC to see which fits the walk data best:
+broom::glance(MASS::fitdistr(w_309_2015$DURATION%>% unlist() %>% as.numeric(),"gamma"))
+broom::glance(MASS::fitdistr(w_309_2015$DURATION%>% unlist() %>% as.numeric(),"normal"))
+broom::glance(MASS::fitdistr(w_309_2015$DURATION%>% unlist() %>% as.numeric(),"poisson"))
+broom::glance(MASS::fitdistr(w_309_2015$DURATION%>% unlist() %>% as.numeric(),"exponential"))
+```
+
+So, gamma has largest logLik and the smallest AIC and BIC. we will pick gamma function for walking trips in 2015!(309)
+
+```{r}
+cycling_30915_gamma <- gamma_c309_2015_
+c_309_2015 <- c_309_2015 %>%
+ mutate(f_309 = dgamma(DURATION, cycling_30915_gamma$estimate["shape"], cycling_30915_gamma$estimate["rate"])) 
+summary(c_309_2015$f_309)
+```
+
+###Destination : Cycling - Place of worship (310), 2015
+using a skew vs. kurtois graph to descriptive statistics of data
+
+```{r creating Cullen and Frey graph for cycling 2015 - Place of worship (310)}
+# creating a skew vs. kurtois graph for cycling 2015
+
+# Filter the data based on the "destination" column
+ c_310_2015 <- cycling_2015 %>%
+  filter(destination == "310")  
+count <- sum(cycling_2015$destination == "310")
+print(count)
+
+
+#descdist(c_310_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
+```
+
+
+
+
+
+creating a new walking data frame that have all the f values for walking 2015
+
+```{r}
+walking_2015_f <- bind_rows(w_300_2015, w_301_2015, w_302_2015, w_303_2015, w_305_2015, w_306_2015, w_307_2015, w_309_2015, w_310_2015)
+
+```
+
+
+creating a new cycling data frame that have all the f values for cycling 2015
+
+```{r}
+cycling_2015_f <- bind_rows(c_300_2015, c_301_2015, c_302_2015, c_303_2015, c_305_2015, c_306_2015, c_307_2015, c_309_2015, c_310_2015)
+
+```
+
+
+
+
+
+
+
+
+
+
