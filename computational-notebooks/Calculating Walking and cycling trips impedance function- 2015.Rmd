@@ -1139,12 +1139,24 @@ There is no available data pertaining to cycling directed towards business desti
 ###Destination : Cycling- At someone else's home or property (303), 2015
 using a skew vs. kurtois graph to descriptive statistics of data
 
+
+```{r}
+# Assuming you have a data frame named 'cycling_2015' with a column 'dest'
+
+# Calculate the number of occurrences of '303' in the 'dest' column
+count_303 <- sum(cycling_2015$destination == 303)
+
+cat("The number of occurrences of '303' in the 'dest' column is:", count_303, "\n")
+
+```
+
 ```{r creating Cullen and Frey graph for cycling 2015 - At someone else home or property (303)}
 # creating a skew vs. kurtois graph for cycling 2015
 
 # Filter the data based on the "destination" column
  c_303_2015 <- cycling_2015 %>%
   filter(destination == "303")   
+
 descdist(c_303_2015$DURATION %>% unlist() %>% as.numeric(), discrete=FALSE, boot=500)
 ```
 

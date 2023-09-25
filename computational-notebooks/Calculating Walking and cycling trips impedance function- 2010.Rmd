@@ -1052,6 +1052,14 @@ summary(c_2_2010$f_2)
 ```
 
 ###Destination : Cycling - other's home (3), 2010
+```{r}
+
+# Calculate the number of occurrences of '303' in the 'dest' column
+count_3 <- sum(cycling_2010$destination == 3)
+
+cat("The number of occurrences of '3' in the 'dest' column is:", count_3, "\n")
+
+```
 
 using a skew vs. kurtois graph to descriptive statistics of data
 
