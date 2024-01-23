@@ -1,15 +1,9 @@
 ---
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
-|                                          |
-|------------------------------------------|
-| tle: "Active-transport walking behavior" |
-| tput:                                    |
-| pdf_document: default                    |
-| html_document: default                   |
-| te: '2022-05-19'                         |
+
 
 # Active-transport walking and cycling behaviour in Canada
 
@@ -1465,6 +1459,240 @@ print(heatmap_plot_2015)
 
 ```
 
+```{r}
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(RColorBrewer)
+
+# Ensure WGHT_EPI is numeric
+walking_2015$WGHT_EPI <- as.numeric(as.character(walking_2015$WGHT_EPI))
+
+# Calculate the count of each pair of the orig-dest trip and their weighted counts
+trip_counts <- walking_2015 %>%
+  group_by(orig, dest) %>%
+  summarize(count_each_trip = n(), # Count the number of trips for each unique origin-destination pair
+            weighted_count = sum(WGHT_EPI)) # Calculate weighted count for each origin-destination pair
+
+# Calculate the total weighted count for normalization
+total_weighted_count <- sum(trip_counts$weighted_count)
+
+# Calculate percentages and round to 2 decimal places
+trip_counts <- trip_counts %>%
+  mutate(percentage = round((weighted_count / total_weighted_count) * 100, 2))
+
+# Get the maximum percentage value for the legend
+max_percentage <- max(trip_counts$percentage, na.rm = TRUE)
+
+# Reshape data for heatmap
+heatmap_data <- dcast(trip_counts, orig ~ dest, value.var = "percentage")
+
+# Convert the data frame to a matrix for the heatmap
+heatmap_matrix <- as.matrix(heatmap_data[,-1]) # Remove the first column (orig)
+rownames(heatmap_matrix) <- heatmap_data$orig # Assign row names from the 'orig' column
+
+# Melt the matrix for use with ggplot
+heatmap_melted <- melt(heatmap_matrix, varnames = c("Origin", "Destination"))
+
+# Create the heatmap with ggplot2
+heatmap_plot <- ggplot(heatmap_melted, aes(x = Destination, y = Origin, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradientn(colors = RColorBrewer::brewer.pal(9, "Blues"), 
+                       na.value = "lightgray", 
+                       limits = c(0, max_percentage), 
+                       breaks = c(0, max_percentage), 
+                       labels = c("0%", paste0(round(max_percentage, 2), "%"))) +
+  labs(x = "Destination", y = "Origin", fill = "Percentage") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.text.y = element_text(angle = 0, vjust = 0.5))
+
+# Print the heatmap plot
+print(heatmap_plot)
+
+```
+
+```{r}
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(RColorBrewer)
+library(paletteer)
+
+# Ensure WGHT_EPI is numeric
+walking_2015$WGHT_EPI <- as.numeric(as.character(walking_2015$WGHT_EPI))
+
+# Calculate the count of each pair of the orig-dest trip and their weighted counts
+trip_counts <- walking_2015 %>%
+  group_by(orig, dest) %>%
+  summarize(count_each_trip = n(), 
+            weighted_count = sum(WGHT_EPI)) # Count trips and sum weights for each origin-destination pair
+
+# Calculate the total number of trips
+sum_count_trip <- sum(trip_counts$count_each_trip)
+
+# Calculate the total weighted count for normalization
+total_weighted_count <- sum(trip_counts$weighted_count)
+
+# Calculate percentages based on the provided formula
+trip_counts <- trip_counts %>%
+  mutate(percentage = ((count_each_trip * weighted_count) / (sum_count_trip * total_weighted_count)) * 100)
+
+# Round percentages to 2 decimal places
+trip_counts <- trip_counts %>%
+  mutate(percentage = round(percentage, 2))
+
+# Reshape data for heatmap
+heatmap_data <- dcast(trip_counts, orig ~ dest, value.var = "percentage")
+
+# Convert the data frame to a matrix for the heatmap
+heatmap_matrix <- as.matrix(heatmap_data[,-1]) # Remove the first column (orig)
+rownames(heatmap_matrix) <- heatmap_data$orig # Assign row names from the 'orig' column
+
+# Melt the matrix for use with ggplot
+heatmap_melted <- melt(heatmap_matrix, varnames = c("Origin", "Destination"))
+
+ 
+
+# Create the heatmap with ggplot2
+ggplot(heatmap_melted, aes(x = Destination, y = Origin, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradientn(colors = RColorBrewer::brewer.pal(9, "YlOrRd"), 
+                       na.value = "gray95", 
+                       limits = c(0, max(heatmap_melted$value, na.rm = TRUE)), 
+                       breaks = c(0, max(heatmap_melted$value, na.rm = TRUE)), 
+                       labels = c("0%", paste0(max(heatmap_melted$value, na.rm = TRUE), "%"))) +
+  labs(x = "Destination", y = "Origin", fill = "Percentage") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.text.y = element_text(angle = 0, vjust = 0.5))
+```
+```{r}
+total_sum <- sum(walking_2015$WGHT_EPI, na.rm = TRUE)
+print(total_sum )
+summary(walking_2015$WGHT_EPI)
+```
+
+
+
+```{r}
+library(dplyr)
+library(reshape2)
+
+# Ensure WGHT_EPI is numeric
+walking_2015$WGHT_EPI <- as.numeric(as.character(walking_2015$WGHT_EPI))
+
+# Calculate the weighted count of trips for each origin-destination pair
+trip_counts <- walking_2015 %>%
+  group_by(orig, dest) %>%
+  summarize(weighted_count = sum(WGHT_EPI)) # Sum the weights for each origin-destination pair
+
+# Calculate the total weighted count for normalization
+total_weighted_count <- sum(trip_counts$weighted_count)
+
+# Convert weighted counts to percentages and round the values
+trip_counts <- trip_counts %>%
+  mutate(percentage = round((weighted_count / total_weighted_count) * 100, 2)) # Round to 2 decimal places
+
+# Reshape data for cross-tabulation
+cross_tab_matrix <- reshape2::dcast(trip_counts, orig ~ dest, value.var = "percentage")
+
+# Calculate row totals
+cross_tab_matrix$Total <- rowSums(cross_tab_matrix[,-1], na.rm = TRUE) # Exclude the first column (orig) for row sums
+
+# Calculate column totals and append to the table
+total_row <- colSums(cross_tab_matrix[, -1], na.rm = TRUE) # Exclude the first column (orig) for column sums
+total_row <- c("Total", total_row) # Add a label for the total row
+cross_tab_matrix <- rbind(cross_tab_matrix, total_row)
+
+# View the cross-tabulation table with totals
+print(cross_tab_matrix)
+
+```
+```{r}
+# Load the required libraries
+library(dplyr)
+library(reshape2)
+library(knitr)
+library(kableExtra)
+
+# Ensure WGHT_EPI is numeric
+walking_2015$WGHT_EPI <- as.numeric(as.character(walking_2015$WGHT_EPI))
+
+# Calculate the count of each pair of the orig-dest trip and their weighted counts
+trip_counts <- walking_2015 %>%
+  group_by(orig, dest) %>%
+  summarize(count_each_trip = n(), 
+            weighted_count = sum(WGHT_EPI)) # Count trips and sum weights for each origin-destination pair
+
+# Calculate the total number of trips
+sum_count_trip <- sum(trip_counts$count_each_trip)
+
+# Calculate the total weighted count for normalization
+total_weighted_count <- sum(trip_counts$weighted_count)
+
+# Calculate percentages based on the provided formula
+trip_counts <- trip_counts %>%
+  mutate(percentage = ((count_each_trip * weighted_count) / (sum_count_trip * total_weighted_count)) * 100)
+
+# Round percentages to 2 decimal places
+trip_counts <- trip_counts %>%
+  mutate(percentage = round(percentage, 5))
+
+# Create the crosstab data frame
+crosstab <- dcast(trip_counts, orig ~ dest, value.var = "percentage")
+
+# View the crosstab table
+crosstab
+
+# Optionally, create a nicer looking table using knitr and kableExtra
+kable(crosstab, "html") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+  scroll_box(width = "100%", height = "500px")
+
+```
+
+
+```{r}
+library(dplyr)
+library(reshape2)
+library(knitr)
+library(kableExtra)
+
+# Ensure WGHT_EPI is numeric
+walking_2015$WGHT_EPI <- as.numeric(as.character(walking_2015$WGHT_EPI))
+
+# Calculate the weighted count of trips for each origin-destination pair
+trip_counts <- walking_2015 %>%
+  group_by(orig, dest) %>%
+  summarize(weighted_count = sum(WGHT_EPI)) # Sum the weights for each origin-destination pair
+
+# Calculate the total weighted count for normalization
+total_weighted_count <- sum(trip_counts$weighted_count)
+
+# Convert weighted counts to percentages and round the values
+trip_counts <- trip_counts %>%
+  mutate(percentage = round((weighted_count / total_weighted_count) * 100, 2)) # Round to 2 decimal places
+
+# Reshape data for cross-tabulation
+cross_tab_matrix <- reshape2::dcast(trip_counts, orig ~ dest, value.var = "percentage")
+
+# Calculate row totals
+cross_tab_matrix$Total <- rowSums(cross_tab_matrix[,-1], na.rm = TRUE) # Exclude the first column (orig) for row sums
+
+# Calculate column totals and append to the table
+total_row <- colSums(cross_tab_matrix[, -1], na.rm = TRUE) # Exclude the first column (orig) for column sums
+total_row <- c("Total", total_row) # Add a label for the total row
+cross_tab_matrix <- rbind(cross_tab_matrix, total_row)
+
+# Using kable and kableExtra for a well-formatted table
+kable(cross_tab_matrix, "html", booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE, position = "center") %>%
+  column_spec(1, bold = TRUE, border_right = TRUE) %>%
+  row_spec(nrow(cross_tab_matrix), bold = TRUE, color = "white", background = "#56B4E9")
+
+```
+
 
 ```{r,  2010}
 
@@ -1495,6 +1723,36 @@ print(heatmap_plot_2010)
 
 ```
 
+```{r}
+
+# Ensure WGHT_EPI is numeric
+walking_2010$WGHT_EPI <- as.numeric(as.character(walking_2010$WGHT_EPI))
+
+# Calculate the weighted number of trips
+trip_counts <- walking_2010 %>%
+  group_by(orig, dest) %>%
+  summarize(count = n(), # Count the number of trips for each origin-destination pair
+            average_weight = mean(WGHT_EPI)) %>% # Calculate the average weight for the pair
+  mutate(weighted_count = count * average_weight) # Multiply the count by the average weight
+
+# Calculate the total weighted count for normalization
+total_weighted_count <- sum(trip_counts$weighted_count)
+
+# Convert weighted counts to percentages
+trip_counts <- trip_counts %>%
+  mutate(percentage = (weighted_count / total_weighted_count) * 100)
+
+# Create heatmap
+heatmap_plot_2010_weighted <- ggplot(trip_counts, aes(x = orig, y = dest, fill = percentage)) +
+  geom_tile(color = "white") +
+  scale_fill_gradientn(colors = brewer.pal(9, "Blues")) +
+  labs(x = "Origin", y = "Destination", fill = "Percentage") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Rotate x-axis labels for better readability
+
+# Display the heatmap
+print(heatmap_plot_2010_weighted)
+```
 
 
 
@@ -2444,8 +2702,14 @@ walking_1998_f <- walking_1998_f %>%
 walking_1992_f <- walking_1992_f %>%
   mutate(f_t = coalesce(f_1, f_2, f_3))
 walking_1986_f <- walking_1986_f %>%
-  mutate(f_t = coalesce(f_1, f_2, f_3))
+  mutate(f_t86 = coalesce(f_1, f_2, f_3))
 
+
+walking_data <- bind_rows(walking_2015_f, walking_2010_f, walking_2005_f,walking_1998_f, walking_1992_f,walking_1986_f )
+
+```
+
+```{r}
 cycling_2015_f <- cycling_2015_f %>%
   mutate(f_t = coalesce(f_300, f_301, f_303, f_306, f_309))
 cycling_2010_f <- cycling_2010_f %>%
@@ -2457,9 +2721,1319 @@ cycling_1998_f <- cycling_1998_f %>%
 cycling_1992_f <- cycling_1992_f %>%
   mutate(f_t = coalesce(f_1, f_2, f_3))
 
+cycling_data <- bind_rows(cycling_2015_f, cycling_2010_f, cycling_2005_f,cycling_1998_f, cycling_1992_f )
 ```
 
 
+# New Impedance 
+
+##Walking
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming walking_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+home_plot <- ggplot(walking_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = walking_data %>% filter(dest != "home"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = walking_data %>% filter(dest == "home"), 
+            aes(group = dest), color = "cyan3", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of walking for home destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(home_plot)
+
+# Save the plot if desired
+ggsave("home_plot.jpg", plot = home_plot, width = 8, height = 6, dpi = 300)
+```
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming walking_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+work_plot <- ggplot(walking_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = walking_data %>% filter(dest != "work or school"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = walking_data %>% filter(dest == "work or school"), 
+            aes(group = dest), color = "deeppink2", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of walking for work or school destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(work_plot)
+
+# Save the plot if desired
+ggsave("work_plot.jpg", plot = work_plot, width = 8, height = 6, dpi = 300)
+```
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming walking_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+others_home_plot <- ggplot(walking_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = walking_data %>% filter(dest != "other's home"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = walking_data %>% filter(dest == "other's home"), 
+            aes(group = dest), color = "darkorchid3", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of walking for other's home destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(others_home_plot)
+
+# Save the plot if desired
+ggsave("others_home_plot.jpg", plot = others_home_plot, width = 8, height = 6, dpi = 300)
+```
+
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming walking_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+Restaurant_plot <- ggplot(walking_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = walking_data %>% filter(dest != "Restaurant, bar or club"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = walking_data %>% filter(dest == "Restaurant, bar or club"), 
+            aes(group = dest), color = "yellow2", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of walking for Restaurant, bar or club destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(Restaurant_plot)
+
+# Save the plot if desired
+ggsave("Restaurant_plot.jpg", plot = Restaurant_plot, width = 8, height = 6, dpi = 300)
+```
+
+
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming walking_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+Grocery_plot <- ggplot(walking_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = walking_data %>% filter(dest != "Grocery store, other stores or mall"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = walking_data %>% filter(dest == "Grocery store, other stores or mall"), 
+            aes(group = dest), color = "red3", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of walking for Grocery store, other stores or mall destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(Grocery_plot)
+
+# Save the plot if desired
+ggsave("Grocery_plot.jpg", plot = Grocery_plot, width = 8, height = 6, dpi = 300)
+```
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming walking_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+Library_plot <- ggplot(walking_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = walking_data %>% filter(dest != "Library, museum or theatre"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = walking_data %>% filter(dest == "Library, museum or theatre"), 
+            aes(group = dest), color = "olivedrab3", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of walking for Library, museum or theatre destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(Library_plot)
+
+# Save the plot if desired
+ggsave("Library_plot.jpg", plot = Library_plot, width = 8, height = 6, dpi = 300)
+```
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming walking_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+outdoors_plot <- ggplot(walking_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = walking_data %>% filter(dest != "outdoors"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = walking_data %>% filter(dest == "outdoors"), 
+            aes(group = dest), color = "royalblue2", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of walking for outdoors destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(outdoors_plot)
+
+# Save the plot if desired
+ggsave("outdoors_plot.jpg", plot = outdoors_plot, width = 8, height = 6, dpi = 300)
+```
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming walking_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+worship_plot <- ggplot(walking_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = walking_data %>% filter(dest != "Place of worship"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = walking_data %>% filter(dest == "Place of worship"), 
+            aes(group = dest), color = "darkorange1", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of walking for Place of worship destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(worship_plot)
+
+# Save the plot if desired
+ggsave("worship_plot.jpg", plot = worship_plot, width = 8, height = 6, dpi = 300)
+```
+
+
+
+
+
+
+##CYCLING
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming walking_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+home_c_plot <- ggplot(cycling_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = cycling_data %>% filter(dest != "home"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = cycling_data %>% filter(dest == "home"), 
+            aes(group = dest), color = "cyan3", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of cycling for home destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(home_c_plot)
+# Save the plot if desired
+ggsave("home_c_plot.jpg", plot = home_c_plot, width = 8, height = 6, dpi = 300)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming cycling_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+work_c_plot <- ggplot(cycling_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = cycling_data %>% filter(dest != "work or school"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = cycling_data %>% filter(dest == "work or school"), 
+            aes(group = dest), color = "deeppink2", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of cycling for work or school destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(work_c_plot)
+
+# Save the plot if desired
+ggsave("work_c_plot.jpg", plot = work_c_plot, width = 8, height = 6, dpi = 300)
+
+```
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming cycling_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+others_home_c_plot <- ggplot(cycling_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = cycling_data %>% filter(dest != "other's home"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = cycling_data %>% filter(dest == "other's home"), 
+            aes(group = dest), color = "darkorchid3", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of cycling for other's home destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(others_home_c_plot)
+
+# Save the plot if desired
+ggsave("others_home_c_plot.jpg", plot = others_home_c_plot, width = 8, height = 6, dpi = 300)
+```
+
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming cycling_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+Restaurant_c_plot <- ggplot(cycling_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = cycling_data %>% filter(dest != "Restaurant, bar or club"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = cycling_data %>% filter(dest == "Restaurant, bar or club"), 
+            aes(group = dest), color = "yellow2", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of cycling for Restaurant, bar or club destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(Restaurant_c_plot)
+
+# Save the plot if desired
+ggsave("Restaurant_c_plot.jpg", plot = Restaurant_c_plot, width = 8, height = 6, dpi = 300)
+```
+
+
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming cycling_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+Grocery_c_plot <- ggplot(cycling_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = cycling_data %>% filter(dest != "Grocery store, other stores or mall"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = cycling_data %>% filter(dest == "Grocery store, other stores or mall"), 
+            aes(group = dest), color = "red3", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of cycling for Grocery store, other stores or mall destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(Grocery_c_plot)
+# Save the plot if desired
+ggsave("Grocery_c_plot.jpg", plot = Grocery_c_plot, width = 8, height = 6, dpi = 300)
+```
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Assuming cycling_data is already loaded and has 'YEAR', 'DURATION', 'dest', and 'f_t' columns
+
+# Define the font family to use (this font must be installed on your system)
+font_family <- "Helvetica"
+
+# Plot the data
+outdoors_c_plot <- ggplot(cycling_data, aes(x = DURATION, y = f_t, group = dest)) +
+  # Draw all non-'home' destination lines in grey
+  geom_line(data = cycling_data %>% filter(dest != "outdoors"), 
+            aes(group = dest), color = "grey40", size = 0.5, alpha = 0.5) +
+  # Draw 'home' destination lines in cyan and larger size
+  geom_line(data = cycling_data %>% filter(dest == "outdoors"), 
+            aes(group = dest), color = "royalblue2", size = 1.2) +
+  # Set the title and labels
+  labs(title = "Modeling distance decay curves of cycling for outdoors destination",
+       x = "Duration (minutes)",
+       y = "Frequency (scaled)") +
+  # Facet by 'YEAR'
+  facet_wrap(~YEAR) +
+  # Use a minimal theme with white background
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family ="Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    strip.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.position = "none",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA), # White background for panels
+    strip.background = element_rect(fill = "white", colour = NA)  # White background for facet labels
+  ) +
+  theme(aspect.ratio = 1/2)  # Set the aspect ratio
+
+# Display the plot
+print(outdoors_c_plot)
+
+# Save the plot if desired
+ggsave("outdoors_c_plot.jpg", plot = outdoors_c_plot, width = 8, height = 6, dpi = 300)
+
+```
+
+
+
+
+
+
+## 2015-walking-impedance
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Filter the walking_data for the year 2015 only
+walking_data_2015 <- walking_data %>%
+  filter(YEAR == 2015)
+
+# Define the colors for each destination
+dest_colors <- c(
+  "Place of worship" = "darkorange1",
+  "outdoors" = "royalblue2",
+  "Library, museum or theatre" = "olivedrab3",
+  "Grocery store, other stores or mall" = "red3",
+  "Restaurant, bar or club" = "yellow2",
+  "other's home" = "darkorchid3",
+  "work or school" = "deeppink2",
+  "home" = "cyan3"
+)
+
+# Load the desired font family (make sure it is installed on your system)
+loadfonts(device = "win")  # For Windows, or 'quartz' for Mac, or comment it out for Linux
+
+# Plot the data for the year 2015
+walking_plot_2015 <- ggplot(walking_data_2015, aes(x = DURATION, y = f_t, group = dest, color = dest)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = dest_colors) +
+  labs(
+    title = "Modeling distance decay curves of walking for 2015",
+    x = "Duration (minutes)",
+    y = "Frequency (scaled)",
+    color = "Destination"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family = "Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.text = element_text(size = 10, color = "grey40", family = "Times New Roman"),  # Set legend text properties
+    legend.title = element_text(size = 10, color = "grey40", family = "Times New Roman"), # Set legend title properties
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA)  # White background for panels
+  )
+
+# Display the plot
+print(walking_plot_2015)
+
+# Save the plot if desired
+ggsave("walking_plot_2015.jpg", plot = walking_plot_2015, width = 8, height = 6, dpi = 300)
+
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Filter the walking_data for the year 2010 only
+walking_data_2010 <- walking_data %>%
+  filter(YEAR == 2010)
+
+# Define the colors for each destination
+dest_colors <- c(
+  "Place of worship" = "darkorange1",
+  "Outdoors away from home" = "royalblue2",
+  "Library, museum or theatre" = "olivedrab3",
+  "Grocery store, other stores or mall" = "red3",
+  "Restaurant, bar or club" = "yellow2",
+  "other's home" = "darkorchid3",
+  "work or school" = "deeppink2",
+  "home" = "cyan3"
+)
+
+# Load the desired font family (make sure it is installed on your system)
+loadfonts(device = "win")  # For Windows, or 'quartz' for Mac, or comment it out for Linux
+
+# Plot the data for the year 2015
+walking_plot_2010 <- ggplot(walking_data_2010, aes(x = DURATION, y = f_t, group = dest, color = dest)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = dest_colors) +
+  labs(
+    title = "Modeling distance decay curves of walking for 2010",
+    x = "Duration (minutes)",
+    y = "Frequency (scaled)",
+    color = "Destination"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family = "Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.text = element_text(size = 10, color = "grey40", family = "Times New Roman"),  # Set legend text properties
+    legend.title = element_text(size = 10, color = "grey40", family = "Times New Roman"), # Set legend title properties
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA)  # White background for panels
+  )
+
+# Display the plot
+print(walking_plot_2010)
+
+# Save the plot if desired
+ggsave("walking_plot_2010.jpg", plot = walking_plot_2010, width = 8, height = 6, dpi = 300)
+
+
+```
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Filter the walking_data for the year 2005 only
+walking_data_2005 <- walking_data %>%
+  filter(YEAR == 2005)
+
+# Define the colors for each destination
+dest_colors <- c(
+  "Place of worship" = "darkorange1",
+  "outdoors" = "royalblue2",
+  "Library, museum or theatre" = "olivedrab3",
+  "Grocery store, other stores or mall" = "red3",
+  "Restaurant, bar or club" = "yellow2",
+  "other's home" = "darkorchid3",
+  "work or school" = "deeppink2",
+  "home" = "cyan3"
+)
+
+# Load the desired font family (make sure it is installed on your system)
+loadfonts(device = "win")  # For Windows, or 'quartz' for Mac, or comment it out for Linux
+
+# Plot the data for the year 2015
+walking_plot_2005 <- ggplot(walking_data_2005, aes(x = DURATION, y = f_t, group = dest, color = dest)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = dest_colors) +
+  labs(
+    title = "Modeling distance decay curves of walking for 2005",
+    x = "Duration (minutes)",
+    y = "Frequency (scaled)",
+    color = "Destination"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family = "Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.text = element_text(size = 10, color = "grey40", family = "Times New Roman"),  # Set legend text properties
+    legend.title = element_text(size = 10, color = "grey40", family = "Times New Roman"), # Set legend title properties
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA)  # White background for panels
+  )
+
+# Display the plot
+print(walking_plot_2005)
+
+# Save the plot if desired
+ggsave("walking_plot_2005.jpg", plot = walking_plot_2005, width = 8, height = 6, dpi = 300)
+
+
+```
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Filter the walking_data for the year 1998 only
+walking_data_1998 <- walking_data %>%
+  filter(YEAR == 1998)
+
+# Define the colors for each destination
+dest_colors <- c(
+  "Place of worship" = "darkorange1",
+  "outdoors" = "royalblue2",
+  "Library, museum or theatre" = "olivedrab3",
+  "Grocery store, other stores or mall" = "red3",
+  "Restaurant, bar or club" = "yellow2",
+  "other's home" = "darkorchid3",
+  "work or school" = "deeppink2",
+  "home" = "cyan3"
+)
+
+# Load the desired font family (make sure it is installed on your system)
+loadfonts(device = "win")  # For Windows, or 'quartz' for Mac, or comment it out for Linux
+
+# Plot the data for the year 2015
+walking_plot_1998 <- ggplot(walking_data_1998, aes(x = DURATION, y = f_t, group = dest, color = dest)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = dest_colors) +
+  labs(
+    title = "Modeling distance decay curves of walking for 1998",
+    x = "Duration (minutes)",
+    y = "Frequency (scaled)",
+    color = "Destination"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family = "Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.text = element_text(size = 10, color = "grey40", family = "Times New Roman"),  # Set legend text properties
+    legend.title = element_text(size = 10, color = "grey40", family = "Times New Roman"), # Set legend title properties
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA)  # White background for panels
+  )
+
+# Display the plot
+print(walking_plot_1998)
+
+# Save the plot if desired
+ggsave("walking_plot_1998.jpg", plot = walking_plot_1998, width = 8, height = 6, dpi = 300)
+
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Filter the walking_data for the year 1998 only
+walking_data_1992 <- walking_data %>%
+  filter(YEAR == 1992)
+
+# Define the colors for each destination
+dest_colors <- c(
+  "Place of worship" = "darkorange1",
+  "outdoors" = "royalblue2",
+  "Library, museum or theatre" = "olivedrab3",
+  "Grocery store, other stores or mall" = "red3",
+  "Restaurant, bar or club" = "yellow2",
+  "other's home" = "darkorchid3",
+  "work or school" = "deeppink2",
+  "home" = "cyan3"
+)
+
+# Load the desired font family (make sure it is installed on your system)
+loadfonts(device = "win")  # For Windows, or 'quartz' for Mac, or comment it out for Linux
+
+# Plot the data for the year 1992
+walking_plot_1992 <- ggplot(walking_data_1992, aes(x = DURATION, y = f_t, group = dest, color = dest)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = dest_colors) +
+  labs(
+    title = "Modeling distance decay curves of walking for 1992",
+    x = "Duration (minutes)",
+    y = "Frequency (scaled)",
+    color = "Destination"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family = "Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.text = element_text(size = 10, color = "grey40", family = "Times New Roman"),  # Set legend text properties
+    legend.title = element_text(size = 10, color = "grey40", family = "Times New Roman"), # Set legend title properties
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA)  # White background for panels
+  )
+
+# Display the plot
+print(walking_plot_1992)
+
+# Save the plot if desired
+ggsave("walking_plot_1992.jpg", plot = walking_plot_1992, width = 8, height = 6, dpi = 300)
+
+
+```
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Filter the walking_data for the year 1998 only
+walking_data_1986 <- walking_data %>%
+  filter(YEAR == 1986)
+
+# Define the colors for each destination
+dest_colors <- c(
+  "Place of worship" = "darkorange1",
+  "outdoors" = "royalblue2",
+  "Library, museum or theatre" = "olivedrab3",
+  "Grocery store, other stores or mall" = "red3",
+  "Restaurant, bar or club" = "yellow2",
+  "other's home" = "darkorchid3",
+  "work or school" = "deeppink2",
+  "home" = "cyan3"
+)
+
+# Load the desired font family (make sure it is installed on your system)
+loadfonts(device = "win")  # For Windows, or 'quartz' for Mac, or comment it out for Linux
+
+# Plot the data for the year 1986
+walking_plot_1986 <- ggplot(walking_data_1986, aes(x = DURATION, y = f_t, group = dest, color = dest)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = dest_colors) +
+  labs(
+    title = "Modeling distance decay curves of walking for 1986",
+    x = "Duration (minutes)",
+    y = "Frequency (scaled)",
+    color = "Destination"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family = "Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.text = element_text(size = 10, color = "grey40", family = "Times New Roman"),  # Set legend text properties
+    legend.title = element_text(size = 10, color = "grey40", family = "Times New Roman"), # Set legend title properties
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA)  # White background for panels
+  )
+
+# Display the plot
+print(walking_plot_1986)
+
+# Save the plot if desired
+ggsave("walking_plot_1986.jpg", plot = walking_plot_1986, width = 8, height = 6, dpi = 300)
+
+
+```
+
+## 2015-cycling-impedance
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Filter the walking_data for the year 2015 only
+cycling_data_2015 <- cycling_data %>%
+  filter(YEAR == 2015)
+
+# Define the colors for each destination
+dest_colors <- c(
+  "Place of worship" = "darkorange1",
+  "outdoors" = "royalblue2",
+  "Library, museum or theatre" = "olivedrab3",
+  "Grocery store, other stores or mall" = "red3",
+  "Restaurant, bar or club" = "yellow2",
+  "other's home" = "darkorchid3",
+  "work or school" = "deeppink2",
+  "home" = "cyan3"
+)
+
+# Load the desired font family (make sure it is installed on your system)
+loadfonts(device = "win")  # For Windows, or 'quartz' for Mac, or comment it out for Linux
+
+# Plot the data for the year 2015
+cycling_plot_2015 <- ggplot(cycling_data_2015, aes(x = DURATION, y = f_t, group = dest, color = dest)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = dest_colors) +
+  labs(
+    title = "Modeling distance decay curves of cycling for 2015",
+    x = "Duration (minutes)",
+    y = "Frequency (scaled)",
+    color = "Destination"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family = "Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.text = element_text(size = 10, color = "grey40", family = "Times New Roman"),  # Set legend text properties
+    legend.title = element_text(size = 10, color = "grey40", family = "Times New Roman"), # Set legend title properties
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA)  # White background for panels
+  )
+
+# Display the plot
+print(cycling_plot_2015)
+
+# Save the plot if desired
+ggsave("cycling_plot_2015.jpg", plot = cycling_plot_2015, width = 8, height = 6, dpi = 300)
+
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Filter the walking_data for the year 2010 only
+cycling_data_2010 <- cycling_data %>%
+  filter(YEAR == 2010)
+
+# Define the colors for each destination
+dest_colors <- c(
+  "Place of worship" = "darkorange1",
+  "Outdoors away from home" = "royalblue2",
+  "Library, museum or theatre" = "olivedrab3",
+  "Grocery store, other stores or mall" = "red3",
+  "Restaurant, bar or club" = "yellow2",
+  "other's home" = "darkorchid3",
+  "work or school" = "deeppink2",
+  "home" = "cyan3"
+)
+
+# Load the desired font family (make sure it is installed on your system)
+loadfonts(device = "win")  # For Windows, or 'quartz' for Mac, or comment it out for Linux
+
+# Plot the data for the year 2015
+cycling_plot_2010 <- ggplot(cycling_data_2010, aes(x = DURATION, y = f_t, group = dest, color = dest)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = dest_colors) +
+  labs(
+    title = "Modeling distance decay curves of cycling for 2010",
+    x = "Duration (minutes)",
+    y = "Frequency (scaled)",
+    color = "Destination"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family = "Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.text = element_text(size = 10, color = "grey40", family = "Times New Roman"),  # Set legend text properties
+    legend.title = element_text(size = 10, color = "grey40", family = "Times New Roman"), # Set legend title properties
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA)  # White background for panels
+  )
+
+# Display the plot
+print(cycling_plot_2010)
+
+# Save the plot if desired
+ggsave("cycling_plot_2010.jpg", plot = cycling_plot_2010, width = 8, height = 6, dpi = 300)
+
+
+```
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Filter the cycling_data for the year 2005 only
+cycling_data_2005 <- cycling_data %>%
+  filter(YEAR == 2005)
+
+# Define the colors for each destination
+dest_colors <- c(
+  "Place of worship" = "darkorange1",
+  "outdoors" = "royalblue2",
+  "Library, museum or theatre" = "olivedrab3",
+  "Grocery store, other stores or mall" = "red3",
+  "Restaurant, bar or club" = "yellow2",
+  "other's home" = "darkorchid3",
+  "work or school" = "deeppink2",
+  "home" = "cyan3"
+)
+
+# Load the desired font family (make sure it is installed on your system)
+loadfonts(device = "win")  # For Windows, or 'quartz' for Mac, or comment it out for Linux
+
+# Plot the data for the year 2015
+cycling_plot_2005 <- ggplot(cycling_data_2005, aes(x = DURATION, y = f_t, group = dest, color = dest)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = dest_colors) +
+  labs(
+    title = "Modeling distance decay curves of cycling for 2005",
+    x = "Duration (minutes)",
+    y = "Frequency (scaled)",
+    color = "Destination"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family = "Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.text = element_text(size = 10, color = "grey40", family = "Times New Roman"),  # Set legend text properties
+    legend.title = element_text(size = 10, color = "grey40", family = "Times New Roman"), # Set legend title properties
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA)  # White background for panels
+  )
+
+# Display the plot
+print(cycling_plot_2005)
+
+# Save the plot if desired
+ggsave("cycling_plot_2005.jpg", plot = cycling_plot_2005, width = 8, height = 6, dpi = 300)
+
+
+```
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Filter the cycling_data for the year 1998 only
+cycling_data_1998 <- cycling_data %>%
+  filter(YEAR == 1998)
+
+# Define the colors for each destination
+dest_colors <- c(
+  "Place of worship" = "darkorange1",
+  "outdoors" = "royalblue2",
+  "Library, museum or theatre" = "olivedrab3",
+  "Grocery store, other stores or mall" = "red3",
+  "Restaurant, bar or club" = "yellow2",
+  "other's home" = "darkorchid3",
+  "work or school" = "deeppink2",
+  "home" = "cyan3"
+)
+
+# Load the desired font family (make sure it is installed on your system)
+loadfonts(device = "win")  # For Windows, or 'quartz' for Mac, or comment it out for Linux
+
+# Plot the data for the year 2015
+cycling_plot_1998 <- ggplot(cycling_data_1998, aes(x = DURATION, y = f_t, group = dest, color = dest)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = dest_colors) +
+  labs(
+    title = "Modeling distance decay curves of cycling for 1998",
+    x = "Duration (minutes)",
+    y = "Frequency (scaled)",
+    color = "Destination"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family = "Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.text = element_text(size = 10, color = "grey40", family = "Times New Roman"),  # Set legend text properties
+    legend.title = element_text(size = 10, color = "grey40", family = "Times New Roman"), # Set legend title properties
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA)  # White background for panels
+  )
+
+# Display the plot
+print(cycling_plot_1998)
+
+# Save the plot if desired
+ggsave("cycling_plot_1998.jpg", plot = cycling_plot_1998, width = 8, height = 6, dpi = 300)
+
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(extrafont)
+
+# Filter the cycling_data for the year 1998 only
+cycling_data_1992 <- cycling_data %>%
+  filter(YEAR == 1992)
+
+# Define the colors for each destination
+dest_colors <- c(
+  "Place of worship" = "darkorange1",
+  "outdoors" = "royalblue2",
+  "Library, museum or theatre" = "olivedrab3",
+  "Grocery store, other stores or mall" = "red3",
+  "Restaurant, bar or club" = "yellow2",
+  "other's home" = "darkorchid3",
+  "work or school" = "deeppink2",
+  "home" = "cyan3"
+)
+
+# Load the desired font family (make sure it is installed on your system)
+loadfonts(device = "win")  # For Windows, or 'quartz' for Mac, or comment it out for Linux
+
+# Plot the data for the year 1992
+cycling_plot_1992 <- ggplot(cycling_data_1992, aes(x = DURATION, y = f_t, group = dest, color = dest)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = dest_colors) +
+  labs(
+    title = "Modeling distance decay curves of cycling for 1992",
+    x = "Duration (minutes)",
+    y = "Frequency (scaled)",
+    color = "Destination"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, color = "grey40", family = "Times New Roman"),
+    axis.title = element_text(color = "grey40", family = "Times New Roman"),
+    axis.text = element_text(color = "grey40", family = "Times New Roman"),
+    legend.text = element_text(size = 10, color = "grey40", family = "Times New Roman"),  # Set legend text properties
+    legend.title = element_text(size = 10, color = "grey40", family = "Times New Roman"), # Set legend title properties
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA)  # White background for panels
+  )
+
+# Display the plot
+print(cycling_plot_1992)
+
+# Save the plot if desired
+ggsave("cycling_plot_1992.jpg", plot = cycling_plot_1992, width = 8, height = 6, dpi = 300)
+
+
+```
+
+
+
+
+
+
+
+# previouse impedance function
 
 
 ```{r}
@@ -2471,9 +4045,6 @@ included_destinations <- c("home", "work or school", "other's home", "Grocery st
 w_2015_a <- walking_2015_f %>%
   filter(dest %in% included_destinations)
 
-# Multiply the values in the f_t column by 1000
-#w_2015_a <- w_2015_a %>%
-#  mutate(f_t = f_t * 1000)
 
 # Create the plot with the modified line style
 ggplot(w_2015_a, aes(x = DURATION, y = f_t, color = dest)) +
@@ -2496,29 +4067,65 @@ dpi <- 300  # DPI (dots per inch)
 ggsave(filename, width = width, height = height, dpi = dpi)
 
 ```
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Define the destinations you want to include
+included_destinations <- c("home", "work or school", "other's home", "Grocery store, other stores or mall")
+
+# Filter the data frame to include only the specified destinations
+w_2015_a <- walking_2015_f %>%
+  filter(dest %in% included_destinations)
+
+# Create the plot with specified line colors
+ggplot(w_2015_a, aes(x = DURATION, y = f_t, color = dest)) +
+  geom_line(size = 1.005) +  # Adjust line thickness
+  labs(title = "2015 (a)",
+       x = "Time (minutes)",
+       y = "f(Cij)",
+       color = "Destination") +
+  scale_x_continuous(breaks = seq(0, max(w_2015_a$DURATION), by = 10)) +
+  scale_color_manual(values = c("home" = "yellow", 
+                                "work or school" = "blue", 
+                                "other's home" = "green", 
+                                "Grocery store, other stores or mall" = "red")) +
+  theme(aspect.ratio = 1/2,  # Adjust the aspect ratio if needed
+        plot.title = element_text(hjust = 0.5))  # Center-align the title
+
+# Specify the filename and other parameters
+filename <- "w_2015_1.jpg"
+width <- 8  # Width in inches
+height <- 6  # Height in inches
+dpi <- 300  # DPI (dots per inch)
+
+# Save the graph as a JPG with specified parameters
+ggsave(filename, width = width, height = height, dpi = dpi)
+
+```
 
 
 ```{r}
 library(ggplot2)
 # Define the destinations you want to include
-included_destinations <- c("outdoors", "Library, museum or theatre", "Place of worship", "Restaurant, bar or club")
+#included_destinations <- c("outdoors", "Library, museum or theatre", "Place of worship", "Restaurant, bar or club")
 
 # Filter the data frame to include only the specified destinations
-w_2015_b <- walking_2015_f %>%
-  filter(dest %in% included_destinations)
+#w_2015_b <- walking_2015_f %>%
+  #filter(dest %in% included_destinations)
 
 # Multiply the values in the f_t column by 1000
 #w_2015_b <- w_2015_b %>%
  # mutate(f_t = f_t * 1000)
 
 # Create the plot with the modified line style
-ggplot(w_2015_b, aes(x = DURATION, y = f_t, color = dest)) +
+ggplot(walking_2015_f, aes(x = DURATION, y = f_t, color = dest)) +
   geom_line(size = 1.005) +  # Adjust line thickness and style
   labs(title = "2015 (b)",
        x = "Time (minutes)",
        y = "f(Cij)",
        color = "Destination") +
-  scale_x_continuous(breaks = seq(0, max(w_2015_b$DURATION), by = 10)) +
+  scale_x_continuous(breaks = seq(0, max(walking_2015_f$DURATION), by = 10)) +
   theme(aspect.ratio = 1/2, # Adjust the aspect ratio if needed
   plot.title = element_text(hjust = 0.5)) # Center-align the title
 
@@ -3012,7 +4619,7 @@ print(plot)
 
 
 
-```
+
 
 
 
@@ -3097,6 +4704,65 @@ percentage_matrix <- spread(summary_data, key = dest, value = percentage, fill =
 duration_matrix <- spread(summary_data, key = dest, value = mean_duration, fill = 0)
 
 ```
+
+
+
+
+
+
+```{r Trip, echo=FALSE, cache=FALSE, warning=FALSE, results="asis"}
+
+# Filter for walking and cycling trips, selected years, and calculate statistics
+trip_stats_data <- trip %>%
+  filter(MODE %in% c("walking", "cycling"), YEAR %in% c(1986, 1992, 1998)) %>%
+  group_by(YEAR, dest, MODE) %>%
+  summarise(
+    Count = n(),
+    min = min(DURATION),
+    median = median(DURATION),
+    max = max(DURATION),
+    .groups = "drop"
+  )
+
+# Calculate percentages
+total_counts <- trip_stats_data %>% group_by(YEAR, MODE) %>% summarise(total_count = sum(Count), .groups = "drop")
+trip_stats_data <- left_join(trip_stats_data, total_counts, by = c("YEAR", "MODE"))
+trip_stats_data$Percentage <- round((trip_stats_data$Count / trip_stats_data$total_count) * 100, 1)
+
+# Pivot data for the table layout
+wide_data <- trip_stats_data %>%
+  pivot_wider(
+    id_cols = c(dest, MODE),
+    names_from = YEAR,
+    values_from = c(min, median, max, Percentage)
+  )
+
+# Arrange rows based on MODE and then the decreasing percentage of year 1998
+wide_data <- wide_data %>% 
+  arrange(MODE, desc(Percentage_1998))
+
+
+styled_table_14 <- wide_data %>%
+  kable(
+    format = "html", 
+    booktabs = TRUE, 
+    longtable = TRUE, 
+    caption = "\\label{tab:table_14}Trip Statistics by Mode and Destination for 1986, 1992 and 1998", 
+    col.names = c("Destination", "Mode", 
+                  "Min 1986", "Median 1986", "Max 1986", "Percentage 1986", 
+                  "Min 1992", "Median 1992", "Max 1992", "Percentage 1992",
+                  "Min 1998", "Median 1998", "Max 1998", "Percentage 1998"),
+    align = 'c'
+  ) %>%
+  kable_styling(full_width = FALSE, font_size = 8) %>%
+  column_spec(1:14, width = "2cm") %>%
+  add_header_above(c(" " = 2, "1986" = 4, "1992" = 4, "1998" = 4)) %>%
+  row_spec(0, bold = TRUE, align = "c") %>%
+  column_spec(6, border_right = TRUE) %>%
+  column_spec(10, border_right = TRUE)
+styled_table_14
+```
+
 
 
 

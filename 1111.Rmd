@@ -1,0 +1,28 @@
+---
+title: "Untitled"
+output:
+  pdf_document: default
+date: "2023-10-10"
+---
+
+
+```{r}
+library(thesisdown)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(fitdistrplus)
+library(tidyverse)
+library(readxl) 
+library(splitstackshape)
+library(tibble)
+library(readr)
+library(tabulate)
+library(janitor)
+library(flextable)
+library(tidyr)
+library(gt)
+library(xtable)
+library(kableExtra)
+```
+salam

@@ -1,0 +1,542 @@
+---
+title: "Untitled"
+output: html_document
+date: "2023-10-17"
+---
+
+
+
+```{r load-packages, include=FALSE, cache=FALSE}
+#load all packages:
+library(fitdistrplus)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(readxl) 
+library(splitstackshape)
+library(tibble)
+library(readr)
+library(tabulate)
+library(janitor)
+library(kableExtra)
+library(flextable)
+library(gt)
+```
+
+Here, we are loading all the primary files of the GSS dataset to create our database for analysis.
+
+```{r, include=FALSE, cache=FALSE}
+#Read main file:
+gss_e_2015 <- read.csv("D:/GSS Data/gss-e.csv")
+gss_e_2005 <- read.csv("D:/First Article/Data/Time use_2005/gss-12M0019-E-2005-c-19-e_F1.csv")
+gss_e_2010 <- read.csv("D:/First Article/Data/Time use_2010/gss-12M0018-E-2010-c-24-tus-ef_F1.csv")
+gss_e_1998 <- read.csv("D:/First Article/Data/Time use_1998/gss-12M0012-E-1998-c-12e_F1.csv")
+gss_e_1992 <- read.csv("D:/First Article/Data/Time use_1992/gss-12M0007-E-1992-c-7-ep_F1.csv")
+gss_e_1986 <- read.csv("D:/First Article/Data/Time use_1986/gss-12M0002-E-1986-c-2-ep_F1.csv")
+```
+
+
+```{r creating dataset for walking 2015, include=FALSE, cache=FALSE}
+
+# **walking 2015**
+# Creating data of origins and destinations of walking trip 2015
+inds = which(gss_e_2015$LOCATION == 315)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_2015 <- gss_e_2015 [unlist(rows),] %>% 
+  dplyr::select(PUMFID:LOCATION) %>% 
+  mutate(origin = lag(LOCATION, order_by = PUMFID)) %>% 
+  mutate(destination = lead(LOCATION, order_by = PUMFID)) %>% 
+  group_by(PUMFID) %>% 
+  filter(LOCATION == 315) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walk_2015 <- walk_2015 %>%  filter(destination == 300 | destination == 301 | destination == 303 | destination == 302 | destination == 305 |destination == 306 | destination == 307 |destination == 309 | destination == 310 ) %>% filter(origin == 300 | origin == 301 | origin == 303 | origin == 302 | origin == 305 | origin == 306 | origin == 307  | origin == 309 | origin == 310 ) %>% 
+  mutate(dest =
+                     case_when(destination == 300 ~ "home", 
+                               destination == 301 ~ "work or school",
+                               destination == 303 ~ "other's home",
+                               destination == 302 ~ "business",
+                               destination == 305 ~ "outdoors",
+                               destination == 306 ~ "Grocery store, other stores or mall",
+                               destination == 307 ~ "Library, museum or theatre",
+                               destination == 309 ~ "Restaurant, bar or club",
+                               destination == 310 ~ "Place of worship")) %>% 
+  mutate(orig =
+                     case_when(origin == 300 ~ "home", 
+                               origin == 301 ~ "work or school",
+                               origin == 303 ~ "other's home",
+                               origin == 302 ~ "business",
+                               origin == 305 ~ "outdoors",
+                               origin == 306 ~ "Grocery store, other stores or mall",
+                               origin == 307 ~ "Library, museum or theatre",
+                               origin == 309 ~ "Restaurant, bar or club",
+                               origin == 310 ~ "Place of worship"))
+
+walk_2015 <- walk_2015 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walk_2015$YEAR <-  2015
+walk_2015$MODE <-  "walking"
+```
+
+
+```{r creating dataset for cycling 2015, include=FALSE, cache=FALSE}
+
+# cycling _2015
+# Creating data of origins and destinations of cycling trip 2015
+inds = which(gss_e_2015$LOCATION == 318)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycle_2015 <- gss_e_2015[unlist(rows),] %>% 
+  dplyr::select(PUMFID:LOCATION) %>% 
+  mutate(origin = lag(LOCATION, order_by = PUMFID)) %>% 
+  mutate(destination = lead(LOCATION, order_by = PUMFID)) %>% 
+  group_by(PUMFID) %>% 
+  filter(LOCATION == 318)
+
+# change destination and origins to text column
+cycle_2015 <- cycle_2015 %>%  filter(destination == 300 | destination == 301 | destination == 303 | destination == 302 | destination == 305 |destination == 306 | destination == 307 | destination == 309 | destination == 310 ) %>% filter(origin == 300 | origin == 301 | origin == 303 | origin == 302 | origin == 305 | origin == 306 | origin == 307 | origin == 309 | origin == 310) %>% 
+  mutate(dest =
+                     case_when(destination == 300 ~ "home", 
+                               destination == 301 ~ "work or school",
+                               destination == 303 ~ "other's home",
+                               destination == 302 ~ "business",
+                               destination == 305 ~ "outdoors",
+                               destination == 306 ~ "Grocery store, other stores or mall",
+                               destination == 307 ~ "Library, museum or theatre",
+                               destination == 309 ~ "Restaurant, bar or club",
+                               destination == 310 ~ "Place of worship")) %>% 
+  mutate(orig =
+                     case_when(origin == 300 ~ "home", 
+                               origin == 301 ~ "work or school",
+                               origin == 303 ~ "other's home",
+                               origin == 302 ~ "business",
+                               origin == 305 ~ "outdoors",
+                               origin == 306 ~ "Grocery store, other stores or mall",
+                               origin == 307 ~ "Library, museum or theatre",
+                               origin == 309 ~ "Restaurant, bar or club",
+                               origin == 310 ~ "Place of worship"))
+
+cycle_2015 <- cycle_2015 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycle_2015$YEAR <-  2015
+cycle_2015$MODE <-  "cycling"
+```
+
+```{r creating dataset for walking 2010, include=FALSE, cache=FALSE}
+
+# **walking 2010**
+# Creating data of origins and destinations of walking trip 2010
+inds = which(gss_e_2010$PLACE == 14)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_2010 <- gss_e_2010 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 14) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walk_2010 <- walk_2010 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 4 | destination == 5 |destination == 6 | destination == 7 | destination == 8 | destination == 9 | destination == 10 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 4 | origin == 5 | origin == 6 | origin == 7 | origin == 8 | origin == 9 | origin == 10) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 4 ~ "Restaurant/bar",
+                               destination == 5 ~ "Place of worship",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 8 ~ "work or school",
+                               destination == 9 ~ "Outdoors away from home",
+                               destination == 10 ~ "Library" )) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 4 ~ "Restaurant/bar",
+                               origin == 5 ~ "Place of worship",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 8 ~ "work or school",
+                               origin == 9 ~ "Outdoors away from home",
+                               origin == 10 ~ "Library"))
+
+walk_2010 <- walk_2010 %>%
+  rename(PUMFID = RECID,
+         LOCATION = PLACE)
+
+walk_2010 <- walk_2010 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walk_2010$YEAR <-  2010
+walk_2010$MODE <-  "walking"
+```
+
+```{r creating dataset for cycling 2010, include=FALSE, cache=FALSE}
+
+# cycling _2010
+# Creating data of origins and destinations of cycling trip 2010
+inds = which(gss_e_2010$PLACE == 17)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycle_2010 <- gss_e_2010[unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 17)
+
+# change destination and origins to text column
+cycle_2010 <- cycle_2010 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 6 | destination == 7 | destination == 8 | destination == 9 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 6 | origin == 7 | origin == 8 | origin == 9 ) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 8 ~ "work or school",
+                               destination == 9 ~ "Outdoors away from home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 8 ~ "work or school",
+                               origin == 9 ~ "Outdoors away from home"))
+
+cycle_2010 <- cycle_2010 %>%
+  rename(PUMFID = RECID,
+         LOCATION = PLACE)
+
+cycle_2010 <- cycle_2010 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycle_2010$YEAR <-  2010
+cycle_2010$MODE <-  "cyclingtrip"
+```
+
+```{r creating dataset for walking 2005, include=FALSE, cache=FALSE}
+
+# **walking 2005**
+# Creating data of origins and destinations of walking trip 2005
+inds = which(gss_e_2005$PLACE == 14)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_2005 <- gss_e_2005 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 14) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walk_2005 <- walk_2005 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 8 | destination == 4 | destination == 5 | destination == 6 | destination == 7 | destination == 9 | destination == 10 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 8 | origin == 4 | origin == 5 | origin == 6 | origin == 7 | origin == 9 | origin == 10) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 8 ~ "work or school",
+                               destination == 4 ~ "Restaurant, bar or club",
+                               destination == 5 ~ "Place of worship",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 9 ~ "outdoors",
+                               destination == 10 ~ "Library, museum or theatre")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 8 ~ "work or school",
+                               origin == 4 ~ "Restaurant, bar or club",
+                               origin == 5 ~ "Place of worship",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 9 ~ "outdoors",
+                               origin == 10 ~ "Library, museum or theatre"))
+
+walk_2005 <- walk_2005 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    LOCATION = PLACE)
+
+walk_2005 <- walk_2005 %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walk_2005$YEAR <-  2005
+walk_2005$MODE <-  "walking"
+```
+
+```{r creating dataset for cycling 2005, include=FALSE, cache=FALSE}
+
+# **CYCLING 2005**
+# Creating data of origins and destinations of cycling trip 2005
+inds = which(gss_e_2005$PLACE == 17)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycle_2005 <- gss_e_2005 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 17) %>% 
+  ungroup()
+
+# change destination and origins to text column
+cycle_2005 <- cycle_2005 %>%  filter(destination == 1 | destination == 2 | destination == 3 | destination == 8 | destination == 4 |  destination == 6 | destination == 7 | destination == 9 ) %>% filter(origin == 1 | origin == 2 | origin == 3 | origin == 8 | origin == 4 | origin == 6 | origin == 7 | origin == 9 ) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home",
+                               destination == 8 ~ "work or school",
+                               destination == 4 ~ "Restaurant, bar or club",
+                               destination == 6 ~ "Grocery store, other stores or mall",
+                               destination == 7 ~ "Grocery store, other stores or mall",
+                               destination == 9 ~ "outdoors")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home",
+                               origin == 8 ~ "work or school",
+                               origin == 4 ~ "Restaurant, bar or club",
+                               origin == 6 ~ "Grocery store, other stores or mall",
+                               origin == 7 ~ "Grocery store, other stores or mall",
+                               origin == 9 ~ "outdoors"))
+
+cycle_2005 <- cycle_2005 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    LOCATION = PLACE) %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycle_2005$YEAR <-  2005
+cycle_2005$MODE <-  "cycling"
+```
+
+```{r creating dataset for walking 1998, include=FALSE, cache=FALSE}
+
+# **walking 1998**
+# Creating data of origins and destinations of walking trip 1998
+inds = which(gss_e_1998$PLACE == 7)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_1998 <- gss_e_1998 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 7) %>% 
+  ungroup()
+
+# change destination and origins to text column
+walk_1998 <- walk_1998 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+walk_1998 <- walk_1998 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    WGHT_EPI = WGHTEPI,
+    LOCATION = PLACE) %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+walk_1998$YEAR <-  1998
+walk_1998$MODE <-  "walking"
+```
+
+```{r creating dataset for cycling 1998, include=FALSE, cache=FALSE}
+
+# **Cycling 1998**
+# Creating data of origins and destinations of cycling trip 1998
+inds = which(gss_e_1998$PLACE == 9)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycle_1998 <- gss_e_1998 [unlist(rows),] %>% 
+  dplyr::select(RECID:PLACE) %>% 
+  mutate(origin = lag(PLACE, order_by = RECID)) %>% 
+  mutate(destination = lead(PLACE, order_by = RECID)) %>% 
+  group_by(RECID) %>% 
+  filter(PLACE == 9) %>% 
+  ungroup()
+
+# change destination and origins to text column
+cycle_1998 <- cycle_1998 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+cycle_1998 <- cycle_1998 %>% dplyr::rename(
+    PUMFID = RECID,
+    STARTMIN = STARMIN,
+    WGHT_EPI = WGHTEPI,
+    LOCATION = PLACE) %>%  dplyr::select(PUMFID, WGHT_EPI, DDAY, STARTIME:orig) 
+cycle_1998$YEAR <-  1998
+cycle_1998$MODE <-  "cycling"
+```
+
+```{r creating dataset for walking 1992, include=FALSE, cache=FALSE}
+# **walking 1992**
+# Creating data of origins and destinations of walking trip 1992
+inds = which(gss_e_1992$PLACE == 7)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_1992 <- gss_e_1992 [unlist(rows),] %>% 
+  dplyr::select(SEQNUM, DDAY, NOEPISO, ACTCODE, STARTIME, ENDTIME, DURATION, PLACE, TIMEWGT) %>% 
+  mutate(origin = lag(PLACE, order_by = SEQNUM)) %>% 
+  mutate(destination = lead(PLACE, order_by = SEQNUM)) %>% 
+  group_by(SEQNUM) %>% 
+  filter(PLACE == 7) %>% 
+  ungroup()
+
+# change NA's Weight to 1 
+
+
+# change destination and origins to text column
+walk_1992 <- walk_1992 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+walk_1992 <- walk_1992 %>% dplyr::rename(
+    PUMFID = SEQNUM,
+    LOCATION = PLACE, WGHT_EPI = TIMEWGT) %>%  dplyr::select(PUMFID, DDAY, STARTIME:orig) 
+walk_1992$YEAR <-  1992
+walk_1992$MODE <-  "walking"
+walk_1992$STARTMIN <-  1
+walk_1992$ENDMIN <-  1
+```
+
+```{r creating dataset for cycling 1992, include=FALSE, cache=FALSE}
+
+# **Cycling 1992**
+# Creating data of origins and destinations of cycling trip 1992
+inds = which(gss_e_1992$PLACE == 9)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+cycle_1992 <- gss_e_1992 [unlist(rows),] %>% 
+  dplyr::select(SEQNUM, DDAY, NOEPISO, ACTCODE, STARTIME, ENDTIME, DURATION, PLACE, TIMEWGT) %>% 
+  mutate(origin = lag(PLACE, order_by = SEQNUM)) %>% 
+  mutate(destination = lead(PLACE, order_by = SEQNUM)) %>% 
+  group_by(SEQNUM) %>% 
+  filter(PLACE == 9) %>% 
+  ungroup()
+
+# change destination and origins to text column
+cycle_1992 <- cycle_1992 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+cycle_1992 <- cycle_1992 %>% dplyr::rename(
+    PUMFID = SEQNUM,
+    LOCATION = PLACE,WGHT_EPI = TIMEWGT) %>%  dplyr::select(PUMFID, DDAY, STARTIME:orig) 
+cycle_1992$YEAR <-  1992
+cycle_1992$MODE <-  "cycling"
+cycle_1992$STARTMIN <-  1
+cycle_1992$ENDMIN <-  1
+
+```
+
+```{r creating dataset for walking 1986, include=FALSE, cache=FALSE}
+
+# **walking 1986**
+# Creating data of origins and destinations of walking trip 1986
+inds = which(gss_e_1986$PLACE == 7)
+rows <- lapply(inds, function(x) (x-1):(x+1))
+walk_1986 <- gss_e_1986 [unlist(rows),] %>% 
+  dplyr::select(SEQNUM, DDAY, NO_EPISO, ACT_CODE, STRTTIME, ENDTIME, DURATION, PLACE, FWGT_MS) %>% 
+  mutate(origin = lag(PLACE, order_by = SEQNUM)) %>% 
+  mutate(destination = lead(PLACE, order_by = SEQNUM)) %>% 
+  group_by(SEQNUM) %>% 
+  filter(PLACE == 7) %>% 
+  ungroup()
+summary(walk_1986$PLACE)
+
+# change destination and origins to text column
+walk_1986 <- walk_1986 %>%  filter(destination == 1 | destination == 2 | destination == 3) %>% filter(origin == 1 | origin == 2 | origin == 3) %>% 
+  mutate(dest =
+                     case_when(destination == 1 ~ "home", 
+                               destination == 2 ~ "work or school",
+                               destination == 3 ~ "other's home")) %>% 
+  mutate(orig =
+                     case_when(origin == 1 ~ "home", 
+                               origin == 2 ~ "work or school",
+                               origin == 3 ~ "other's home"))
+
+walk_1986 <- walk_1986 %>% dplyr::rename(
+    PUMFID = SEQNUM,
+    LOCATION = PLACE, WGHT_EPI = FWGT_MS, STARTIME = STRTTIME) %>%  dplyr::select(PUMFID, DDAY, STARTIME:orig) 
+walk_1986$YEAR <-  1986
+walk_1986$MODE <-  "walking"
+walk_1986$STARTMIN <-  1
+walk_1986$ENDMIN <-  1
+```
+
+```{r, include=FALSE,  cache=FALSE}
+# creating an integrated data frame from 1992 to 2015
+trip <- rbind(walk_2015, cycle_2015, walk_2010,cycle_2010, walk_2005, cycle_2005, cycle_1998, walk_1998, walk_1992, cycle_1992, walk_1986)
+
+#change cyclingtrip in cycling_2010 to cycling 
+unique_modes <- unique(trip$MODE)
+print(unique_modes)
+trip$MODE[trip$MODE == "cyclingtrip"] <- "cycling"
+
+
+#change of the name of some values in the dest column in the dataset 
+
+trip <- trip %>%
+  mutate(dest = case_when(
+    dest == "Restaurant/bar" ~ "Restaurant, bar or club",
+    dest == "Outdoors away from home" ~ "outdoors",
+    dest == "Library" ~ "Library, museum or theatre",
+    TRUE ~ dest  # This line ensures other values remain unchanged
+  ))
+
+```
+
+```{r Trip, echo=FALSE, cache=FALSE, warning=FALSE, results="asis"}
+
+# Filter for walking and cycling trips, selected years, and calculate statistics
+trip_stats_data <- trip %>%
+  filter(MODE %in% c("walking", "cycling"), YEAR %in% c(1986, 1992, 1998)) %>%
+  group_by(YEAR, dest, MODE) %>%
+  summarise(
+    Count = n(),
+    min = min(DURATION),
+    median = median(DURATION),
+    max = max(DURATION),
+    .groups = "drop"
+  )
+
+# Calculate percentages
+total_counts <- trip_stats_data %>% group_by(YEAR, MODE) %>% summarise(total_count = sum(Count), .groups = "drop")
+trip_stats_data <- left_join(trip_stats_data, total_counts, by = c("YEAR", "MODE"))
+trip_stats_data$Percentage <- round((trip_stats_data$Count / trip_stats_data$total_count) * 100, 1)
+
+# Pivot data for the table layout
+wide_data <- trip_stats_data %>%
+  pivot_wider(
+    id_cols = c(dest, MODE),
+    names_from = YEAR,
+    values_from = c(min, median, max, Percentage)
+  )
+
+# Adjust column names for clarity and consistency
+wide_data <- wide_data %>%
+  select(
+    dest, MODE,
+    min_1986, median_1986, max_1986, Percentage_1986,
+    min_1992, median_1992, max_1992, Percentage_1992,
+    min_1998, median_1998, max_1998, Percentage_1998
+  )
+print(colnames(wide_data))
+# Arrange rows based on MODE and then the decreasing percentage of year 1998
+wide_data <- wide_data %>% 
+  arrange(MODE, desc(Percentage_1998))
+
+
+print(wide_data)
+```
